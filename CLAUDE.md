@@ -58,8 +58,14 @@ Dependencies are managed in `pyproject.toml` (not requirements.txt).
 ### Running Agents
 
 ```bash
-# Run agent_researcher (from project root)
+# One-shot run (from project root)
 PYTHONPATH=. python -m agent_researcher
+
+# Scheduled daily run (default 07:30)
+PYTHONPATH=. python -m agent_researcher --scheduled
+
+# Custom schedule time
+PYTHONPATH=. python -m agent_researcher --scheduled --hour 9 --minute 0
 ```
 
 ### Config
@@ -74,4 +80,7 @@ Pipeline: parallel source fetch → dedup/freshness filter → LLM scoring (Clau
 - **Dedup** (`agent_researcher/dedup.py`): URL normalization + `rapidfuzz` title similarity (threshold 85). Merges multi-source items rather than discarding.
 - **Scorer** (`agent_researcher/scorer.py`): batch scoring via Claude API. Falls back to raw score sorting if API key missing.
 - **Data contracts** (`shared/models.py`): `RawItem` → `ScoredItem` → `ComedyBrief`. All agents share these.
-- **Output**: `output/briefs/YYYY-MM-DD.md`
+- **Delivery** (`agent_researcher/delivery/`): local `.md` file (always) + Notion page (if configured). Dispatched via `deliver_brief()`.
+- **Alerts** (`agent_researcher/alerts.py`): Slack webhook notifications on success/failure. Gated on `SLACK_WEBHOOK_URL`.
+- **Scheduler** (`agent_researcher/scheduler.py`): APScheduler `CronTrigger` for daily runs. Activated via `--scheduled` flag.
+- **Output**: `output/briefs/YYYY-MM-DD.md` + optional Notion page

@@ -9,4 +9,8 @@ dependencies = [
     "feedparser>=6.0,<7",
     "rapidfuzz>=3.0,<4",
     "anthropic>=0.40,<1",
+    "xai-sdk",
+    "atproto>=0.0.50,<1",
+    "apscheduler>=3.10,<4",
+    "notion-client>=2.0,<3",
 ]

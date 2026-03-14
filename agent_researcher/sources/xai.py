@@ -1,0 +1,92 @@
+from __future__ import annotations
+
+import json
+import logging
+from datetime import datetime, timezone
+
+from xai_sdk import Client
+from xai_sdk.chat import user
+
+from shared.config import Settings
+from shared.models import RawItem
+
+logger = logging.getLogger(__name__)
+
+MODEL = "grok-3-mini"
+
+PROMPT = """\
+You have access to real-time X (Twitter) data.
+
+Return the top 10 most viral or trending posts/threads from the last 24 hours \
+in these domains: AI, machine learning, robotics, biotechnology, tech industry.
+
+For each, return:
+- "title": post summary (1–2 sentences)
+- "url": post URL if available, otherwise empty string
+- "why_trending": why it's getting traction (1 sentence)
+- "engagement": one of "viral", "high", "moderate"
+
+Focus on: surprising claims, failures, hype, controversy, absurd announcements.
+Exclude: pure news headlines with no reaction, political content.
+
+Return ONLY a JSON array, no other text.
+"""
+
+
+class XAISource:
+    name = "xai"
+
+    def __init__(self, settings: Settings) -> None:
+        self._settings = settings
+
+    def fetch(self) -> list[RawItem]:
+        if not self._settings.xai_api_key:
+            return []
+
+        try:
+            client = Client(api_key=self._settings.xai_api_key)
+            chat = client.chat.create(model=MODEL)
+            chat.append(user(PROMPT))
+            response = chat.sample()
+            text = response.content
+        except Exception:
+            logger.exception("xAI API call failed")
+            return []
+
+        # Parse JSON from response
+        text = text.strip()
+        if text.startswith("```"):
+            text = text.split("\n", 1)[1] if "\n" in text else text[3:]
+            text = text.rsplit("```", 1)[0].strip()
+
+        try:
+            posts = json.loads(text)
+        except json.JSONDecodeError:
+            logger.error("Failed to parse xAI response as JSON:\n%s", text[:500])
+            return []
+
+        items: list[RawItem] = []
+        engagement_scores = {"viral": 100, "high": 50, "moderate": 20}
+
+        for post in posts:
+            title = post.get("title", "")
+            if not title:
+                continue
+
+            engagement = post.get("engagement", "moderate").lower()
+            score = engagement_scores.get(engagement, 20)
+
+            items.append(
+                RawItem(
+                    title=title,
+                    url=post.get("url", ""),
+                    sources=["xai:x.com"],
+                    tier="discovery",
+                    score=score,
+                    timestamp=datetime.now(timezone.utc),
+                    snippet=post.get("why_trending", ""),
+                )
+            )
+
+        logger.info("xAI/X: fetched %d items", len(items))
+        return items
