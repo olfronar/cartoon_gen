@@ -54,3 +54,24 @@ uv sync
 ```
 
 Dependencies are managed in `pyproject.toml` (not requirements.txt).
+
+### Running Agents
+
+```bash
+# Run agent_researcher (from project root)
+PYTHONPATH=. python -m agent_researcher
+```
+
+### Config
+
+Environment variables loaded from `.env` (see `.env.example` for template). Missing optional credentials cause graceful source skipping, not crashes.
+
+## Agent Researcher Internals
+
+Pipeline: parallel source fetch → dedup/freshness filter → LLM scoring (Claude Opus) → Markdown brief output.
+
+- **Source Protocol** (`agent_researcher/sources/base.py`): synchronous `fetch() -> list[RawItem]`. Runner parallelizes via `asyncio.to_thread()`.
+- **Dedup** (`agent_researcher/dedup.py`): URL normalization + `rapidfuzz` title similarity (threshold 85). Merges multi-source items rather than discarding.
+- **Scorer** (`agent_researcher/scorer.py`): batch scoring via Claude API. Falls back to raw score sorting if API key missing.
+- **Data contracts** (`shared/models.py`): `RawItem` → `ScoredItem` → `ComedyBrief`. All agents share these.
+- **Output**: `output/briefs/YYYY-MM-DD.md`
