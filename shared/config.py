@@ -40,6 +40,13 @@ class Settings:
     # Output
     output_dir: Path = field(default_factory=lambda: Path("output/briefs"))
 
+    # Script Writer
+    script_writer_model: str = "claude-opus-4-6"
+    script_writer_max_tokens: int = 64000
+    characters_dir: Path = field(default_factory=lambda: Path("output/characters"))
+    art_style_path: Path = field(default_factory=lambda: Path("output/art_style.md"))
+    scripts_output_dir: Path = field(default_factory=lambda: Path("output/scripts"))
+
 
 def load_settings(env_path: str = ".env") -> Settings:
     values = dotenv_values(env_path)
@@ -57,6 +64,11 @@ def load_settings(env_path: str = ".env") -> Settings:
         notion_api_key=values.get("NOTION_API_KEY", ""),
         notion_page_id=values.get("NOTION_PAGE_ID", ""),
         slack_webhook_url=values.get("SLACK_WEBHOOK_URL", ""),
+        script_writer_model=values.get("SCRIPT_WRITER_MODEL", "claude-opus-4-6"),
+        script_writer_max_tokens=int(values.get("SCRIPT_WRITER_MAX_TOKENS", "64000")),
+        characters_dir=Path(values.get("CHARACTERS_DIR", "output/characters")),
+        art_style_path=Path(values.get("ART_STYLE_PATH", "output/art_style.md")),
+        scripts_output_dir=Path(values.get("SCRIPTS_OUTPUT_DIR", "output/scripts")),
     )
 
     if not settings.anthropic_api_key:

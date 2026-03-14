@@ -54,3 +54,15 @@ class TestWriteBriefLocal:
         brief = ComedyBrief(date=date(2026, 3, 14))
         path = write_brief_local(brief, nested)
         assert path.exists()
+
+    def test_writes_json_sidecar(self, tmp_path):
+        import json
+
+        item = make_scored_item()
+        brief = ComedyBrief(date=date(2026, 3, 14), top_picks=[item])
+        write_brief_local(brief, tmp_path)
+        json_path = tmp_path / "2026-03-14.json"
+        assert json_path.exists()
+        data = json.loads(json_path.read_text())
+        assert data["date"] == "2026-03-14"
+        assert len(data["top_picks"]) == 1

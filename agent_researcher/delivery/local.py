@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import json
 import logging
 from pathlib import Path
 
@@ -54,6 +55,11 @@ def write_brief_local(brief: ComedyBrief, output_dir: Path) -> Path:
 
     content = render_brief(brief)
     path.write_text(content, encoding="utf-8")
+
+    # JSON sidecar for downstream agents
+    json_path = output_dir / f"{brief.date.isoformat()}.json"
+    json_path.write_text(json.dumps(brief.to_dict(), indent=2), encoding="utf-8")
+    logger.info("Brief JSON sidecar written to %s", json_path)
 
     logger.info("Brief written to %s", path)
     return path
