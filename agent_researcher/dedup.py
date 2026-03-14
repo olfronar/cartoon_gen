@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import logging
 from datetime import datetime, timedelta, timezone
-from urllib.parse import urlparse, urlunparse, parse_qs, urlencode
+from urllib.parse import parse_qs, urlencode, urlparse, urlunparse
 
 from rapidfuzz import fuzz
 
@@ -48,9 +48,7 @@ def _merge_items(keep: RawItem, discard: RawItem) -> RawItem:
     )
 
 
-def dedup_and_filter(
-    items: list[RawItem], now: datetime | None = None
-) -> list[RawItem]:
+def dedup_and_filter(items: list[RawItem], now: datetime | None = None) -> list[RawItem]:
     if not items:
         return []
 
@@ -60,7 +58,10 @@ def dedup_and_filter(
     fresh: list[RawItem] = []
     for item in items:
         cutoff = FRESHNESS_CUTOFFS.get(item.tier, timedelta(hours=24))
-        age = now - item.timestamp.replace(tzinfo=timezone.utc) if item.timestamp.tzinfo is None else now - item.timestamp
+        ts = item.timestamp
+        if not ts.tzinfo:
+            ts = ts.replace(tzinfo=timezone.utc)
+        age = now - ts
         if age <= cutoff:
             fresh.append(item)
 

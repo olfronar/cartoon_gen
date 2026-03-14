@@ -55,6 +55,30 @@ uv sync
 
 Dependencies are managed in `pyproject.toml` (not requirements.txt).
 
+### Testing & Linting
+
+```bash
+# Install dev dependencies
+uv sync --extra dev
+
+# Run all tests
+pytest
+
+# Run a single test file
+pytest tests/test_dedup.py
+
+# Run a single test
+pytest tests/test_dedup.py::TestDedupAndFilter::test_url_dedup_merges_sources -v
+
+# Lint
+ruff check .
+
+# Format
+ruff format .
+```
+
+Pre-commit hooks run ruff (lint + format) and pytest on every commit.
+
 ### Running Agents
 
 ```bash

@@ -15,26 +15,28 @@ def _build_notion_blocks(brief: ComedyBrief) -> list[dict]:
     blocks: list[dict] = []
 
     # Top Picks heading
-    blocks.append({
-        "object": "block",
-        "type": "heading_2",
-        "heading_2": {
-            "rich_text": [{"type": "text", "text": {"content": "TOP PICKS"}}]
-        },
-    })
+    blocks.append(
+        {
+            "object": "block",
+            "type": "heading_2",
+            "heading_2": {"rich_text": [{"type": "text", "text": {"content": "TOP PICKS"}}]},
+        }
+    )
 
     for i, scored in enumerate(brief.top_picks, 1):
         item = scored.item
         sources_str = " / ".join(item.sources)
 
         # Numbered item as a heading
-        blocks.append({
-            "object": "block",
-            "type": "heading_3",
-            "heading_3": {
-                "rich_text": [{"type": "text", "text": {"content": f"{i}. {item.title}"}}]
-            },
-        })
+        blocks.append(
+            {
+                "object": "block",
+                "type": "heading_3",
+                "heading_3": {
+                    "rich_text": [{"type": "text", "text": {"content": f"{i}. {item.title}"}}]
+                },
+            }
+        )
 
         # Details as bullet points
         details = [f"Source: {sources_str}"]
@@ -50,23 +52,25 @@ def _build_notion_blocks(brief: ComedyBrief) -> list[dict]:
             details.append(f"URL: {item.url}")
 
         for detail in details:
-            blocks.append({
-                "object": "block",
-                "type": "bulleted_list_item",
-                "bulleted_list_item": {
-                    "rich_text": [{"type": "text", "text": {"content": detail}}]
-                },
-            })
+            blocks.append(
+                {
+                    "object": "block",
+                    "type": "bulleted_list_item",
+                    "bulleted_list_item": {
+                        "rich_text": [{"type": "text", "text": {"content": detail}}]
+                    },
+                }
+            )
 
     # Also Notable heading
     if brief.also_notable:
-        blocks.append({
-            "object": "block",
-            "type": "heading_2",
-            "heading_2": {
-                "rich_text": [{"type": "text", "text": {"content": "ALSO NOTABLE"}}]
-            },
-        })
+        blocks.append(
+            {
+                "object": "block",
+                "type": "heading_2",
+                "heading_2": {"rich_text": [{"type": "text", "text": {"content": "ALSO NOTABLE"}}]},
+            }
+        )
 
         for scored in brief.also_notable:
             item = scored.item
@@ -75,13 +79,15 @@ def _build_notion_blocks(brief: ComedyBrief) -> list[dict]:
             if scored.comedy_angle:
                 text += f" — {scored.comedy_angle}"
 
-            blocks.append({
-                "object": "block",
-                "type": "bulleted_list_item",
-                "bulleted_list_item": {
-                    "rich_text": [{"type": "text", "text": {"content": text}}]
-                },
-            })
+            blocks.append(
+                {
+                    "object": "block",
+                    "type": "bulleted_list_item",
+                    "bulleted_list_item": {
+                        "rich_text": [{"type": "text", "text": {"content": text}}]
+                    },
+                }
+            )
 
     return blocks
 

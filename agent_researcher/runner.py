@@ -48,7 +48,7 @@ async def _pipeline(settings: Settings) -> ComedyBrief:
 
     # Flatten, logging any exceptions
     raw_items: list[RawItem] = []
-    for source, result in zip(sources, results):
+    for source, result in zip(sources, results, strict=True):
         if isinstance(result, BaseException):
             logger.warning("Source %s failed: %s", source.name, result)
         else:

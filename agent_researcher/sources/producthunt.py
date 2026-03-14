@@ -39,11 +39,13 @@ QUERY = """\
 
 def _get_access_token(client_id: str, client_secret: str) -> str:
     """Exchange client credentials for an OAuth access token."""
-    payload = json.dumps({
-        "client_id": client_id,
-        "client_secret": client_secret,
-        "grant_type": "client_credentials",
-    }).encode("utf-8")
+    payload = json.dumps(
+        {
+            "client_id": client_id,
+            "client_secret": client_secret,
+            "grant_type": "client_credentials",
+        }
+    ).encode("utf-8")
 
     req = urllib.request.Request(
         PH_OAUTH_URL,

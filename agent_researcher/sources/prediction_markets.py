@@ -50,9 +50,7 @@ class PredictionMarketsSource:
                 volume_24h = market.get("volume24Hours", 0) or 0
 
                 try:
-                    created = datetime.fromtimestamp(
-                        market["createdTime"] / 1000, tz=timezone.utc
-                    )
+                    created = datetime.fromtimestamp(market["createdTime"] / 1000, tz=timezone.utc)
                 except (KeyError, ValueError, TypeError):
                     created = datetime.now(timezone.utc)
 

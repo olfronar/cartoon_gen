@@ -47,9 +47,7 @@ class RedditSource:
                             sources=[f"reddit:r/{sub_name}"],
                             tier="discovery",
                             score=post.score,
-                            timestamp=datetime.fromtimestamp(
-                                post.created_utc, tz=timezone.utc
-                            ),
+                            timestamp=datetime.fromtimestamp(post.created_utc, tz=timezone.utc),
                             snippet=(post.selftext or "")[:200],
                             comment_count=post.num_comments,
                         )

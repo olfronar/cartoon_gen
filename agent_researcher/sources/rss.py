@@ -36,8 +36,6 @@ def _parse_timestamp(entry: dict) -> datetime:
     return datetime.now(timezone.utc)
 
 
-
-
 class RSSSource:
     name = "rss"
 

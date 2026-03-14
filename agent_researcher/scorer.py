@@ -72,9 +72,7 @@ def score_items(items: list[RawItem], settings: Settings) -> list[ScoredItem]:
         response = client.messages.create(
             model=SCORING_MODEL,
             max_tokens=4096,
-            messages=[
-                {"role": "user", "content": SCORING_PROMPT + items_json}
-            ],
+            messages=[{"role": "user", "content": SCORING_PROMPT + items_json}],
         )
     except Exception:
         logger.exception("Claude API call failed")

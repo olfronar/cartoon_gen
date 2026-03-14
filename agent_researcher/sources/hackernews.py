@@ -3,6 +3,7 @@ from __future__ import annotations
 import json
 import logging
 import urllib.request
+
 from shared.models import RawItem
 from shared.utils import parse_iso_utc
 
