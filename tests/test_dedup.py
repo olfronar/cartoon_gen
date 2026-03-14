@@ -132,3 +132,31 @@ class TestDedupAndFilter:
         ]
         result = dedup_and_filter(items, now=now)
         assert len(result) == 5
+
+    def test_naive_timestamp_handled(self):
+        now = datetime(2026, 3, 14, 14, 0, tzinfo=timezone.utc)
+        # Naive datetime (no tzinfo)
+        naive_ts = datetime(2026, 3, 14, 13, 0)
+        item = make_raw_item(timestamp=naive_ts)
+        result = dedup_and_filter([item], now=now)
+        assert len(result) == 1
+
+    def test_unknown_tier_uses_24h_default(self):
+        now = datetime(2026, 3, 14, 14, 0, tzinfo=timezone.utc)
+        # 20h old item with unknown tier — should pass 24h default
+        item = make_raw_item(
+            tier="unknown_tier",
+            timestamp=now - timedelta(hours=20),
+        )
+        result = dedup_and_filter([item], now=now)
+        assert len(result) == 1
+
+        # 30h old item with unknown tier — should be dropped
+        old = make_raw_item(
+            title="Old unknown",
+            url="https://example.com/old",
+            tier="unknown_tier",
+            timestamp=now - timedelta(hours=30),
+        )
+        result = dedup_and_filter([old], now=now)
+        assert len(result) == 0

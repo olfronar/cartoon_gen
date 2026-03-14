@@ -1,11 +1,8 @@
 from __future__ import annotations
 
-from datetime import datetime, timezone
+from datetime import date, datetime, timezone
 
-import pytest
-
-from shared.config import Settings
-from shared.models import RawItem, ScoredItem
+from shared.models import ComedyBrief, RawItem, ScoredItem
 
 
 def make_raw_item(
@@ -50,11 +47,12 @@ def make_scored_item(
     )
 
 
-@pytest.fixture
-def settings_no_keys() -> Settings:
-    return Settings()
-
-
-@pytest.fixture
-def now() -> datetime:
-    return datetime(2026, 3, 14, 14, 0, tzinfo=timezone.utc)
+def make_brief(
+    top_picks: list[ScoredItem] | None = None,
+    also_notable: list[ScoredItem] | None = None,
+) -> ComedyBrief:
+    return ComedyBrief(
+        date=date(2026, 3, 14),
+        top_picks=top_picks or [],
+        also_notable=also_notable or [],
+    )

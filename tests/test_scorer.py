@@ -1,3 +1,6 @@
+import json
+from unittest.mock import MagicMock, patch
+
 from agent_researcher.scorer import _fallback_scoring, _prepare_items_json, score_items
 from shared.config import Settings
 from tests.conftest import make_raw_item
@@ -36,8 +39,6 @@ class TestFallbackScoring:
 
 class TestPrepareItemsJson:
     def test_returns_valid_json(self):
-        import json
-
         items = [make_raw_item(title="Test", score=42)]
         result = _prepare_items_json(items)
         parsed = json.loads(result)
@@ -59,3 +60,148 @@ class TestScoreItemsNoKey:
         result = score_items(items, settings)
         assert len(result) == 1
         assert result[0].total_score == 50.0
+
+
+class TestScoreItemsWithMockedAPI:
+    def _mock_claude_response(self, scored_data: list[dict]) -> MagicMock:
+        """Build a mock streaming context manager returning scored_data as JSON."""
+        text_block = MagicMock()
+        text_block.type = "text"
+        text_block.text = json.dumps(scored_data)
+
+        message = MagicMock()
+        message.content = [text_block]
+
+        stream_ctx = MagicMock()
+        stream_ctx.__enter__ = lambda s: s
+        stream_ctx.__exit__ = MagicMock(return_value=False)
+        stream_ctx.get_final_message.return_value = message
+        return stream_ctx
+
+    def test_successful_scoring(self):
+        settings = Settings(anthropic_api_key="test-key")
+        items = [make_raw_item(title="Test", score=50)]
+
+        scored_data = [
+            {
+                "index": 0,
+                "title": "Rewritten: Test Event Happens",
+                "comedy_potential": 8.0,
+                "cultural_resonance": 7.0,
+                "freshness": 9.0,
+                "comedy_angle": "It's funny because reasons. 'One-liner here.'",
+            }
+        ]
+
+        stream_ctx = self._mock_claude_response(scored_data)
+
+        with patch("agent_researcher.scorer.anthropic") as mock_anthropic:
+            mock_client = MagicMock()
+            mock_anthropic.Anthropic.return_value = mock_client
+            mock_client.messages.stream.return_value = stream_ctx
+
+            result = score_items(items, settings)
+
+        assert len(result) == 1
+        assert result[0].comedy_potential == 8.0
+        assert result[0].cultural_resonance == 7.0
+        assert result[0].freshness == 9.0
+        assert result[0].total_score == 24.0
+        assert result[0].comedy_angle == "It's funny because reasons. 'One-liner here.'"
+        # Title should be rewritten
+        assert result[0].item.title == "Rewritten: Test Event Happens"
+
+    def test_title_not_rewritten_when_empty(self):
+        settings = Settings(anthropic_api_key="test-key")
+        items = [make_raw_item(title="Original Title")]
+
+        scored_data = [
+            {
+                "index": 0,
+                "title": "",
+                "comedy_potential": 5.0,
+                "cultural_resonance": 5.0,
+                "freshness": 5.0,
+                "comedy_angle": "angle",
+            }
+        ]
+
+        stream_ctx = self._mock_claude_response(scored_data)
+
+        with patch("agent_researcher.scorer.anthropic") as mock_anthropic:
+            mock_client = MagicMock()
+            mock_anthropic.Anthropic.return_value = mock_client
+            mock_client.messages.stream.return_value = stream_ctx
+
+            result = score_items(items, settings)
+
+        assert result[0].item.title == "Original Title"
+
+    def test_json_parse_failure_falls_back(self):
+        settings = Settings(anthropic_api_key="test-key")
+        items = [make_raw_item(score=42)]
+
+        text_block = MagicMock()
+        text_block.type = "text"
+        text_block.text = "This is not JSON at all"
+
+        message = MagicMock()
+        message.content = [text_block]
+
+        stream_ctx = MagicMock()
+        stream_ctx.__enter__ = lambda s: s
+        stream_ctx.__exit__ = MagicMock(return_value=False)
+        stream_ctx.get_final_message.return_value = message
+
+        with patch("agent_researcher.scorer.anthropic") as mock_anthropic:
+            mock_client = MagicMock()
+            mock_anthropic.Anthropic.return_value = mock_client
+            mock_client.messages.stream.return_value = stream_ctx
+
+            result = score_items(items, settings)
+
+        # Should fall back to raw score
+        assert len(result) == 1
+        assert result[0].total_score == 42.0
+        assert result[0].comedy_potential == 0
+
+    def test_api_exception_falls_back(self):
+        settings = Settings(anthropic_api_key="test-key")
+        items = [make_raw_item(score=77)]
+
+        with patch("agent_researcher.scorer.anthropic") as mock_anthropic:
+            mock_client = MagicMock()
+            mock_anthropic.Anthropic.return_value = mock_client
+            mock_client.messages.stream.side_effect = Exception("API down")
+
+            result = score_items(items, settings)
+
+        assert len(result) == 1
+        assert result[0].total_score == 77.0
+
+    def test_max_items_truncation(self):
+        settings = Settings(anthropic_api_key="test-key")
+        items = [make_raw_item(title=f"Item {i}", url=f"https://ex.com/{i}") for i in range(150)]
+
+        scored_data = [
+            {
+                "index": i,
+                "comedy_potential": 1.0,
+                "cultural_resonance": 1.0,
+                "freshness": 1.0,
+                "comedy_angle": "angle",
+            }
+            for i in range(100)
+        ]
+
+        stream_ctx = self._mock_claude_response(scored_data)
+
+        with patch("agent_researcher.scorer.anthropic") as mock_anthropic:
+            mock_client = MagicMock()
+            mock_anthropic.Anthropic.return_value = mock_client
+            mock_client.messages.stream.return_value = stream_ctx
+
+            result = score_items(items, settings)
+
+        # Should only score first 100
+        assert len(result) == 100
