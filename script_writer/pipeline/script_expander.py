@@ -1,10 +1,7 @@
 from __future__ import annotations
 
-import json
 import logging
 from datetime import date
-
-import anthropic
 
 from script_writer.prompts import HUMOR_PREAMBLE, SCRIPT_EXPANSION_PROMPT, SYNOPSIS_PROMPT
 from shared.models import (
@@ -14,7 +11,7 @@ from shared.models import (
     ScoredItem,
     Synopsis,
 )
-from shared.utils import strip_code_fences
+from shared.utils import call_llm_json
 
 logger = logging.getLogger(__name__)
 
@@ -23,7 +20,7 @@ def generate_synopsis(
     logline: Logline,
     item: ScoredItem,
     context_block: str,
-    api_key: str,
+    client,
     model: str = "claude-opus-4-6",
     max_tokens: int = 64000,
 ) -> Synopsis:
@@ -36,33 +33,7 @@ def generate_synopsis(
         comedy_angle=item.comedy_angle,
     )
 
-    client = anthropic.Anthropic(api_key=api_key)
-
-    try:
-        with client.messages.stream(
-            model=model,
-            max_tokens=max_tokens,
-            thinking={"type": "adaptive"},
-            temperature=1,
-            messages=[{"role": "user", "content": prompt}],
-        ) as stream:
-            response = stream.get_final_message()
-    except Exception:
-        logger.exception("Synopsis generation failed for: %s", item.item.title)
-        raise
-
-    text = ""
-    for block in response.content:
-        if block.type == "text":
-            text += block.text
-
-    text = strip_code_fences(text)
-
-    try:
-        data = json.loads(text)
-    except json.JSONDecodeError:
-        logger.error("Failed to parse synopsis JSON:\n%s", text[:500])
-        raise
+    data = call_llm_json(client, prompt, model, max_tokens)
 
     return Synopsis(
         setup=data["setup"],
@@ -79,7 +50,7 @@ def expand_script(
     item: ScoredItem,
     script_date: date,
     context_block: str,
-    api_key: str,
+    client,
     model: str = "claude-opus-4-6",
     max_tokens: int = 64000,
 ) -> CartoonScript:
@@ -96,33 +67,7 @@ def expand_script(
         num_scenes=synopsis.estimated_scenes,
     )
 
-    client = anthropic.Anthropic(api_key=api_key)
-
-    try:
-        with client.messages.stream(
-            model=model,
-            max_tokens=max_tokens,
-            thinking={"type": "adaptive"},
-            temperature=1,
-            messages=[{"role": "user", "content": prompt}],
-        ) as stream:
-            response = stream.get_final_message()
-    except Exception:
-        logger.exception("Script expansion failed for: %s", item.item.title)
-        raise
-
-    text = ""
-    for block in response.content:
-        if block.type == "text":
-            text += block.text
-
-    text = strip_code_fences(text)
-
-    try:
-        data = json.loads(text)
-    except json.JSONDecodeError:
-        logger.error("Failed to parse script JSON:\n%s", text[:500])
-        raise
+    data = call_llm_json(client, prompt, model, max_tokens)
 
     scenes = [
         SceneScript(

@@ -45,27 +45,24 @@ class ComedyBrief:
     @classmethod
     def from_dict(cls, data: dict) -> ComedyBrief:
         """Deserialize from a JSON-compatible dict."""
-        from shared.utils import parse_iso_utc
-
-        top_picks = []
-        for entry in data.get("top_picks", []):
-            raw = entry["item"]
-            raw["timestamp"] = parse_iso_utc(raw["timestamp"])
-            scored_fields = {k: v for k, v in entry.items() if k != "item"}
-            top_picks.append(ScoredItem(item=RawItem(**raw), **scored_fields))
-
-        also_notable = []
-        for entry in data.get("also_notable", []):
-            raw = entry["item"]
-            raw["timestamp"] = parse_iso_utc(raw["timestamp"])
-            scored_fields = {k: v for k, v in entry.items() if k != "item"}
-            also_notable.append(ScoredItem(item=RawItem(**raw), **scored_fields))
-
         return cls(
             date=date.fromisoformat(data["date"]),
-            top_picks=top_picks,
-            also_notable=also_notable,
+            top_picks=_deserialize_scored_items(data.get("top_picks", [])),
+            also_notable=_deserialize_scored_items(data.get("also_notable", [])),
         )
+
+
+def _deserialize_scored_items(entries: list[dict]) -> list[ScoredItem]:
+    """Deserialize a list of ScoredItem dicts from JSON."""
+    from shared.utils import parse_iso_utc
+
+    result = []
+    for entry in entries:
+        raw = entry["item"]
+        raw["timestamp"] = parse_iso_utc(raw["timestamp"])
+        scored_fields = {k: v for k, v in entry.items() if k != "item"}
+        result.append(ScoredItem(item=RawItem(**raw), **scored_fields))
+    return result
 
 
 # --- Script Writer models ---

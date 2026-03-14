@@ -1,13 +1,10 @@
 from __future__ import annotations
 
-import json
 import logging
-
-import anthropic
 
 from script_writer.prompts import HUMOR_PREAMBLE, LOGLINE_GENERATION_PROMPT
 from shared.models import Logline, ScoredItem
-from shared.utils import strip_code_fences
+from shared.utils import call_llm_json
 
 logger = logging.getLogger(__name__)
 
@@ -15,7 +12,7 @@ logger = logging.getLogger(__name__)
 def generate_loglines(
     item: ScoredItem,
     context_block: str,
-    api_key: str,
+    client,
     model: str = "claude-opus-4-6",
     max_tokens: int = 64000,
 ) -> list[Logline]:
@@ -29,44 +26,21 @@ def generate_loglines(
         snippet=item.item.snippet,
     )
 
-    client = anthropic.Anthropic(api_key=api_key)
-
     try:
-        with client.messages.stream(
-            model=model,
-            max_tokens=max_tokens,
-            thinking={"type": "adaptive"},
-            temperature=1,
-            messages=[{"role": "user", "content": prompt}],
-        ) as stream:
-            response = stream.get_final_message()
+        data = call_llm_json(client, prompt, model, max_tokens)
     except Exception:
         logger.exception("Logline generation failed for: %s", item.item.title)
         return []
 
-    text = ""
-    for block in response.content:
-        if block.type == "text":
-            text += block.text
-
-    text = strip_code_fences(text)
-
-    try:
-        data = json.loads(text)
-    except json.JSONDecodeError:
-        logger.error("Failed to parse logline JSON:\n%s", text[:500])
-        return []
-
-    loglines = []
-    for entry in data:
-        loglines.append(
-            Logline(
-                text=entry["text"],
-                approach=entry["approach"],
-                featured_characters=entry.get("featured_characters", []),
-                visual_hook=entry.get("visual_hook", ""),
-            )
+    loglines = [
+        Logline(
+            text=entry["text"],
+            approach=entry["approach"],
+            featured_characters=entry.get("featured_characters", []),
+            visual_hook=entry.get("visual_hook", ""),
         )
+        for entry in data
+    ]
 
     logger.info("Generated %d loglines for: %s", len(loglines), item.item.title)
     return loglines

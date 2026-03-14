@@ -1,23 +1,19 @@
 from __future__ import annotations
 
-import json
 import logging
 
-import anthropic
-
 from script_writer.prompts import HUMOR_PREAMBLE, LOGLINE_SELECTION_PROMPT
-from shared.models import Logline
-from shared.utils import strip_code_fences
+from shared.models import Logline, ScoredItem
+from shared.utils import call_llm_json
 
 logger = logging.getLogger(__name__)
 
 
 def select_logline(
     loglines: list[Logline],
-    title: str,
-    comedy_angle: str,
+    item: ScoredItem,
     context_block: str,
-    api_key: str,
+    client,
     model: str = "claude-opus-4-6",
     max_tokens: int = 64000,
 ) -> Logline:
@@ -37,38 +33,16 @@ def select_logline(
     prompt = LOGLINE_SELECTION_PROMPT.format(
         preamble=HUMOR_PREAMBLE,
         context=context_block,
-        title=title,
-        comedy_angle=comedy_angle,
+        title=item.item.title,
+        comedy_angle=item.comedy_angle,
         loglines_formatted=loglines_formatted,
     )
 
-    client = anthropic.Anthropic(api_key=api_key)
-
     try:
-        with client.messages.stream(
-            model=model,
-            max_tokens=max_tokens,
-            thinking={"type": "adaptive"},
-            temperature=1,
-            messages=[{"role": "user", "content": prompt}],
-        ) as stream:
-            response = stream.get_final_message()
-    except Exception:
-        logger.exception("Logline selection failed, defaulting to first")
-        return loglines[0]
-
-    text = ""
-    for block in response.content:
-        if block.type == "text":
-            text += block.text
-
-    text = strip_code_fences(text)
-
-    try:
-        data = json.loads(text)
+        data = call_llm_json(client, prompt, model, max_tokens)
         idx = int(data["selected_index"])
         logger.info("Selected logline %d: %s", idx, data.get("reasoning", ""))
         return loglines[idx]
-    except (json.JSONDecodeError, KeyError, IndexError):
-        logger.error("Failed to parse selection, defaulting to first:\n%s", text[:500])
+    except Exception:
+        logger.exception("Logline selection failed, defaulting to first")
         return loglines[0]

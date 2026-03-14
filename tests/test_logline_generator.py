@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 import json
-from unittest.mock import MagicMock, patch
+from unittest.mock import MagicMock
 
 from script_writer.pipeline.logline_generator import generate_loglines
 from tests.conftest import make_scored_item
@@ -43,16 +43,14 @@ MOCK_LOGLINES = [
 
 
 class TestGenerateLoglines:
-    @patch("script_writer.pipeline.logline_generator.anthropic.Anthropic")
-    def test_generates_three_loglines(self, mock_anthropic_cls):
+    def test_generates_three_loglines(self):
         mock_client = MagicMock()
-        mock_anthropic_cls.return_value = mock_client
         mock_client.messages.stream.return_value = _mock_stream_response(MOCK_LOGLINES)
 
         result = generate_loglines(
             item=make_scored_item(),
             context_block="test context",
-            api_key="test-key",
+            client=mock_client,
         )
 
         assert len(result) == 3
@@ -60,24 +58,20 @@ class TestGenerateLoglines:
         assert result[1].approach == "satirical"
         assert result[2].approach == "surreal"
 
-    @patch("script_writer.pipeline.logline_generator.anthropic.Anthropic")
-    def test_returns_empty_on_api_failure(self, mock_anthropic_cls):
+    def test_returns_empty_on_api_failure(self):
         mock_client = MagicMock()
-        mock_anthropic_cls.return_value = mock_client
         mock_client.messages.stream.side_effect = Exception("API error")
 
         result = generate_loglines(
             item=make_scored_item(),
             context_block="test context",
-            api_key="test-key",
+            client=mock_client,
         )
 
         assert result == []
 
-    @patch("script_writer.pipeline.logline_generator.anthropic.Anthropic")
-    def test_returns_empty_on_bad_json(self, mock_anthropic_cls):
+    def test_returns_empty_on_bad_json(self):
         mock_client = MagicMock()
-        mock_anthropic_cls.return_value = mock_client
 
         mock_message = MagicMock()
         mock_message.content = [MagicMock(type="text", text="not json")]
@@ -90,7 +84,7 @@ class TestGenerateLoglines:
         result = generate_loglines(
             item=make_scored_item(),
             context_block="test context",
-            api_key="test-key",
+            client=mock_client,
         )
 
         assert result == []

@@ -2,12 +2,12 @@ from __future__ import annotations
 
 import json
 from datetime import date
-from unittest.mock import MagicMock, patch
+from unittest.mock import MagicMock
 
 import pytest
 
 from script_writer.pipeline.script_expander import expand_script, generate_synopsis
-from shared.models import Logline
+from shared.models import Logline, Synopsis
 from tests.conftest import make_scored_item
 
 
@@ -61,27 +61,23 @@ LOGLINE = Logline(
 
 
 class TestGenerateSynopsis:
-    @patch("script_writer.pipeline.script_expander.anthropic.Anthropic")
-    def test_generates_synopsis(self, mock_anthropic_cls):
+    def test_generates_synopsis(self):
         mock_client = MagicMock()
-        mock_anthropic_cls.return_value = mock_client
         mock_client.messages.stream.return_value = _mock_stream_response(MOCK_SYNOPSIS)
 
         result = generate_synopsis(
             logline=LOGLINE,
             item=make_scored_item(),
             context_block="ctx",
-            api_key="key",
+            client=mock_client,
         )
 
         assert result.setup == "Robot opens restaurant"
         assert result.estimated_scenes == 6
         assert len(result.key_visual_gags) == 2
 
-    @patch("script_writer.pipeline.script_expander.anthropic.Anthropic")
-    def test_raises_on_api_failure(self, mock_anthropic_cls):
+    def test_raises_on_api_failure(self):
         mock_client = MagicMock()
-        mock_anthropic_cls.return_value = mock_client
         mock_client.messages.stream.side_effect = Exception("API error")
 
         with pytest.raises(Exception):  # noqa: B017
@@ -89,18 +85,14 @@ class TestGenerateSynopsis:
                 logline=LOGLINE,
                 item=make_scored_item(),
                 context_block="ctx",
-                api_key="key",
+                client=mock_client,
             )
 
 
 class TestExpandScript:
-    @patch("script_writer.pipeline.script_expander.anthropic.Anthropic")
-    def test_expands_to_script(self, mock_anthropic_cls):
+    def test_expands_to_script(self):
         mock_client = MagicMock()
-        mock_anthropic_cls.return_value = mock_client
         mock_client.messages.stream.return_value = _mock_stream_response(MOCK_SCRIPT)
-
-        from shared.models import Synopsis
 
         synopsis = Synopsis(**MOCK_SYNOPSIS)
 
@@ -110,7 +102,7 @@ class TestExpandScript:
             item=make_scored_item(),
             script_date=date(2026, 3, 14),
             context_block="ctx",
-            api_key="key",
+            client=mock_client,
         )
 
         assert result.title == "Robot Restaurant"
