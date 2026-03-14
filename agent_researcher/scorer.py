@@ -26,16 +26,24 @@ For each item, score it from 0–10 on THREE criteria:
 
 Bonus: if an item appears across multiple sources, add +1 to its total.
 
-Then suggest a one-line comedy angle (the "joke seed") for the top candidates.
+For EVERY item (not just top ones), provide:
+- A clear, informative title that explains WHAT happened (not vague — a reader \
+should understand the event from the title alone)
+- A comedy explanation: identify the specific irony, absurdity, or hubris, then \
+pitch a one-line joke angle. This is required for all items.
 
 Return as JSON array. Each element must have these exact keys:
 - "index": the item's index from the input list (0-based)
+- "title": string — rewritten informative title (what happened, who, why it matters)
 - "comedy_potential": float 0-10
 - "cultural_resonance": float 0-10
 - "freshness": float 0-10
-- "comedy_angle": string (one-liner joke seed, or empty string if score is low)
+- "comedy_angle": string — REQUIRED. Format: "[Why it's funny in 1 sentence]. \
+[One-liner joke seed.]" Example: "CEO claims AI will replace all jobs while his \
+own AI can't schedule a meeting. 'Our product will automate everything except \
+working correctly.'"
 
-Be brutal — most items will score low. That's the point.
+Be brutal with scores — most items will score low. That's the point.
 
 Items:
 """
@@ -69,11 +77,14 @@ def score_items(items: list[RawItem], settings: Settings) -> list[ScoredItem]:
     client = anthropic.Anthropic(api_key=settings.anthropic_api_key)
 
     try:
-        response = client.messages.create(
+        with client.messages.stream(
             model=SCORING_MODEL,
-            max_tokens=4096,
+            max_tokens=32768,
+            thinking={"type": "adaptive"},
+            temperature=1,  # required when thinking is enabled
             messages=[{"role": "user", "content": SCORING_PROMPT + items_json}],
-        )
+        ) as stream:
+            response = stream.get_final_message()
     except Exception:
         logger.exception("Claude API call failed")
         return _fallback_scoring(items)
@@ -108,6 +119,20 @@ def score_items(items: list[RawItem], settings: Settings) -> list[ScoredItem]:
         fresh = float(data.get("freshness", 0))
         multi_bonus = 1.0 if len(item.sources) > 1 else 0.0
         total = comedy + resonance + fresh + multi_bonus
+
+        # Use LLM-rewritten title if provided
+        rewritten_title = data.get("title", "")
+        if rewritten_title:
+            item = RawItem(
+                title=rewritten_title,
+                url=item.url,
+                sources=item.sources,
+                tier=item.tier,
+                score=item.score,
+                timestamp=item.timestamp,
+                snippet=item.snippet,
+                comment_count=item.comment_count,
+            )
 
         result.append(
             ScoredItem(

@@ -37,8 +37,11 @@ def render_brief(brief: ComedyBrief) -> str:
         for scored in brief.also_notable:
             item = scored.item
             sources_str = " / ".join(item.sources)
-            angle = f" — {scored.comedy_angle}" if scored.comedy_angle else ""
-            lines.append(f"- [{item.title}]({item.url}) ({sources_str}){angle}")
+            lines.append(f"- **{item.title}** ({sources_str})")
+            if scored.comedy_angle:
+                lines.append(f"  - Why it's funny: {scored.comedy_angle}")
+            if item.url:
+                lines.append(f"  - URL: {item.url}")
         lines.append("")
 
     return "\n".join(lines)

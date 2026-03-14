@@ -5,7 +5,8 @@ import logging
 from datetime import datetime, timezone
 
 from xai_sdk import Client
-from xai_sdk.chat import user
+from xai_sdk.chat import system, user
+from xai_sdk.tools import web_search
 
 from shared.config import Settings
 from shared.models import RawItem
@@ -16,15 +17,19 @@ logger = logging.getLogger(__name__)
 MODEL = "grok-4.20-beta-latest-non-reasoning"
 ENGAGEMENT_SCORES = {"viral": 100, "high": 50, "moderate": 20}
 
-PROMPT = """\
-You have access to real-time X (Twitter) data.
+SYSTEM_PROMPT = """\
+You are a trend research assistant. Use your web search tool to find \
+trending content on X (Twitter). Always search before answering. \
+Return only valid JSON, no commentary."""
 
-Return the top 10 most viral or trending posts/threads from the last 24 hours \
-in these domains: AI, machine learning, robotics, biotechnology, tech industry.
+PROMPT = """\
+Search X (x.com) for the top 10 most viral or trending posts/threads \
+from the last 24 hours in these domains: AI, machine learning, robotics, \
+biotechnology, tech industry.
 
 For each, return:
 - "title": post summary (1–2 sentences)
-- "url": post URL if available, otherwise empty string
+- "url": post URL (x.com link), or empty string if unavailable
 - "why_trending": why it's getting traction (1 sentence)
 - "engagement": one of "viral", "high", "moderate"
 
@@ -47,7 +52,11 @@ class XAISource:
 
         try:
             client = Client(api_key=self._settings.xai_api_key)
-            chat = client.chat.create(model=MODEL)
+            chat = client.chat.create(
+                model=MODEL,
+                tools=[web_search(allowed_domains=["x.com"])],
+            )
+            chat.append(system(SYSTEM_PROMPT))
             chat.append(user(PROMPT))
             response = chat.sample()
             text = response.content
