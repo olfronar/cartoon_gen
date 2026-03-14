@@ -3,9 +3,8 @@ from __future__ import annotations
 import json
 import logging
 import urllib.request
-from datetime import datetime, timezone
-
 from shared.models import RawItem
+from shared.utils import parse_iso_utc
 
 logger = logging.getLogger(__name__)
 
@@ -31,12 +30,7 @@ class HackerNewsSource:
 
             url = hit.get("url") or f"https://news.ycombinator.com/item?id={hit['objectID']}"
 
-            try:
-                timestamp = datetime.fromisoformat(
-                    hit["created_at"].replace("Z", "+00:00")
-                )
-            except (KeyError, ValueError):
-                timestamp = datetime.now(timezone.utc)
+            timestamp = parse_iso_utc(hit.get("created_at", ""))
 
             snippet = (hit.get("story_text") or "")[:200]
 

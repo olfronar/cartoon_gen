@@ -3,10 +3,10 @@ from __future__ import annotations
 import json
 import logging
 import urllib.request
-from datetime import datetime, timezone
 
 from shared.config import Settings
 from shared.models import RawItem
+from shared.utils import parse_iso_utc
 
 logger = logging.getLogger(__name__)
 
@@ -106,12 +106,7 @@ class ProductHuntSource:
             if not name:
                 continue
 
-            try:
-                timestamp = datetime.fromisoformat(
-                    node["createdAt"].replace("Z", "+00:00")
-                )
-            except (KeyError, ValueError):
-                timestamp = datetime.now(timezone.utc)
+            timestamp = parse_iso_utc(node.get("createdAt", ""))
 
             tagline = node.get("tagline", "")
 

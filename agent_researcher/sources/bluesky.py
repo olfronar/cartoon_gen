@@ -1,12 +1,12 @@
 from __future__ import annotations
 
 import logging
-from datetime import datetime, timezone
 
 from atproto import Client
 
 from shared.config import Settings
 from shared.models import RawItem
+from shared.utils import parse_iso_utc
 
 logger = logging.getLogger(__name__)
 
@@ -66,12 +66,7 @@ class BlueskySource:
                 rkey = uri_parts[-1] if uri_parts else ""
                 url = f"https://bsky.app/profile/{handle}/post/{rkey}"
 
-                try:
-                    created = datetime.fromisoformat(
-                        record.created_at.replace("Z", "+00:00")
-                    )
-                except (AttributeError, ValueError):
-                    created = datetime.now(timezone.utc)
+                created = parse_iso_utc(getattr(record, "created_at", "") or "")
 
                 like_count = getattr(post, "like_count", 0) or 0
                 reply_count = getattr(post, "reply_count", 0) or 0

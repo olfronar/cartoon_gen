@@ -7,6 +7,7 @@ import anthropic
 
 from shared.config import Settings
 from shared.models import RawItem, ScoredItem
+from shared.utils import strip_code_fences
 
 logger = logging.getLogger(__name__)
 
@@ -53,7 +54,7 @@ def _prepare_items_json(items: list[RawItem]) -> str:
                 "snippet": item.snippet,
             }
         )
-    return json.dumps(serializable, indent=2)
+    return json.dumps(serializable)
 
 
 def score_items(items: list[RawItem], settings: Settings) -> list[ScoredItem]:
@@ -86,11 +87,7 @@ def score_items(items: list[RawItem], settings: Settings) -> list[ScoredItem]:
             text += block.text
 
     # Parse JSON from response (handle markdown code blocks)
-    text = text.strip()
-    if text.startswith("```"):
-        text = text.split("\n", 1)[1] if "\n" in text else text[3:]
-        text = text.rsplit("```", 1)[0]
-        text = text.strip()
+    text = strip_code_fences(text)
 
     try:
         scored_data = json.loads(text)

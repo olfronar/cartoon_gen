@@ -9,10 +9,12 @@ from xai_sdk.chat import user
 
 from shared.config import Settings
 from shared.models import RawItem
+from shared.utils import strip_code_fences
 
 logger = logging.getLogger(__name__)
 
-MODEL = "grok-3-mini"
+MODEL = "grok-4.20-beta-latest-non-reasoning"
+ENGAGEMENT_SCORES = {"viral": 100, "high": 50, "moderate": 20}
 
 PROMPT = """\
 You have access to real-time X (Twitter) data.
@@ -54,10 +56,7 @@ class XAISource:
             return []
 
         # Parse JSON from response
-        text = text.strip()
-        if text.startswith("```"):
-            text = text.split("\n", 1)[1] if "\n" in text else text[3:]
-            text = text.rsplit("```", 1)[0].strip()
+        text = strip_code_fences(text)
 
         try:
             posts = json.loads(text)
@@ -66,7 +65,6 @@ class XAISource:
             return []
 
         items: list[RawItem] = []
-        engagement_scores = {"viral": 100, "high": 50, "moderate": 20}
 
         for post in posts:
             title = post.get("title", "")
@@ -74,7 +72,7 @@ class XAISource:
                 continue
 
             engagement = post.get("engagement", "moderate").lower()
-            score = engagement_scores.get(engagement, 20)
+            score = ENGAGEMENT_SCORES.get(engagement, 20)
 
             items.append(
                 RawItem(

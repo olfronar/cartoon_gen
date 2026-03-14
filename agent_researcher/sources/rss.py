@@ -7,6 +7,7 @@ from time import mktime
 import feedparser
 
 from shared.models import RawItem
+from shared.utils import strip_html
 
 logger = logging.getLogger(__name__)
 
@@ -35,11 +36,6 @@ def _parse_timestamp(entry: dict) -> datetime:
     return datetime.now(timezone.utc)
 
 
-def _strip_html(text: str) -> str:
-    """Rough HTML tag stripping — good enough for snippets."""
-    import re
-
-    return re.sub(r"<[^>]+>", "", text)
 
 
 class RSSSource:
@@ -62,7 +58,7 @@ class RSSSource:
                         continue
 
                     link = entry.get("link", "")
-                    summary = _strip_html(entry.get("summary", ""))[:200]
+                    summary = strip_html(entry.get("summary", ""))[:200]
 
                     items.append(
                         RawItem(

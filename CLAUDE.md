@@ -72,6 +72,14 @@ PYTHONPATH=. python -m agent_researcher --scheduled --hour 9 --minute 0
 
 Environment variables loaded from `.env` (see `.env.example` for template). Missing optional credentials cause graceful source skipping, not crashes.
 
+## Code Conventions
+
+- Cross-module utilities (parsing, formatting, HTTP helpers) go in `shared/utils.py` — never duplicate logic across agent modules
+- LLM JSON responses may be wrapped in code fences: use `strip_code_fences()` from `shared/utils.py`
+- ISO timestamps with `Z` suffix: use `parse_iso_utc()` from `shared/utils.py`
+- Constants, lookup dicts, and compiled regexes belong at module level, not inside functions
+- Each piece of logic has one owner module — if a second copy appears, extract to `shared/`
+
 ## Agent Researcher Internals
 
 Pipeline: parallel source fetch → dedup/freshness filter → LLM scoring (Claude Opus) → Markdown brief output.
@@ -80,6 +88,7 @@ Pipeline: parallel source fetch → dedup/freshness filter → LLM scoring (Clau
 - **Dedup** (`agent_researcher/dedup.py`): URL normalization + `rapidfuzz` title similarity (threshold 85). Merges multi-source items rather than discarding.
 - **Scorer** (`agent_researcher/scorer.py`): batch scoring via Claude API. Falls back to raw score sorting if API key missing.
 - **Data contracts** (`shared/models.py`): `RawItem` → `ScoredItem` → `ComedyBrief`. All agents share these.
+- **Shared utilities** (`shared/utils.py`): `strip_code_fences()`, `parse_iso_utc()`, `strip_html()` — cross-module helpers.
 - **Delivery** (`agent_researcher/delivery/`): local `.md` file (always) + Notion page (if configured). Dispatched via `deliver_brief()`.
 - **Alerts** (`agent_researcher/alerts.py`): Slack webhook notifications on success/failure. Gated on `SLACK_WEBHOOK_URL`.
 - **Scheduler** (`agent_researcher/scheduler.py`): APScheduler `CronTrigger` for daily runs. Activated via `--scheduled` flag.
