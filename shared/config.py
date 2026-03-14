@@ -22,8 +22,9 @@ class Settings:
     # xAI (Phase 2)
     xai_api_key: str = ""
 
-    # Product Hunt (Phase 2)
+    # Product Hunt (needs both for OAuth token exchange)
     product_hunt_api_key: str = ""
+    product_hunt_api_secret: str = ""
 
     # Bluesky (Phase 2 — requires app password)
     bluesky_handle: str = ""
@@ -50,6 +51,7 @@ def load_settings(env_path: str = ".env") -> Settings:
         reddit_user_agent=values.get("REDDIT_USER_AGENT", "CartoonMakerBot/0.1"),
         xai_api_key=values.get("XAI_API_KEY", ""),
         product_hunt_api_key=values.get("PRODUCT_HUNT_API_KEY", ""),
+        product_hunt_api_secret=values.get("PRODUCT_HUNT_API_SECRET", ""),
         bluesky_handle=values.get("BLUESKY_HANDLE", ""),
         bluesky_app_password=values.get("BLUESKY_APP_PASSWORD", ""),
         notion_api_key=values.get("NOTION_API_KEY", ""),

@@ -35,10 +35,10 @@ def get_active_sources(settings: Settings) -> list[Source]:
     else:
         logger.info("XAI_API_KEY not configured — skipping X/Twitter source")
 
-    if settings.product_hunt_api_key:
+    if settings.product_hunt_api_key and settings.product_hunt_api_secret:
         sources.append(ProductHuntSource(settings))
     else:
-        logger.info("PRODUCT_HUNT_API_KEY not configured — skipping Product Hunt source")
+        logger.info("Product Hunt credentials not configured — skipping Product Hunt source")
 
     if settings.bluesky_handle and settings.bluesky_app_password:
         sources.append(BlueskySource(settings))
