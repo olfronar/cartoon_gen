@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import json
 import logging
+from dataclasses import replace
 
 import anthropic
 
@@ -123,16 +124,7 @@ def score_items(items: list[RawItem], settings: Settings) -> list[ScoredItem]:
         # Use LLM-rewritten title if provided
         rewritten_title = data.get("title", "")
         if rewritten_title:
-            item = RawItem(
-                title=rewritten_title,
-                url=item.url,
-                sources=item.sources,
-                tier=item.tier,
-                score=item.score,
-                timestamp=item.timestamp,
-                snippet=item.snippet,
-                comment_count=item.comment_count,
-            )
+            item = replace(item, title=rewritten_title)
 
         result.append(
             ScoredItem(
