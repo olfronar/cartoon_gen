@@ -23,7 +23,7 @@ cartoon_maker/
 
 1. **agent_researcher** — Scans 7 sources across 3 tiers, deduplicates, scores via Claude Opus for comedy potential, and outputs a ranked daily brief.
 
-2. **script_writer** — Analyzes filtered trends, writes loglines, selects the best one, develops a synopsis, then writes the full script.
+2. **script_writer** — Reads the daily brief JSON sidecar, generates 3 loglines per item (absurdist/satirical/surreal), selects the best, expands to synopsis + full script with scene-by-scene breakdown. Requires character profiles and art style (created via interactive setup tool).
 
 3. **static_shots_maker** — Analyzes the script and generates static shots (images) for each scene that will be used as keyframes for video generation.
 
@@ -111,6 +111,8 @@ Required: `ANTHROPIC_API_KEY` (without it, scorer falls back to raw score sortin
 - ISO timestamps with `Z` suffix: use `parse_iso_utc()` from `shared/utils.py`
 - Constants, lookup dicts, and compiled regexes belong at module level, not inside functions
 - Each piece of logic has one owner module — if a second copy appears, extract to `shared/`
+- LLM calls: use `call_llm_json(client, prompt, model, max_tokens)` from `shared/utils.py` — handles streaming, text extraction, code fence stripping, and JSON parsing. Create a single `anthropic.Anthropic` client per pipeline run and pass it through.
+- LLM response text extraction: use `extract_text(response)` from `shared/utils.py` for non-JSON responses
 
 ## Agent Researcher Internals
 
@@ -137,7 +139,7 @@ Tier freshness cutoffs: discovery/validation = 24h, context = 48h.
 - **Scorer** (`scorer.py`): streams to `claude-opus-4-6` with adaptive thinking, 32k max tokens. Rewrites titles for clarity, generates comedy explanations for every item. Falls back to raw score sorting if API key missing or call fails.
 - **xAI source** (`sources/xai.py`): uses `grok-4.20-beta-latest-non-reasoning` with `web_search(allowed_domains=["x.com"])` tool for live X data.
 - **Data contracts** (`shared/models.py`): `RawItem` → `ScoredItem` → `ComedyBrief` → `Logline` → `Synopsis` → `SceneScript` → `CartoonScript`. All agents share these.
-- **Shared utilities** (`shared/utils.py`): `strip_code_fences()`, `parse_iso_utc()`, `strip_html()`.
+- **Shared utilities** (`shared/utils.py`): `strip_code_fences()`, `parse_iso_utc()`, `strip_html()`, `extract_text()`, `call_llm_json()`.
 - **Delivery** (`delivery/`): local `.md` file (always) + Notion page (if `NOTION_API_KEY` configured).
 - **Alerts** (`alerts.py`): Slack webhook notifications on success/failure. Gated on `SLACK_WEBHOOK_URL`.
 - **Scheduler** (`scheduler.py`): APScheduler `CronTrigger` for daily runs. Activated via `--scheduled` flag.
@@ -145,7 +147,7 @@ Tier freshness cutoffs: discovery/validation = 24h, context = 48h.
 
 ## Script Writer Internals
 
-Pipeline: brief JSON ingestion → logline generation (3 per item) → logline selection (best 1 of 3) → parallel script expansion (synopsis + full script) → .md + .json output.
+Pipeline: brief JSON ingestion → parallel logline generation + selection (all items concurrent) → parallel script expansion (synopsis + full script) → .md + .json output. Single `anthropic.Anthropic` client shared across all LLM calls.
 
 ### Pipeline stages
 
