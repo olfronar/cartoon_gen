@@ -1,0 +1,6 @@
+[project]
+name = "cartoon-maker"
+version = "0.1.0"
+description = "AI-powered pipeline for discovering trends and producing comedy cartoon videos"
+requires-python = ">=3.10"
+dependencies = []
