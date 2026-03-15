@@ -128,10 +128,11 @@ Required for static shots: `GOOGLE_API_KEY` (Gemini image generation). Optional:
 - Constants, lookup dicts, and compiled regexes belong at module level, not inside functions
 - Each piece of logic has one owner module — if a second copy appears, extract to `shared/`
 - Error handling and resource setup (fallback logic, directory creation) belong in the module that owns the operation — callers should not duplicate these concerns
+- Avoid pre-checking file/resource existence before operating (TOCTOU anti-pattern) — call the operation directly and handle the error
 - LLM calls: use `call_llm_json(client, prompt, model, max_tokens)` from `shared/utils.py` — handles streaming, text extraction, code fence stripping, and JSON parsing. Use `call_llm_text()` for raw text responses. Create a single `anthropic.Anthropic` client per pipeline run and pass it through.
 - LLM response text extraction: use `extract_text(response)` from `shared/utils.py` for non-JSON responses
 - Context loading: use `shared/context_loader.py` for loading characters + art style (shared by script_writer and static_shots_maker)
-- Dataclass serialization: use `asdict()` with post-processing for non-serializable fields (dates, Paths). Never hand-build the dict — fields added later would be silently dropped
+- Dataclass serialization: use `asdict()` with post-processing for non-serializable fields (dates, Paths). Never hand-build the dict — fields added later would be silently dropped. Add a `from_dict()` classmethod for any dataclass that is serialized to JSON — consumers should not hand-parse
 
 ## Agent Researcher Internals
 

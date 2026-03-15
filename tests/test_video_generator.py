@@ -20,9 +20,12 @@ class TestGenerateVideo:
         mock_client = MagicMock()
         mock_client.video.generate.return_value = mock_response
 
-        mock_http_response = MagicMock()
-        mock_http_response.content = b"fake mp4 data"
-        mock_httpx.get.return_value = mock_http_response
+        # Mock streaming download
+        mock_stream = MagicMock()
+        mock_stream.__enter__ = MagicMock(return_value=mock_stream)
+        mock_stream.__exit__ = MagicMock(return_value=False)
+        mock_stream.iter_bytes.return_value = [b"fake ", b"mp4 data"]
+        mock_httpx.stream.return_value = mock_stream
 
         result = generate_video(
             prompt="A robot moves",

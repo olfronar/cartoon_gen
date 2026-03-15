@@ -37,12 +37,8 @@ def generate_video(
         The output_path on success.
 
     Raises:
-        FileNotFoundError: If image_path does not exist.
         RuntimeError: If video generation or download fails.
     """
-    if not image_path.exists():
-        raise FileNotFoundError(f"Static shot not found: {image_path}")
-
     # Encode image as base64 data URI
     image_bytes = image_path.read_bytes()
     b64 = base64.b64encode(image_bytes).decode("ascii")
@@ -61,9 +57,10 @@ def generate_video(
     if not response.url:
         raise RuntimeError("xAI returned no video URL")
 
-    # Download video
-    http_response = httpx.get(response.url)
-    output_path.write_bytes(http_response.content)
+    # Download video with streaming to avoid buffering entire file in memory
+    with httpx.stream("GET", response.url) as stream, open(output_path, "wb") as f:
+        for chunk in stream.iter_bytes():
+            f.write(chunk)
 
     logger.info("Saved video: %s", output_path)
     return output_path

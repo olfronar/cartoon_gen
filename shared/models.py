@@ -161,6 +161,25 @@ class ShotsManifest:
             shot["output_path"] = str(path) if path else None
         return data
 
+    @classmethod
+    def from_dict(cls, data: dict) -> ShotsManifest:
+        """Deserialize from a JSON-compatible dict."""
+        return cls(
+            script_title=data["script_title"],
+            script_index=data["script_index"],
+            date=date.fromisoformat(data["date"]),
+            shots=[
+                ShotResult(
+                    script_index=s["script_index"],
+                    scene_number=s["scene_number"],
+                    success=s["success"],
+                    output_path=Path(s["output_path"]) if s["output_path"] else None,
+                    error=s["error"],
+                )
+                for s in data["shots"]
+            ],
+        )
+
 
 # --- Video Designer models ---
 

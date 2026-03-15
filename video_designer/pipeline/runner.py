@@ -3,7 +3,6 @@ from __future__ import annotations
 import asyncio
 import json
 import logging
-import shutil
 from collections.abc import Callable
 from datetime import date
 from pathlib import Path
@@ -85,15 +84,11 @@ async def run(
     date_str = data[0].script.date.isoformat()
     final_path = settings.video_output_dir / f"final_{date_str}.mp4"
 
-    if len(script_videos) > 1:
-        await asyncio.to_thread(
-            assemble_final_video,
-            [path for _, path in script_videos],
-            final_path,
-        )
-    else:
-        _, src = script_videos[0]
-        shutil.copy2(src, final_path)
+    await asyncio.to_thread(
+        assemble_final_video,
+        [path for _, path in script_videos],
+        final_path,
+    )
 
     print(f"\nDone! Final video: {final_path}")
     return final_path
@@ -133,7 +128,7 @@ async def _process_script(
                 scene_number=scene.scene_number,
                 script_index=entry.index,
                 output_path=output_dir / f"scene_{scene.scene_number}.mp4",
-                image_path=Path(image_path),
+                image_path=image_path,
                 prompt_fn=lambda s=scene: generate_video_prompt(
                     s,
                     entry.script,
@@ -157,7 +152,7 @@ async def _process_script(
                 scene_number=0,
                 script_index=entry.index,
                 output_path=output_dir / "end_card.mp4",
-                image_path=Path(end_card_path),
+                image_path=end_card_path,
                 prompt_fn=lambda: generate_end_card_video_prompt(
                     entry.script,
                     context_block,
@@ -178,13 +173,18 @@ async def _process_script(
     successful = [c for c in clips if c.success and c.output_path]
     # Sort: scenes first (by number), end card (0) last
     successful.sort(key=lambda c: (c.scene_number == 0, c.scene_number))
-    clip_paths = [Path(c.output_path) for c in successful]
+    clip_paths = [c.output_path for c in successful]
 
     script_video_path = None
     if clip_paths:
         script_video_path = output_dir / "script_video.mp4"
         try:
-            await asyncio.to_thread(assemble_script_video, clip_paths, script_video_path)
+            await asyncio.to_thread(
+                assemble_script_video,
+                clip_paths,
+                script_video_path,
+                clip_duration=float(settings.video_duration),
+            )
         except Exception:
             logger.exception("Failed to assemble script video for %d", entry.index)
             script_video_path = None

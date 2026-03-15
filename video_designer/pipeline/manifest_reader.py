@@ -7,7 +7,7 @@ from dataclasses import dataclass
 from datetime import date
 from pathlib import Path
 
-from shared.models import CartoonScript, ShotResult, ShotsManifest
+from shared.models import CartoonScript, ShotsManifest
 
 logger = logging.getLogger(__name__)
 
@@ -60,7 +60,7 @@ def read_manifests(
 
         try:
             manifest_data = json.loads(manifest_path.read_text(encoding="utf-8"))
-            manifest = _parse_manifest(manifest_data)
+            manifest = ShotsManifest.from_dict(manifest_data)
 
             script_data = json.loads(script_path.read_text(encoding="utf-8"))
             script = CartoonScript.from_dict(script_data)
@@ -87,22 +87,3 @@ def _find_latest_date(shots_dir: Path) -> date:
     if not dates:
         raise FileNotFoundError(f"No shot directories found in {shots_dir}")
     return date.fromisoformat(max(dates))
-
-
-def _parse_manifest(data: dict) -> ShotsManifest:
-    """Parse a manifest dict into a ShotsManifest."""
-    return ShotsManifest(
-        script_title=data["script_title"],
-        script_index=data["script_index"],
-        date=date.fromisoformat(data["date"]),
-        shots=[
-            ShotResult(
-                script_index=s["script_index"],
-                scene_number=s["scene_number"],
-                success=s["success"],
-                output_path=Path(s["output_path"]) if s["output_path"] else None,
-                error=s["error"],
-            )
-            for s in data["shots"]
-        ],
-    )
