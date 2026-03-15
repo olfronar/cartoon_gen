@@ -16,7 +16,7 @@ cartoon_maker/
 ├── agent_researcher/    # Stage 1: Trend discovery & filtering  [IMPLEMENTED]
 ├── script_writer/       # Stage 2: Script creation pipeline     [IMPLEMENTED]
 ├── static_shots_maker/  # Stage 3: Static shot generation       [IMPLEMENTED]
-├── video_designer/      # Stage 4: Video assembly & final output [STUB]
+├── video_designer/      # Stage 4: Video assembly & final output [IMPLEMENTED]
 ```
 
 ### Agent Pipeline (sequential flow)
@@ -27,7 +27,7 @@ cartoon_maker/
 
 3. **static_shots_maker** — Reads script JSONs, uses Claude to rewrite video prompts into image-optimized prompts, generates 9:16 PNGs via Gemini, outputs shots + manifest per script.
 
-4. **video_designer** — Takes static shots, generates video for each scene, and assembles the final cartoon.
+4. **video_designer** — Reads static shots + script JSONs, uses Claude to compose video prompts, generates 15s clips via xAI grok-imagine-video, assembles with glitch transitions into final cartoon videos.
 
 ### Design Principles
 
@@ -61,7 +61,7 @@ Dependencies are managed in `pyproject.toml` (not requirements.txt).
 ### Testing & Linting
 
 ```bash
-# Run all tests (145 tests)
+# Run all tests (167 tests)
 pytest
 
 # Run a single test file
@@ -104,6 +104,12 @@ PYTHONPATH=. python -m static_shots_maker
 
 # Static Shots Maker — generate shots from specific date
 PYTHONPATH=. python -m static_shots_maker --date 2026-03-15
+
+# Video Designer — generate videos from latest static shots
+PYTHONPATH=. python -m video_designer
+
+# Video Designer — generate videos from specific date
+PYTHONPATH=. python -m video_designer --date 2026-03-15
 ```
 
 ### Config
@@ -151,7 +157,7 @@ Tier freshness cutoffs: discovery/validation = 24h, context = 48h.
 - **Dedup** (`dedup.py`): URL normalization + `rapidfuzz` title similarity (threshold 85). Merges multi-source items rather than discarding.
 - **Scorer** (`scorer.py`): streams to `claude-opus-4-6` with adaptive thinking, 32k max tokens. Rewrites titles for clarity, generates comedy explanations for every item. Falls back to raw score sorting if API key missing or call fails.
 - **xAI source** (`sources/xai.py`): uses `grok-4.20-beta-latest-non-reasoning` with `web_search(allowed_domains=["x.com"])` tool for live X data.
-- **Data contracts** (`shared/models.py`): `RawItem` → `ScoredItem` → `ComedyBrief` → `Logline` → `Synopsis` → `SceneScript` → `CartoonScript` → `ShotResult` → `ShotsManifest`. All agents share these.
+- **Data contracts** (`shared/models.py`): `RawItem` → `ScoredItem` → `ComedyBrief` → `Logline` → `Synopsis` → `SceneScript` → `CartoonScript` → `ShotResult` → `ShotsManifest` → `ClipResult` → `VideoManifest`. All agents share these.
 - **Shared utilities** (`shared/utils.py`): `strip_code_fences()`, `parse_iso_utc()`, `strip_html()`, `extract_text()`, `call_llm_json()`, `call_llm_text()`.
 - **Context loader** (`shared/context_loader.py`): `load_characters()`, `load_art_style()`, `build_context_block()`. Used by script_writer and static_shots_maker.
 - **Delivery** (`delivery/`): local `.md` file (always) + Notion page (if `NOTION_API_KEY` configured).
@@ -201,3 +207,21 @@ Pipeline: script JSON ingestion → parallel prompt rewriting (Claude) → paral
 
 - `output/static_shots/<YYYY-MM-DD>_<N>/scene_<M>.png` + `end_card.png` + `manifest.json` per script.
 - `manifest.json` records success/failure per shot for `video_designer` to consume.
+
+## Video Designer Internals
+
+Pipeline: manifest + script ingestion → parallel video prompt composition (Claude) → parallel video generation (xAI grok-imagine-video) → ffmpeg assembly with glitch transitions. Two-level `asyncio.gather()` with semaphore for rate limiting.
+
+### Pipeline stages
+
+- **Manifest reader** (`pipeline/manifest_reader.py`): Reads `output/static_shots/<date>_<N>/manifest.json` + pairs with `output/scripts/<date>_<N>.json`. Auto-detects latest date. Skips scripts with no successful shots.
+- **Prompt generator** (`pipeline/prompt_generator.py`): Claude composes video-generation prompts from scene details + character profiles + art style. Falls back to original scene_prompt if Claude unavailable.
+- **Video generator** (`pipeline/video_generator.py`): xAI `grok-imagine-video` image-to-video. Encodes static shot as base64, sends with prompt, downloads result as MP4.
+- **Assembler** (`pipeline/assembler.py`): ffmpeg concatenation. Short glitch transitions (0.3s hlslice) between scenes, longer glitch (1.0s) + 200Hz beep between scripts.
+- **Prompts** (`prompts.py`): `SCENE_TO_VIDEO_PROMPT` and `END_CARD_TO_VIDEO_PROMPT` templates.
+- **Runner** (`pipeline/runner.py`): Async orchestrator. Level 1 parallel across scripts, Level 2 parallel across scenes. Semaphore caps concurrent xAI calls.
+
+### Output
+
+- `output/videos/<YYYY-MM-DD>_<N>/scene_<M>.mp4` + `end_card.mp4` + `script_video.mp4` + `video_manifest.json` per script.
+- `output/videos/final_<YYYY-MM-DD>.mp4` — all scripts concatenated with glitch transitions + beep.
