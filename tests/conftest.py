@@ -21,7 +21,7 @@ def make_raw_item(
         sources=sources or ["test_source"],
         tier=tier,
         score=score,
-        timestamp=timestamp or datetime(2026, 3, 14, 12, 0, tzinfo=timezone.utc),
+        timestamp=timestamp or datetime.now(timezone.utc),
         snippet=snippet,
         comment_count=comment_count,
     )

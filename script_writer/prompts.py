@@ -92,8 +92,8 @@ Structure the synopsis in three acts:
 - **punchline**: The climax and resolution (the biggest laugh, then a quick landing)
 
 Also provide:
-- **estimated_scenes**: how many scenes (5-8) this needs
-- **key_visual_gags**: list of 3-5 specific visual comedy moments
+- **estimated_scenes**: how many scenes (2-3) this needs
+- **key_visual_gags**: list of 2-3 specific visual comedy moments
 
 Return as JSON with keys: setup, escalation, punchline, estimated_scenes, key_visual_gags.
 """

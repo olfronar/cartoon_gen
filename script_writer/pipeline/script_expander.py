@@ -39,7 +39,7 @@ def generate_synopsis(
         setup=data["setup"],
         escalation=data["escalation"],
         punchline=data["punchline"],
-        estimated_scenes=int(data.get("estimated_scenes", 6)),
+        estimated_scenes=int(data.get("estimated_scenes", 3)),
         key_visual_gags=data.get("key_visual_gags", []),
     )
 
