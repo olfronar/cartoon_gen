@@ -26,7 +26,7 @@ def assemble_script_video(
     if not clip_paths:
         raise ValueError("assemble_script_video requires at least 1 clip")
 
-    _simple_concat(clip_paths, output_path)
+    _concat_clips(clip_paths, output_path)
     logger.info("Script video assembled: %s", output_path)
     return output_path
 
@@ -36,7 +36,7 @@ def assemble_final_video(
     output_path: Path,
     transition_duration: float = 1.0,
 ) -> Path:
-    """Concatenate script videos with longer glitch interstitials + beep.
+    """Concatenate script videos with glitch interstitials + beep.
 
     Args:
         script_video_paths: Ordered list of script video MP4 paths.
@@ -50,48 +50,52 @@ def assemble_final_video(
         raise ValueError("assemble_final_video requires at least 1 script video")
 
     if len(script_video_paths) == 1:
+        _concat_clips(script_video_paths, output_path)
+    else:
+        _concat_with_glitch(script_video_paths, output_path, transition_duration)
+
+    logger.info("Final video assembled: %s", output_path)
+    return output_path
+
+
+def _concat_clips(paths: list[Path], output_path: Path) -> None:
+    """Concatenate clips sequentially using the concat demuxer (stream copy)."""
+    with tempfile.TemporaryDirectory() as tmpdir:
+        concat_file = Path(tmpdir) / "concat.txt"
+        lines = [f"file '{clip.resolve()}'" for clip in paths]
+        concat_file.write_text("\n".join(lines), encoding="utf-8")
+
         _run_ffmpeg(
             [
                 "ffmpeg",
                 "-y",
+                "-f",
+                "concat",
+                "-safe",
+                "0",
                 "-i",
-                str(script_video_paths[0]),
+                str(concat_file),
                 "-c",
                 "copy",
                 str(output_path),
             ]
         )
-    else:
-        _concat_with_glitch(script_video_paths, output_path, transition_duration, add_beep=True)
-
-    logger.info("Final video assembled: %s", output_path)
-    return output_path
 
 
 def _concat_with_glitch(
     paths: list[Path],
     output_path: Path,
     glitch_duration: float,
-    add_beep: bool,
 ) -> None:
-    """Concatenate clips with glitch interstitials using concat demuxer.
-
-    1. Probe first clip for resolution/fps
-    2. Generate a glitch clip (color noise + optional beep)
-    3. Build concat file interleaving real clips with glitch clips
-    4. Run ffmpeg concat demuxer
-    """
-    # Probe first clip for format info
+    """Concatenate clips with glitch + beep interstitials using concat demuxer."""
     width, height, fps = _probe_video(paths[0])
 
     with tempfile.TemporaryDirectory() as tmpdir:
         tmp = Path(tmpdir)
 
-        # Generate glitch interstitial clip
         glitch_path = tmp / "glitch.mp4"
-        _generate_glitch_clip(glitch_path, glitch_duration, width, height, fps, add_beep)
+        _generate_glitch_clip(glitch_path, glitch_duration, width, height, fps)
 
-        # Build concat list file (absolute paths since concat file is in temp dir)
         concat_file = tmp / "concat.txt"
         lines = []
         for i, clip in enumerate(paths):
@@ -100,7 +104,6 @@ def _concat_with_glitch(
                 lines.append(f"file '{glitch_path.resolve()}'")
         concat_file.write_text("\n".join(lines), encoding="utf-8")
 
-        # Run concat demuxer
         _run_ffmpeg(
             [
                 "ffmpeg",
@@ -124,93 +127,42 @@ def _concat_with_glitch(
         )
 
 
-def _simple_concat(paths: list[Path], output_path: Path) -> None:
-    """Concatenate clips sequentially using the concat demuxer."""
-    with tempfile.TemporaryDirectory() as tmpdir:
-        concat_file = Path(tmpdir) / "concat.txt"
-        lines = [f"file '{clip.resolve()}'" for clip in paths]
-        concat_file.write_text("\n".join(lines), encoding="utf-8")
-
-        _run_ffmpeg(
-            [
-                "ffmpeg",
-                "-y",
-                "-f",
-                "concat",
-                "-safe",
-                "0",
-                "-i",
-                str(concat_file),
-                "-c",
-                "copy",
-                str(output_path),
-            ]
-        )
-
-
 def _generate_glitch_clip(
     output_path: Path,
     duration: float,
     width: int,
     height: int,
     fps: float,
-    add_beep: bool,
 ) -> None:
-    """Generate a short glitch interstitial clip with color noise."""
+    """Generate a short glitch clip with color noise + 200Hz beep."""
     video_src = (
         f"color=c=black:s={width}x{height}:r={fps}:d={duration},"
         f"noise=alls=80:allf=t,hue=H=random(1)*360:s=2"
     )
+    audio_src = f"sine=frequency=200:duration={duration},volume=-20dB"
 
-    if add_beep:
-        audio_src = f"sine=frequency=200:duration={duration},volume=-20dB"
-        _run_ffmpeg(
-            [
-                "ffmpeg",
-                "-y",
-                "-f",
-                "lavfi",
-                "-i",
-                video_src,
-                "-f",
-                "lavfi",
-                "-i",
-                audio_src,
-                "-c:v",
-                "libx264",
-                "-preset",
-                "fast",
-                "-c:a",
-                "aac",
-                "-shortest",
-                str(output_path),
-            ]
-        )
-    else:
-        # Silent audio track so concat demuxer doesn't complain about stream mismatch
-        audio_src = f"anullsrc=r=44100:cl=stereo,atrim=0:{duration}"
-        _run_ffmpeg(
-            [
-                "ffmpeg",
-                "-y",
-                "-f",
-                "lavfi",
-                "-i",
-                video_src,
-                "-f",
-                "lavfi",
-                "-i",
-                audio_src,
-                "-c:v",
-                "libx264",
-                "-preset",
-                "fast",
-                "-c:a",
-                "aac",
-                "-shortest",
-                str(output_path),
-            ]
-        )
+    _run_ffmpeg(
+        [
+            "ffmpeg",
+            "-y",
+            "-f",
+            "lavfi",
+            "-i",
+            video_src,
+            "-f",
+            "lavfi",
+            "-i",
+            audio_src,
+            "-c:v",
+            "libx264",
+            "-preset",
+            "fast",
+            "-c:a",
+            "aac",
+            "-shortest",
+            str(output_path),
+        ]
+    )
 
 
 def _probe_video(path: Path) -> tuple[int, int, float]:
@@ -235,7 +187,6 @@ def _probe_video(path: Path) -> tuple[int, int, float]:
         parts = result.stdout.strip().split(",")
         width = int(parts[0])
         height = int(parts[1])
-        # r_frame_rate is like "30/1" or "24000/1001"
         num, den = parts[2].split("/")
         fps = int(num) / int(den)
         return width, height, fps

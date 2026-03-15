@@ -79,8 +79,7 @@ class TestVideoRunner:
         mock_xai.Client.return_value = MagicMock()
         mock_scene_prompt.return_value = "video prompt"
 
-        def fake_generate_video(*args, **kwargs):
-            output_path = kwargs.get("output_path") or args[2]
+        def fake_generate_video(_prompt, _image_path, output_path, *_rest):
             output_path.parent.mkdir(parents=True, exist_ok=True)
             output_path.write_bytes(b"fake mp4")
             return output_path
