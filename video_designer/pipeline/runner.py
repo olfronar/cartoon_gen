@@ -179,12 +179,7 @@ async def _process_script(
     if clip_paths:
         script_video_path = output_dir / "script_video.mp4"
         try:
-            await asyncio.to_thread(
-                assemble_script_video,
-                clip_paths,
-                script_video_path,
-                clip_duration=float(settings.video_duration),
-            )
+            await asyncio.to_thread(assemble_script_video, clip_paths, script_video_path)
         except Exception:
             logger.exception("Failed to assemble script video for %d", entry.index)
             script_video_path = None

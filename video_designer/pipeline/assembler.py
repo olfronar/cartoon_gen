@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import logging
 import subprocess
+import tempfile
 from pathlib import Path
 
 logger = logging.getLogger(__name__)
@@ -11,18 +12,16 @@ def assemble_script_video(
     clip_paths: list[Path],
     output_path: Path,
     transition_duration: float = 0.3,
-    clip_duration: float = 15.0,
 ) -> Path:
-    """Concatenate scene clips with short glitch transitions.
+    """Concatenate scene clips with short glitch interstitials.
 
-    Uses ffmpeg xfade filter with hlslice for glitch effect.
-    For a single clip, copies without transition.
+    Generates a brief glitch clip (color noise) and inserts it between each
+    scene clip using the ffmpeg concat demuxer.
 
     Args:
         clip_paths: Ordered list of scene MP4 paths.
         output_path: Where to save the concatenated video.
-        transition_duration: Glitch transition duration in seconds.
-        clip_duration: Duration of each clip in seconds (for offset calculation).
+        transition_duration: Glitch interstitial duration in seconds.
 
     Returns:
         The output_path on success.
@@ -30,10 +29,21 @@ def assemble_script_video(
     if not clip_paths:
         raise ValueError("assemble_script_video requires at least 1 clip")
 
-    cmd = _build_copy_or_concat_cmd(
-        clip_paths, output_path, transition_duration, clip_duration, audio=False
-    )
-    _run_ffmpeg(cmd)
+    if len(clip_paths) == 1:
+        _run_ffmpeg(
+            [
+                "ffmpeg",
+                "-y",
+                "-i",
+                str(clip_paths[0]),
+                "-c",
+                "copy",
+                str(output_path),
+            ]
+        )
+    else:
+        _concat_with_glitch(clip_paths, output_path, transition_duration, add_beep=False)
+
     logger.info("Script video assembled: %s", output_path)
     return output_path
 
@@ -42,17 +52,13 @@ def assemble_final_video(
     script_video_paths: list[Path],
     output_path: Path,
     transition_duration: float = 1.0,
-    clip_duration: float = 0.0,
 ) -> Path:
-    """Concatenate script videos with longer glitch transitions + audio concat.
-
-    Uses ffmpeg with xfade glitch transitions.
+    """Concatenate script videos with longer glitch interstitials + beep.
 
     Args:
         script_video_paths: Ordered list of script video MP4 paths.
         output_path: Where to save the final cartoon.
-        transition_duration: Glitch transition duration in seconds.
-        clip_duration: Duration of each script video (0 = auto-estimate).
+        transition_duration: Glitch interstitial duration in seconds.
 
     Returns:
         The output_path on success.
@@ -60,105 +66,175 @@ def assemble_final_video(
     if not script_video_paths:
         raise ValueError("assemble_final_video requires at least 1 script video")
 
-    cmd = _build_copy_or_concat_cmd(
-        script_video_paths, output_path, transition_duration, clip_duration, audio=True
-    )
-    _run_ffmpeg(cmd)
+    if len(script_video_paths) == 1:
+        _run_ffmpeg(
+            [
+                "ffmpeg",
+                "-y",
+                "-i",
+                str(script_video_paths[0]),
+                "-c",
+                "copy",
+                str(output_path),
+            ]
+        )
+    else:
+        _concat_with_glitch(script_video_paths, output_path, transition_duration, add_beep=True)
+
     logger.info("Final video assembled: %s", output_path)
     return output_path
 
 
-def _build_copy_or_concat_cmd(
+def _concat_with_glitch(
     paths: list[Path],
     output_path: Path,
-    transition_duration: float,
-    clip_duration: float,
-    audio: bool,
-) -> list[str]:
-    """Build ffmpeg command: copy for single input, xfade concat for multiple."""
-    if len(paths) == 1:
-        return [
-            "ffmpeg",
-            "-y",
-            "-i",
-            str(paths[0]),
-            "-c",
-            "copy",
-            str(output_path),
-        ]
+    glitch_duration: float,
+    add_beep: bool,
+) -> None:
+    """Concatenate clips with glitch interstitials using concat demuxer.
 
-    return _build_xfade_concat_cmd(paths, output_path, transition_duration, clip_duration, audio)
+    1. Probe first clip for resolution/fps
+    2. Generate a glitch clip (color noise + optional beep)
+    3. Build concat file interleaving real clips with glitch clips
+    4. Run ffmpeg concat demuxer
+    """
+    # Probe first clip for format info
+    width, height, fps = _probe_video(paths[0])
 
+    with tempfile.TemporaryDirectory() as tmpdir:
+        tmp = Path(tmpdir)
 
-def _build_xfade_concat_cmd(
-    paths: list[Path],
-    output_path: Path,
-    transition_duration: float,
-    clip_duration: float,
-    audio: bool,
-) -> list[str]:
-    """Build ffmpeg command with xfade glitch transitions."""
-    cmd: list[str] = ["ffmpeg", "-y"]
-    for p in paths:
-        cmd.extend(["-i", str(p)])
+        # Generate glitch interstitial clip
+        glitch_path = tmp / "glitch.mp4"
+        _generate_glitch_clip(glitch_path, glitch_duration, width, height, fps, add_beep)
 
-    # Build xfade filter chain with proper offsets
-    vfilters = _build_xfade_chain(len(paths), transition_duration, clip_duration)
+        # Build concat list file
+        concat_file = tmp / "concat.txt"
+        lines = []
+        for i, clip in enumerate(paths):
+            lines.append(f"file '{clip}'")
+            if i < len(paths) - 1:
+                lines.append(f"file '{glitch_path}'")
+        concat_file.write_text("\n".join(lines), encoding="utf-8")
 
-    if audio:
-        audio_inputs = "".join(f"[{i}:a]" for i in range(len(paths)))
-        afilters = [f"{audio_inputs}concat=n={len(paths)}:v=0:a=1[aout]"]
-        all_filters = ";".join(vfilters + afilters)
-        cmd.extend(
+        # Run concat demuxer
+        _run_ffmpeg(
             [
-                "-filter_complex",
-                all_filters,
-                "-map",
-                "[vout]",
-                "-map",
-                "[aout]",
+                "ffmpeg",
+                "-y",
+                "-f",
+                "concat",
+                "-safe",
+                "0",
+                "-i",
+                str(concat_file),
                 "-c:v",
                 "libx264",
                 "-preset",
                 "fast",
                 "-c:a",
                 "aac",
+                "-movflags",
+                "+faststart",
                 str(output_path),
             ]
         )
-    else:
-        cmd.extend(
+
+
+def _generate_glitch_clip(
+    output_path: Path,
+    duration: float,
+    width: int,
+    height: int,
+    fps: float,
+    add_beep: bool,
+) -> None:
+    """Generate a short glitch interstitial clip with color noise."""
+    video_src = (
+        f"color=c=black:s={width}x{height}:r={fps}:d={duration},"
+        f"noise=alls=80:allf=t,hue=H=random(1)*360:s=2"
+    )
+
+    if add_beep:
+        audio_src = f"sine=frequency=200:duration={duration},volume=-20dB"
+        _run_ffmpeg(
             [
-                "-filter_complex",
-                ";".join(vfilters),
-                "-map",
-                "[vout]",
+                "ffmpeg",
+                "-y",
+                "-f",
+                "lavfi",
+                "-i",
+                video_src,
+                "-f",
+                "lavfi",
+                "-i",
+                audio_src,
                 "-c:v",
                 "libx264",
                 "-preset",
                 "fast",
+                "-c:a",
+                "aac",
+                "-shortest",
+                str(output_path),
+            ]
+        )
+    else:
+        # Silent audio track so concat demuxer doesn't complain about stream mismatch
+        audio_src = f"anullsrc=r=44100:cl=stereo,atrim=0:{duration}"
+        _run_ffmpeg(
+            [
+                "ffmpeg",
+                "-y",
+                "-f",
+                "lavfi",
+                "-i",
+                video_src,
+                "-f",
+                "lavfi",
+                "-i",
+                audio_src,
+                "-c:v",
+                "libx264",
+                "-preset",
+                "fast",
+                "-c:a",
+                "aac",
+                "-shortest",
                 str(output_path),
             ]
         )
 
-    return cmd
 
-
-def _build_xfade_chain(count: int, transition_duration: float, clip_duration: float) -> list[str]:
-    """Build the video xfade filter chain with computed offsets."""
-    filters = []
-    prev = "[0:v]"
-    cumulative = clip_duration  # offset starts at first clip's duration
-    for i in range(1, count):
-        out = f"[v{i}]" if i < count - 1 else "[vout]"
-        offset = max(0, cumulative - transition_duration)
-        filters.append(
-            f"{prev}[{i}:v]xfade=transition=hlslice:"
-            f"duration={transition_duration}:offset={offset}{out}"
+def _probe_video(path: Path) -> tuple[int, int, float]:
+    """Probe a video file for width, height, and fps. Returns defaults on failure."""
+    try:
+        result = subprocess.run(
+            [
+                "ffprobe",
+                "-v",
+                "error",
+                "-select_streams",
+                "v:0",
+                "-show_entries",
+                "stream=width,height,r_frame_rate",
+                "-of",
+                "csv=p=0",
+                str(path),
+            ],
+            capture_output=True,
+            text=True,
         )
-        prev = out
-        cumulative += clip_duration - transition_duration
-    return filters
+        parts = result.stdout.strip().split(",")
+        width = int(parts[0])
+        height = int(parts[1])
+        # r_frame_rate is like "30/1" or "24000/1001"
+        num, den = parts[2].split("/")
+        fps = int(num) / int(den)
+        return width, height, fps
+    except Exception:
+        logger.warning("Failed to probe %s, using 480p 9:16 defaults", path)
+        return 270, 480, 30.0
 
 
 def _run_ffmpeg(cmd: list[str]) -> None:
@@ -167,6 +243,6 @@ def _run_ffmpeg(cmd: list[str]) -> None:
     if result.returncode != 0:
         logger.error(
             "ffmpeg failed: %s",
-            result.stderr[:500] if result.stderr else "unknown",
+            result.stderr[-500:] if result.stderr else "unknown",
         )
         raise RuntimeError(f"ffmpeg failed with exit code {result.returncode}")
