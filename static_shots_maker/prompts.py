@@ -28,7 +28,11 @@ Rules:
 5. Compose for 9:16 vertical format (portrait orientation).
 6. Use ONLY affirmative descriptions — never say "no", "without", "don't", "avoid".
 7. Front-load the key visual in the first 20-30 words.
-8. Output ONLY the image prompt text, 80-200 words. No commentary.
+8. Reference images of characters and art style are provided alongside this prompt. \
+Match them exactly — same proportions, colors, clothing, and rendering style.
+9. If a previous scene's image is provided, maintain visual continuity with it \
+(same background elements, consistent character placement, matching lighting).
+10. Output ONLY the image prompt text, 80-200 words. No commentary.
 """
 
 END_CARD_TO_IMAGE_PROMPT = """\

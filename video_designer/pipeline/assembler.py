@@ -12,9 +12,10 @@ def assemble_script_video(
     clip_paths: list[Path],
     output_path: Path,
 ) -> Path:
-    """Concatenate scene clips sequentially (no transitions).
+    """Concatenate scene clips with re-encoding for audio normalization.
 
-    Uses the ffmpeg concat demuxer for a seamless join.
+    Re-encodes with libx264 + aac to normalize audio streams from Veo clips
+    (which may have varying audio formats/sample rates).
 
     Args:
         clip_paths: Ordered list of scene MP4 paths.
@@ -59,7 +60,7 @@ def assemble_final_video(
 
 
 def _concat_clips(paths: list[Path], output_path: Path) -> None:
-    """Concatenate clips sequentially using the concat demuxer (stream copy)."""
+    """Concatenate clips with re-encoding for audio normalization."""
     with tempfile.TemporaryDirectory() as tmpdir:
         concat_file = Path(tmpdir) / "concat.txt"
         lines = [f"file '{clip.resolve()}'" for clip in paths]
@@ -75,8 +76,14 @@ def _concat_clips(paths: list[Path], output_path: Path) -> None:
                 "0",
                 "-i",
                 str(concat_file),
-                "-c",
-                "copy",
+                "-c:v",
+                "libx264",
+                "-preset",
+                "fast",
+                "-c:a",
+                "aac",
+                "-movflags",
+                "+faststart",
                 str(output_path),
             ]
         )
@@ -134,12 +141,12 @@ def _generate_glitch_clip(
     height: int,
     fps: float,
 ) -> None:
-    """Generate a short glitch clip with color noise + 200Hz beep."""
+    """Generate a short glitch clip with color noise + silence."""
     video_src = (
         f"color=c=black:s={width}x{height}:r={fps}:d={duration},"
         f"noise=alls=80:allf=t,hue=H=random(1)*360:s=2"
     )
-    audio_src = f"sine=frequency=200:duration={duration},volume=-20dB"
+    audio_src = f"anullsrc=r=44100:cl=stereo,atrim=duration={duration}"
 
     _run_ffmpeg(
         [

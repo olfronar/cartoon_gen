@@ -13,6 +13,7 @@ sys.path.insert(0, str(Path(__file__).resolve().parent.parent.parent))
 
 from shared.config import load_settings  # noqa: E402
 
+from .art_materials_builder import create_art_materials  # noqa: E402
 from .art_style_builder import create_art_style  # noqa: E402
 from .character_builder import create_character, delete_character, list_characters  # noqa: E402
 
@@ -23,12 +24,26 @@ def main() -> None:
         "mode",
         nargs="?",
         default="all",
-        choices=["all", "characters", "art-style"],
+        choices=["all", "characters", "art-style", "art-materials"],
         help="What to set up (default: all)",
     )
     args = parser.parse_args()
 
     settings = load_settings()
+
+    if args.mode == "art-materials":
+        if not settings.google_api_key:
+            print("Error: GOOGLE_API_KEY required for art materials generation.")
+            sys.exit(1)
+        create_art_materials(
+            google_api_key=settings.google_api_key,
+            characters_dir=settings.characters_dir,
+            art_style_path=settings.art_style_path,
+            art_materials_dir=settings.art_materials_dir,
+            model=settings.shots_model,
+        )
+        return
+
     if not settings.anthropic_api_key:
         print("Error: ANTHROPIC_API_KEY required for setup interviews.")
         sys.exit(1)

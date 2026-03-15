@@ -7,57 +7,124 @@ import pytest
 from video_designer.pipeline.video_generator import generate_video
 
 
+def _mock_genai_client(video_data: bytes = b"fake mp4 data") -> MagicMock:
+    """Create a mock genai client that returns a completed video operation."""
+    # Mock the video in the response
+    mock_video = MagicMock()
+
+    # Mock the operation response
+    mock_operation = MagicMock()
+    mock_operation.done = True
+    mock_operation.response.generated_videos = [mock_video]
+
+    # Mock client.files.download
+    client = MagicMock()
+    client.models.generate_videos.return_value = mock_operation
+    client.files.download.return_value = video_data
+    return client
+
+
 class TestGenerateVideo:
-    @patch("video_designer.pipeline.video_generator.httpx")
-    def test_generates_and_saves(self, mock_httpx, tmp_path):
+    @patch("video_designer.pipeline.video_generator.types")
+    def test_generates_and_saves(self, mock_types, tmp_path):
         image_path = tmp_path / "scene_1.png"
         image_path.write_bytes(b"\x89PNG\r\n\x1a\nfake")
         output_path = tmp_path / "scene_1.mp4"
 
-        mock_response = MagicMock()
-        mock_response.url = "https://example.com/video.mp4"
-
-        mock_client = MagicMock()
-        mock_client.video.generate.return_value = mock_response
-
-        # Mock streaming download
-        mock_stream = MagicMock()
-        mock_stream.__enter__ = MagicMock(return_value=mock_stream)
-        mock_stream.__exit__ = MagicMock(return_value=False)
-        mock_stream.iter_bytes.return_value = [b"fake ", b"mp4 data"]
-        mock_httpx.stream.return_value = mock_stream
+        client = _mock_genai_client(b"fake mp4 data")
 
         result = generate_video(
             prompt="A robot moves",
             image_path=image_path,
             output_path=output_path,
-            client=mock_client,
-            model="grok-imagine-video",
-            duration=15,
-            resolution="480p",
+            client=client,
+            model="veo-3.1-fast-generate-preview",
+            duration=8,
         )
 
         assert result == output_path
         assert output_path.read_bytes() == b"fake mp4 data"
-        mock_client.video.generate.assert_called_once()
+        client.models.generate_videos.assert_called_once()
 
-        # Verify image_url was base64 encoded
-        call_kwargs = mock_client.video.generate.call_args[1]
-        assert call_kwargs["image_url"].startswith("data:image/png;base64,")
-        assert call_kwargs["duration"] == 15
-        assert call_kwargs["aspect_ratio"] == "9:16"
-
-    def test_raises_on_missing_image(self, tmp_path):
+    @patch("video_designer.pipeline.video_generator.types")
+    def test_raises_on_missing_image(self, mock_types, tmp_path):
         output_path = tmp_path / "scene_1.mp4"
-        mock_client = MagicMock()
+        client = MagicMock()
 
         with pytest.raises(FileNotFoundError):
             generate_video(
                 prompt="test",
                 image_path=tmp_path / "nonexistent.png",
                 output_path=output_path,
-                client=mock_client,
-                model="grok-imagine-video",
-                duration=15,
-                resolution="480p",
+                client=client,
+                model="veo-3.1-fast-generate-preview",
+                duration=8,
+            )
+
+    @patch("video_designer.pipeline.video_generator.types")
+    def test_with_reference_images(self, mock_types, tmp_path):
+        image_path = tmp_path / "scene_1.png"
+        image_path.write_bytes(b"\x89PNG\r\n\x1a\nfake")
+        ref_path = tmp_path / "ref.png"
+        ref_path.write_bytes(b"ref image")
+        output_path = tmp_path / "scene_1.mp4"
+
+        client = _mock_genai_client()
+
+        result = generate_video(
+            prompt="A robot moves",
+            image_path=image_path,
+            output_path=output_path,
+            client=client,
+            model="veo-3.1-fast-generate-preview",
+            duration=8,
+            reference_images=[ref_path],
+        )
+
+        assert result == output_path
+        client.models.generate_videos.assert_called_once()
+
+    @patch("video_designer.pipeline.video_generator.types")
+    def test_with_next_scene_image(self, mock_types, tmp_path):
+        image_path = tmp_path / "scene_1.png"
+        image_path.write_bytes(b"\x89PNG\r\n\x1a\nfake")
+        next_path = tmp_path / "scene_2.png"
+        next_path.write_bytes(b"next scene")
+        output_path = tmp_path / "scene_1.mp4"
+
+        client = _mock_genai_client()
+
+        result = generate_video(
+            prompt="A robot moves",
+            image_path=image_path,
+            output_path=output_path,
+            client=client,
+            model="veo-3.1-fast-generate-preview",
+            duration=8,
+            next_scene_image=next_path,
+        )
+
+        assert result == output_path
+
+    @patch("video_designer.pipeline.video_generator.types")
+    def test_raises_on_no_video(self, mock_types, tmp_path):
+        image_path = tmp_path / "scene_1.png"
+        image_path.write_bytes(b"\x89PNG\r\n\x1a\nfake")
+        output_path = tmp_path / "scene_1.mp4"
+
+        mock_operation = MagicMock()
+        mock_operation.done = True
+        mock_operation.response = None
+
+        client = MagicMock()
+        client.models.generate_videos.return_value = mock_operation
+
+        with pytest.raises(RuntimeError, match="no video data"):
+            generate_video(
+                prompt="test",
+                image_path=image_path,
+                output_path=output_path,
+                client=client,
+                model="veo-3.1-fast-generate-preview",
+                duration=8,
             )

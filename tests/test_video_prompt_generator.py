@@ -4,6 +4,7 @@ from unittest.mock import MagicMock, patch
 
 from tests.conftest import make_scene, make_script
 from video_designer.pipeline.prompt_generator import (
+    _format_dialogue,
     generate_end_card_video_prompt,
     generate_video_prompt,
 )
@@ -54,3 +55,21 @@ class TestGenerateEndCardVideoPrompt:
             script, "context", MagicMock(), "claude-opus-4-6", 4096
         )
         assert result == "Show the logo."
+
+
+class TestFormatDialogue:
+    def test_formats_lines(self):
+        dialogue = [
+            {"character": "Bot", "line": "Hello!"},
+            {"character": "Human", "line": "Hi there."},
+        ]
+        result = _format_dialogue(dialogue)
+        assert '[Bot] says: "Hello!"' in result
+        assert '[Human] says: "Hi there."' in result
+
+    def test_empty_dialogue(self):
+        assert _format_dialogue([]) == "None"
+
+    def test_missing_keys(self):
+        result = _format_dialogue([{"character": "Bot"}])
+        assert "[Bot]" in result

@@ -9,6 +9,18 @@ from video_designer.prompts import END_CARD_TO_VIDEO_PROMPT, SCENE_TO_VIDEO_PROM
 logger = logging.getLogger(__name__)
 
 
+def _format_dialogue(dialogue: list[dict]) -> str:
+    """Format dialogue list into prompt-friendly text."""
+    if not dialogue:
+        return "None"
+    lines = []
+    for d in dialogue:
+        char = d.get("character", "Unknown")
+        line = d.get("line", "")
+        lines.append(f'[{char}] says: "{line}"')
+    return " ".join(lines)
+
+
 def generate_video_prompt(
     scene: SceneScript,
     script: CartoonScript,
@@ -29,6 +41,7 @@ def generate_video_prompt(
         visual_gag=scene.visual_gag or "None",
         audio_direction=scene.audio_direction,
         duration_seconds=scene.duration_seconds,
+        dialogue_formatted=_format_dialogue(scene.dialogue),
     )
     try:
         return call_llm_text(client, prompt, model, max_tokens).strip()

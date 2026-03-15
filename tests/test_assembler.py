@@ -4,7 +4,11 @@ from unittest.mock import patch
 
 import pytest
 
-from video_designer.pipeline.assembler import assemble_final_video, assemble_script_video
+from video_designer.pipeline.assembler import (
+    _generate_glitch_clip,
+    assemble_final_video,
+    assemble_script_video,
+)
 
 
 class TestAssembleScriptVideo:
@@ -43,3 +47,17 @@ class TestAssembleFinalVideo:
     def test_raises_on_empty(self, tmp_path):
         with pytest.raises(ValueError, match="at least 1"):
             assemble_final_video([], tmp_path / "out.mp4")
+
+
+class TestGlitchClip:
+    @patch("video_designer.pipeline.assembler._run_ffmpeg")
+    def test_uses_silence_not_beep(self, mock_ffmpeg, tmp_path):
+        """Glitch clip uses anullsrc (silence) instead of 200Hz sine beep."""
+        output = tmp_path / "glitch.mp4"
+        _generate_glitch_clip(output, 1.0, 270, 480, 30.0)
+
+        mock_ffmpeg.assert_called_once()
+        cmd = mock_ffmpeg.call_args[0][0]
+        cmd_str = " ".join(cmd)
+        assert "anullsrc" in cmd_str
+        assert "sine" not in cmd_str

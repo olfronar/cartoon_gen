@@ -8,7 +8,13 @@ from google.genai import types
 logger = logging.getLogger(__name__)
 
 
-def generate_image(prompt: str, output_path: Path, client, model: str) -> Path:
+def generate_image(
+    prompt: str,
+    output_path: Path,
+    client,
+    model: str,
+    reference_images: list[Path] | None = None,
+) -> Path:
     """Generate a 9:16 PNG image via Gemini and save to output_path.
 
     Uses generate_content_stream with IMAGE response modality.
@@ -19,6 +25,7 @@ def generate_image(prompt: str, output_path: Path, client, model: str) -> Path:
         output_path: Where to save the PNG file.
         client: google.genai.Client instance.
         model: Gemini model name (e.g. "gemini-3.1-flash-image-preview").
+        reference_images: Optional list of image Paths to prepend as visual context.
 
     Returns:
         The output_path on success.
@@ -26,10 +33,17 @@ def generate_image(prompt: str, output_path: Path, client, model: str) -> Path:
     Raises:
         RuntimeError: If image generation fails or returns no image data.
     """
+    parts: list = []
+    if reference_images:
+        for img_path in reference_images:
+            img_bytes = img_path.read_bytes()
+            parts.append(types.Part.from_bytes(data=img_bytes, mime_type="image/png"))
+    parts.append(types.Part.from_text(text=prompt))
+
     contents = [
         types.Content(
             role="user",
-            parts=[types.Part.from_text(text=prompt)],
+            parts=parts,
         ),
     ]
     config = types.GenerateContentConfig(

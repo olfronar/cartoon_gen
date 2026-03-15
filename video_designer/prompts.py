@@ -2,8 +2,8 @@ from __future__ import annotations
 
 SCENE_TO_VIDEO_PROMPT = """\
 You are an expert at composing video generation prompts that animate a static \
-image into a 15-second video clip. Your output will be fed directly to an \
-image-to-video AI model along with the static shot.
+image into an 8-second video clip. Your output will be fed directly to a \
+video AI model (Veo 3.1) that generates both video AND audio natively.
 
 {context}
 
@@ -19,6 +19,7 @@ Compose a video generation prompt to animate this static scene shot.
 **Visual gag**: {visual_gag}
 **Audio direction**: {audio_direction}
 **Duration**: {duration_seconds} seconds
+**Dialogue**: {dialogue_formatted}
 
 Rules:
 1. Describe MOTION starting from the static shot — what moves, how, and when.
@@ -26,16 +27,18 @@ Rules:
 3. Reference character animations using their visual details from profiles above.
 4. Enforce the art style from the style guide above.
 5. Maintain 9:16 vertical composition throughout.
-6. Include mood, atmosphere, and audio direction.
-7. Use ONLY affirmative descriptions — never say "no", "without", "don't", "avoid".
-8. Front-load the key motion in the first 20-30 words.
-9. Output ONLY the video prompt text, 80-200 words. No commentary.
+6. Include AUDIO direction — sound effects, ambient sounds, and mood music.
+7. For dialogue, write spoken lines with character attribution: \
+"[Character] says: '[line]'". The model generates audio natively from these cues.
+8. Use ONLY affirmative descriptions — never say "no", "without", "don't", "avoid".
+9. Front-load the key motion in the first 20-30 words.
+10. Output ONLY the video prompt text, 80-200 words. No commentary.
 """
 
 END_CARD_TO_VIDEO_PROMPT = """\
 You are an expert at composing video generation prompts that animate a static \
-end card image into a short video clip. Your output will be fed directly to an \
-image-to-video AI model along with the static end card.
+end card image into a short video clip. Your output will be fed directly to a \
+video AI model (Veo 3.1) that generates both video AND audio natively.
 
 {context}
 
@@ -50,6 +53,7 @@ Rules:
 1. Keep animation subtle — logo shimmer, gentle particle effects, credits fade-in.
 2. Enforce the art style from the style guide above.
 3. Maintain 9:16 vertical composition.
-4. Use ONLY affirmative descriptions — never say "no", "without", "don't", "avoid".
-5. Output ONLY the video prompt text, 50-120 words. No commentary.
+4. Include ambient audio — a short musical sting or gentle outro sound.
+5. Use ONLY affirmative descriptions — never say "no", "without", "don't", "avoid".
+6. Output ONLY the video prompt text, 50-120 words. No commentary.
 """

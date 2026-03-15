@@ -116,22 +116,34 @@ Write the full script for this cartoon episode.
 
 **Key visual gags to include**: {visual_gags}
 
+**CREATIVE DIRECTION**:
+- Keep the plot simple and direct. One clear comedic premise, escalated once, \
+resolved with a visual punchline.
+- Prioritize VISUAL comedy beats over dialogue. Every scene must have a clear \
+visual gag or physical comedy moment that works with zero sound.
+- Dialogue should be minimal, punchy, and edgy — at most 1-2 short lines per \
+scene. If the comedy works visually, omit dialogue entirely.
+- When dialogue IS included, write it as spoken lines with character attribution \
+— the video model generates audio natively from quoted dialogue in scene_prompt.
+
 Write {num_scenes} scenes. For each scene provide:
 
 - `scene_number`: integer (1-based)
 - `scene_title`: short descriptive title
 - `setting`: location, time of day, atmosphere
-- `scene_prompt`: 50-150 words following this formula: \
-"[Subject performing action] in [setting]. [Camera movement]. [Visual style]. \
-[Audio]. Duration: [N seconds]." \
-The first 20-30 words are critical — front-load the key visual. \
+- `scene_prompt`: 50-150 words describing the scene. \
+Front-load the key visual in the first 20-30 words. \
+Use the format: "[Subject performing action] in [setting]. [Camera movement]. \
+[Visual style]. [Audio/dialogue cues]." \
 Affirmative descriptions ONLY — no negative prompts (never say "no", "without", \
 "don't", "avoid"). \
-Include character visual details from profiles (clothing, colors, features).
+Include character visual details from profiles (clothing, colors, features). \
+If the scene has dialogue, include it as quoted speech with character attribution \
+directly in the prompt (e.g. '[Character] says: "[line]"').
 - `dialogue`: array of objects with "character" and "line" keys (can be empty array)
 - `visual_gag`: description of the comedy beat (or null if none)
-- `audio_direction`: music, sound effects, ambient sounds
-- `duration_seconds`: 1-15 seconds
+- `audio_direction`: music, sound effects, ambient sounds, and dialogue delivery notes
+- `duration_seconds`: 8
 - `camera_movement`: e.g. "slow zoom in", "pan left to right", "static wide shot"
 
 Also provide an `end_card_prompt` (50-100 words): a final scene prompt for the \

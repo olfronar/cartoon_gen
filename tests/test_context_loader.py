@@ -1,7 +1,9 @@
 from __future__ import annotations
 
-from script_writer.pipeline.context_loader import (
+from shared.context_loader import (
     build_context_block,
+    build_reference_image_list,
+    load_art_materials,
     load_art_style,
     load_characters,
 )
@@ -53,3 +55,41 @@ class TestBuildContextBlock:
     def test_empty(self):
         block = build_context_block({}, "")
         assert block == ""
+
+
+class TestLoadArtMaterials:
+    def test_loads_existing_pngs(self, tmp_path):
+        (tmp_path / "canonical_characters.png").write_bytes(b"fake")
+        (tmp_path / "art_style_guide.png").write_bytes(b"fake")
+
+        materials = load_art_materials(tmp_path)
+        assert len(materials) == 2
+        assert "canonical_characters" in materials
+        assert "art_style_guide" in materials
+
+    def test_partial_materials(self, tmp_path):
+        (tmp_path / "canonical_characters.png").write_bytes(b"fake")
+
+        materials = load_art_materials(tmp_path)
+        assert len(materials) == 1
+        assert "canonical_characters" in materials
+
+    def test_missing_directory(self, tmp_path):
+        materials = load_art_materials(tmp_path / "nonexistent")
+        assert materials == {}
+
+
+class TestBuildReferenceImageList:
+    def test_ordered_list(self, tmp_path):
+        chars_path = tmp_path / "canonical_characters.png"
+        style_path = tmp_path / "art_style_guide.png"
+        chars_path.write_bytes(b"fake")
+        style_path.write_bytes(b"fake")
+
+        materials = {"canonical_characters": chars_path, "art_style_guide": style_path}
+        result = build_reference_image_list(materials)
+        assert result == [chars_path, style_path]
+
+    def test_empty_materials(self):
+        result = build_reference_image_list({})
+        assert result == []

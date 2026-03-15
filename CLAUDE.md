@@ -27,7 +27,7 @@ cartoon_maker/
 
 3. **static_shots_maker** — Reads script JSONs, uses Claude to rewrite video prompts into image-optimized prompts, generates 9:16 PNGs via Gemini, outputs shots + manifest per script.
 
-4. **video_designer** — Reads static shots + script JSONs, uses Claude to compose video prompts, generates 15s clips via xAI grok-imagine-video, assembles with glitch transitions into final cartoon videos.
+4. **video_designer** — Reads static shots + script JSONs, uses Claude to compose video prompts, generates 8s clips via Veo 3.1 (with native audio), assembles with glitch transitions into final cartoon videos.
 
 ### Design Principles
 
@@ -61,7 +61,7 @@ Dependencies are managed in `pyproject.toml` (not requirements.txt).
 ### Testing & Linting
 
 ```bash
-# Run all tests (167 tests)
+# Run all tests (182 tests)
 pytest
 
 # Run a single test file
@@ -93,6 +93,9 @@ PYTHONPATH=. python -m agent_researcher --scheduled
 # Script Writer — character & art style setup (interactive, run once)
 PYTHONPATH=. python -m script_writer.setup
 
+# Script Writer — generate art materials (run after characters + art style exist)
+PYTHONPATH=. python -m script_writer.setup art-materials
+
 # Script Writer — generate scripts from latest brief
 PYTHONPATH=. python -m script_writer
 
@@ -118,7 +121,7 @@ Environment variables loaded from `.env` (see `.env.example` for template). Miss
 
 Required: `ANTHROPIC_API_KEY` (without it, scorer falls back to raw score sorting — no comedy angles).
 
-Required for static shots: `GOOGLE_API_KEY` (Gemini image generation). Optional: `ANTHROPIC_API_KEY` enables Claude prompt rewriting (falls back to regex stripping).
+Required for static shots and video: `GOOGLE_API_KEY` (Gemini image generation + Veo 3.1 video generation). Optional: `ANTHROPIC_API_KEY` enables Claude prompt rewriting (falls back to regex stripping for shots, original prompts for video).
 
 ## Code Conventions
 
@@ -160,7 +163,7 @@ Tier freshness cutoffs: discovery/validation = 24h, context = 48h.
 - **xAI source** (`sources/xai.py`): uses `grok-4.20-beta-latest-non-reasoning` with `web_search(allowed_domains=["x.com"])` tool for live X data.
 - **Data contracts** (`shared/models.py`): `RawItem` → `ScoredItem` → `ComedyBrief` → `Logline` → `Synopsis` → `SceneScript` → `CartoonScript` → `ShotResult` → `ShotsManifest` → `ClipResult` → `VideoManifest`. All agents share these.
 - **Shared utilities** (`shared/utils.py`): `strip_code_fences()`, `parse_iso_utc()`, `strip_html()`, `extract_text()`, `call_llm_json()`, `call_llm_text()`.
-- **Context loader** (`shared/context_loader.py`): `load_characters()`, `load_art_style()`, `build_context_block()`. Used by script_writer and static_shots_maker.
+- **Context loader** (`shared/context_loader.py`): `load_characters()`, `load_art_style()`, `load_art_materials()`, `build_context_block()`, `build_reference_image_list()`. Used by script_writer, static_shots_maker, and video_designer.
 - **Delivery** (`delivery/`): local `.md` file (always) + Notion page (if `NOTION_API_KEY` configured).
 - **Alerts** (`alerts.py`): Slack webhook notifications on success/failure. Gated on `SLACK_WEBHOOK_URL`.
 - **Scheduler** (`scheduler.py`): APScheduler `CronTrigger` for daily runs. Activated via `--scheduled` flag.
@@ -186,23 +189,24 @@ Pipeline: brief JSON ingestion → parallel logline generation + selection (all 
 - **Interviewer** (`setup/interviewer.py`): Generic multi-turn LLM conversation engine. Detects `INTERVIEW_COMPLETE` marker.
 - **Character builder** (`setup/character_builder.py`): Interactive character design interview → `output/characters/<name>.md`.
 - **Art style builder** (`setup/art_style_builder.py`): Interactive art style interview → `output/art_style.md`.
+- **Art materials builder** (`setup/art_materials_builder.py`): Automated (non-interactive) generation of canonical reference images via Gemini → `output/art_materials/canonical_characters.png` + `art_style_guide.png`. Requires `GOOGLE_API_KEY`. Run separately after characters + art style exist.
 
 ### Output
 
 - `output/scripts/<YYYY-MM-DD>_<N>.md` + `.json` — one pair per top pick (N = 1-5).
-- Scene prompts follow xAI golden formula: 50-150 words, affirmative only, front-loaded key visuals.
+- Scene prompts: 50-150 words, affirmative only, front-loaded key visuals, with dialogue quoted inline for Veo 3.1 audio generation. Duration fixed at 8 seconds. Emphasis on visual comedy over dialogue.
 
 ## Static Shots Maker Internals
 
-Pipeline: script JSON ingestion → parallel prompt rewriting (Claude) → parallel image generation (Gemini) → PNG output + manifest. Two-level `asyncio.gather()` with semaphore for rate limiting.
+Pipeline: script JSON ingestion → sequential prompt rewriting + image generation per script (for visual continuity) → PNG output + manifest. Script-level parallelism preserved, scene-level is sequential (each scene uses previous scene's output as reference).
 
 ### Pipeline stages
 
 - **Script reader** (`pipeline/script_reader.py`): Reads `output/scripts/<date>_<N>.json` sidecars. Auto-detects latest date if none specified. Uses `CartoonScript.from_dict()`.
 - **Prompt generator** (`pipeline/prompt_generator.py`): Claude rewrites video-oriented scene prompts into static image prompts (strips motion/audio/duration, picks peak visual moment, weaves in character details + art style). Falls back to regex stripping if Claude unavailable.
-- **Image generator** (`pipeline/image_generator.py`): Gemini `gemini-3.1-flash-image-preview` generates 9:16 PNGs.
-- **Prompts** (`prompts.py`): `SCENE_TO_IMAGE_PROMPT` and `END_CARD_TO_IMAGE_PROMPT` templates.
-- **Runner** (`pipeline/runner.py`): Async orchestrator. Level 1 parallel across scripts, Level 2 parallel across scenes. Semaphore caps concurrent Gemini calls.
+- **Image generator** (`pipeline/image_generator.py`): Gemini `gemini-3.1-flash-image-preview` generates 9:16 PNGs. Accepts optional `reference_images` (art materials + previous scene) for visual consistency.
+- **Prompts** (`prompts.py`): `SCENE_TO_IMAGE_PROMPT` and `END_CARD_TO_IMAGE_PROMPT` templates. References art materials and previous scene for consistency.
+- **Runner** (`pipeline/runner.py`): Async orchestrator. Level 1 parallel across scripts, scenes sequential within each script (visual continuity chain). Loads art materials as reference images.
 
 ### Output
 
@@ -211,18 +215,19 @@ Pipeline: script JSON ingestion → parallel prompt rewriting (Claude) → paral
 
 ## Video Designer Internals
 
-Pipeline: manifest + script ingestion → parallel video prompt composition (Claude) → parallel video generation (xAI grok-imagine-video) → ffmpeg assembly with glitch transitions. Two-level `asyncio.gather()` with semaphore for rate limiting.
+Pipeline: manifest + script ingestion → parallel video prompt composition (Claude, includes dialogue formatting) → parallel video generation (Veo 3.1 with native audio) → ffmpeg assembly with glitch transitions. Two-level `asyncio.gather()` with semaphore for rate limiting.
 
 ### Pipeline stages
 
 - **Manifest reader** (`pipeline/manifest_reader.py`): Reads `output/static_shots/<date>_<N>/manifest.json` + pairs with `output/scripts/<date>_<N>.json`. Auto-detects latest date. Skips scripts with no successful shots.
-- **Prompt generator** (`pipeline/prompt_generator.py`): Claude composes video-generation prompts from scene details + character profiles + art style. Falls back to original scene_prompt if Claude unavailable.
-- **Video generator** (`pipeline/video_generator.py`): xAI `grok-imagine-video` image-to-video. Encodes static shot as base64, sends with prompt, downloads result as MP4.
-- **Assembler** (`pipeline/assembler.py`): ffmpeg concatenation. Short glitch transitions (0.3s hlslice) between scenes, longer glitch (1.0s) + 200Hz beep between scripts.
-- **Prompts** (`prompts.py`): `SCENE_TO_VIDEO_PROMPT` and `END_CARD_TO_VIDEO_PROMPT` templates.
-- **Runner** (`pipeline/runner.py`): Async orchestrator. Level 1 parallel across scripts, Level 2 parallel across scenes. Semaphore caps concurrent xAI calls.
+- **Prompt generator** (`pipeline/prompt_generator.py`): Claude composes video-generation prompts from scene details + character profiles + art style + formatted dialogue. Falls back to original scene_prompt if Claude unavailable.
+- **Video generator** (`pipeline/video_generator.py`): Google Veo 3.1 (`veo-3.1-fast-generate-preview`) image-to-video with native audio generation. Uses static shot as source image, next scene as last_frame for interpolation, art materials as reference images. Fallback chain degrades gracefully if features are mutually exclusive.
+- **Assembler** (`pipeline/assembler.py`): ffmpeg concatenation with re-encoding (`libx264 + aac`) for audio normalization. Glitch transitions (1.0s) with silence between scripts.
+- **Prompts** (`prompts.py`): `SCENE_TO_VIDEO_PROMPT` and `END_CARD_TO_VIDEO_PROMPT` templates. Include audio/dialogue direction for Veo 3.1's native audio generation.
+- **Runner** (`pipeline/runner.py`): Async orchestrator. Level 1 parallel across scripts, Level 2 parallel across scenes. Uses `google.genai.Client` (requires `GOOGLE_API_KEY`). Loads art materials and passes next-scene images for interpolation.
 
 ### Output
 
 - `output/videos/<YYYY-MM-DD>_<N>/scene_<M>.mp4` + `end_card.mp4` + `script_video.mp4` + `video_manifest.json` per script.
-- `output/videos/final_<YYYY-MM-DD>.mp4` — all scripts concatenated with glitch transitions + beep.
+- `output/videos/final_<YYYY-MM-DD>.mp4` — all scripts concatenated with glitch transitions + silence.
+- Video clips include native audio (dialogue, sound effects, ambient) generated by Veo 3.1.

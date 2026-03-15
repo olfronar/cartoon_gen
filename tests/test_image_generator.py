@@ -49,6 +49,27 @@ class TestGenerateImage:
         assert output_path.read_bytes() == data
         client.models.generate_content_stream.assert_called_once()
 
+    def test_reference_images_as_parts(self, tmp_path):
+        """Prepends reference image Parts before text Part when provided."""
+        output_path = tmp_path / "scene_1.png"
+        data = b"\x89PNG\r\n\x1a\nfake"
+        client = _mock_client_with_image(data)
+
+        ref1 = tmp_path / "ref1.png"
+        ref2 = tmp_path / "ref2.png"
+        ref1.write_bytes(b"ref image 1")
+        ref2.write_bytes(b"ref image 2")
+
+        result = generate_image(
+            "a robot", output_path, client, MODEL, reference_images=[ref1, ref2]
+        )
+
+        assert result == output_path
+        call_args = client.models.generate_content_stream.call_args
+        contents = call_args[1]["contents"]
+        # Should have 2 ref image parts + 1 text part = 3 parts
+        assert len(contents[0].parts) == 3
+
     def test_raises_on_no_image(self, tmp_path):
         """Raises RuntimeError when Gemini returns no image data."""
         output_path = tmp_path / "scene_1.png"

@@ -55,14 +55,16 @@ class Settings:
     shots_max_concurrency: int = 10
     shots_output_dir: Path = field(default_factory=lambda: Path("output/static_shots"))
 
+    # Art Materials
+    art_materials_dir: Path = field(default_factory=lambda: Path("output/art_materials"))
+
     # Video Designer
-    video_model: str = "grok-imagine-video"
+    video_model: str = "veo-3.1-fast-generate-preview"
     video_prompt_model: str = "claude-opus-4-6"
     video_prompt_max_tokens: int = 4096
     video_max_concurrency: int = 5
     video_output_dir: Path = field(default_factory=lambda: Path("output/videos"))
-    video_duration: int = 15
-    video_resolution: str = "480p"
+    video_duration: int = 8
 
 
 def load_settings(env_path: str = ".env") -> Settings:
@@ -92,13 +94,13 @@ def load_settings(env_path: str = ".env") -> Settings:
         shots_prompt_max_tokens=int(values.get("SHOTS_PROMPT_MAX_TOKENS", "4096")),
         shots_max_concurrency=int(values.get("SHOTS_MAX_CONCURRENCY", "10")),
         shots_output_dir=Path(values.get("SHOTS_OUTPUT_DIR", "output/static_shots")),
-        video_model=values.get("VIDEO_MODEL", "grok-imagine-video"),
+        art_materials_dir=Path(values.get("ART_MATERIALS_DIR", "output/art_materials")),
+        video_model=values.get("VIDEO_MODEL", "veo-3.1-fast-generate-preview"),
         video_prompt_model=values.get("VIDEO_PROMPT_MODEL", "claude-opus-4-6"),
         video_prompt_max_tokens=int(values.get("VIDEO_PROMPT_MAX_TOKENS", "4096")),
         video_max_concurrency=int(values.get("VIDEO_MAX_CONCURRENCY", "5")),
         video_output_dir=Path(values.get("VIDEO_OUTPUT_DIR", "output/videos")),
-        video_duration=int(values.get("VIDEO_DURATION", "15")),
-        video_resolution=values.get("VIDEO_RESOLUTION", "480p"),
+        video_duration=int(values.get("VIDEO_DURATION", "8")),
     )
 
     if not settings.anthropic_api_key:

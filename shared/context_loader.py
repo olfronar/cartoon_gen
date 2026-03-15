@@ -31,6 +31,31 @@ def load_art_style(art_style_path: Path) -> str:
     return content
 
 
+def load_art_materials(art_materials_dir: Path) -> dict[str, Path]:
+    """Load art material image paths. Returns {name: Path} for existing PNGs."""
+    if not art_materials_dir.exists():
+        logger.info("Art materials directory not found: %s", art_materials_dir)
+        return {}
+
+    materials: dict[str, Path] = {}
+    for name in ("canonical_characters", "art_style_guide"):
+        path = art_materials_dir / f"{name}.png"
+        if path.exists():
+            materials[name] = path
+            logger.info("Loaded art material: %s", path)
+
+    return materials
+
+
+def build_reference_image_list(art_materials: dict[str, Path]) -> list[Path]:
+    """Build ordered list of reference image paths from art materials."""
+    paths: list[Path] = []
+    for name in ("canonical_characters", "art_style_guide"):
+        if name in art_materials:
+            paths.append(art_materials[name])
+    return paths
+
+
 def build_context_block(characters: dict[str, str], art_style: str) -> str:
     """Build the shared context block injected into all LLM prompts."""
     parts: list[str] = []

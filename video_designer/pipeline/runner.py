@@ -8,10 +8,16 @@ from datetime import date
 from pathlib import Path
 
 import anthropic
-import xai_sdk
+from google import genai
 
 from shared.config import Settings, load_settings
-from shared.context_loader import build_context_block, load_art_style, load_characters
+from shared.context_loader import (
+    build_context_block,
+    build_reference_image_list,
+    load_art_materials,
+    load_art_style,
+    load_characters,
+)
 from shared.models import ClipResult, VideoManifest
 
 from .assembler import assemble_final_video, assemble_script_video
@@ -29,8 +35,8 @@ async def run(
     """Run the full video designer pipeline. Returns path to final video."""
     settings = settings or load_settings()
 
-    if not settings.xai_api_key:
-        raise RuntimeError("XAI_API_KEY required for video generation")
+    if not settings.google_api_key:
+        raise RuntimeError("GOOGLE_API_KEY required for video generation")
 
     has_anthropic = bool(settings.anthropic_api_key)
     if not has_anthropic:
@@ -40,12 +46,16 @@ async def run(
     anthropic_client = (
         anthropic.Anthropic(api_key=settings.anthropic_api_key) if has_anthropic else None
     )
-    xai_client = xai_sdk.Client(api_key=settings.xai_api_key)
+    genai_client = genai.Client(api_key=settings.google_api_key)
 
     # Load context
     characters = load_characters(settings.characters_dir)
     art_style = load_art_style(settings.art_style_path)
     context_block = build_context_block(characters, art_style)
+
+    # Load art materials (reference images for consistency)
+    art_materials = load_art_materials(settings.art_materials_dir)
+    reference_images = build_reference_image_list(art_materials)
 
     # Read manifests + scripts
     data = read_manifests(
@@ -64,9 +74,10 @@ async def run(
                 entry=entry,
                 context_block=context_block,
                 anthropic_client=anthropic_client,
-                xai_client=xai_client,
+                genai_client=genai_client,
                 semaphore=semaphore,
                 settings=settings,
+                reference_images=reference_images,
             )
             for entry in data
         ]
@@ -98,9 +109,10 @@ async def _process_script(
     entry: ScriptWithShots,
     context_block: str,
     anthropic_client,
-    xai_client,
+    genai_client,
     semaphore: asyncio.Semaphore,
     settings: Settings,
+    reference_images: list[Path] | None = None,
 ) -> tuple[VideoManifest, Path | None]:
     """Process a single script: generate clips + assemble script video."""
     output_dir = settings.video_output_dir / (f"{entry.script.date.isoformat()}_{entry.index}")
@@ -115,13 +127,18 @@ async def _process_script(
         if shot.success and shot.output_path
     }
 
-    # Build tasks for each scene + end card
+    # Build tasks for each scene
     tasks = []
-    for scene in entry.script.scenes:
-        image_path = shot_paths.get(scene.scene_number)
-        if not image_path:
-            logger.warning("No shot for scene %d, skipping", scene.scene_number)
-            continue
+    scenes_with_shots = [s for s in entry.script.scenes if shot_paths.get(s.scene_number)]
+    for i, scene in enumerate(scenes_with_shots):
+        image_path = shot_paths[scene.scene_number]
+
+        # Determine next scene's static shot for last_frame interpolation
+        next_scene_image = None
+        if i + 1 < len(scenes_with_shots):
+            next_scene = scenes_with_shots[i + 1]
+            next_scene_image = shot_paths.get(next_scene.scene_number)
+
         tasks.append(
             _process_clip(
                 label=f"Scene {scene.scene_number}",
@@ -137,9 +154,11 @@ async def _process_script(
                     settings.video_prompt_model,
                     settings.video_prompt_max_tokens,
                 ),
-                xai_client=xai_client,
+                genai_client=genai_client,
                 semaphore=semaphore,
                 settings=settings,
+                next_scene_image=next_scene_image,
+                reference_images=reference_images,
             )
         )
 
@@ -184,9 +203,11 @@ async def _process_clip(
     output_path: Path,
     image_path: Path,
     prompt_fn: Callable[[], str],
-    xai_client,
+    genai_client,
     semaphore: asyncio.Semaphore,
     settings: Settings,
+    next_scene_image: Path | None = None,
+    reference_images: list[Path] | None = None,
 ) -> ClipResult:
     """Generate a single video clip (scene or end card)."""
     try:
@@ -198,10 +219,11 @@ async def _process_clip(
                 video_prompt,
                 image_path,
                 output_path,
-                xai_client,
+                genai_client,
                 settings.video_model,
                 settings.video_duration,
-                settings.video_resolution,
+                next_scene_image,
+                reference_images,
             )
 
         print(f"    {label}: OK")

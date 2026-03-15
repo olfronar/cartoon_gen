@@ -33,16 +33,18 @@ def mock_settings(tmp_path):
 
 class TestShotsRunner:
     @pytest.mark.asyncio
+    @patch("static_shots_maker.pipeline.runner.load_art_materials")
     @patch("static_shots_maker.pipeline.runner.generate_image")
     @patch("static_shots_maker.pipeline.runner.generate_scene_prompt")
     @patch("static_shots_maker.pipeline.runner.anthropic")
     @patch("static_shots_maker.pipeline.runner.genai")
     async def test_generates_manifest(
-        self, mock_genai, mock_anthropic_mod, mock_scene, mock_img, mock_settings
+        self, mock_genai, mock_anthropic_mod, mock_scene, mock_img, mock_art, mock_settings
     ):
         mock_anthropic_mod.Anthropic.return_value = MagicMock()
         mock_genai.Client.return_value = MagicMock()
         mock_scene.return_value = "optimized scene prompt"
+        mock_art.return_value = {}
 
         def fake_generate_image(*args):
             output_path = args[1]
@@ -75,17 +77,19 @@ class TestShotsRunner:
             await run(settings=settings)
 
     @pytest.mark.asyncio
+    @patch("static_shots_maker.pipeline.runner.load_art_materials")
     @patch("static_shots_maker.pipeline.runner.generate_image")
     @patch("static_shots_maker.pipeline.runner.generate_scene_prompt")
     @patch("static_shots_maker.pipeline.runner.anthropic")
     @patch("static_shots_maker.pipeline.runner.genai")
     async def test_image_failure_recorded(
-        self, mock_genai, mock_anthropic_mod, mock_scene, mock_img, mock_settings
+        self, mock_genai, mock_anthropic_mod, mock_scene, mock_img, mock_art, mock_settings
     ):
         mock_anthropic_mod.Anthropic.return_value = MagicMock()
         mock_genai.Client.return_value = MagicMock()
         mock_scene.return_value = "prompt"
         mock_img.side_effect = RuntimeError("Gemini failed")
+        mock_art.return_value = {}
 
         manifests = await run(settings=mock_settings, target_date=date(2026, 3, 15))
 
