@@ -47,6 +47,14 @@ class Settings:
     art_style_path: Path = field(default_factory=lambda: Path("output/art_style.md"))
     scripts_output_dir: Path = field(default_factory=lambda: Path("output/scripts"))
 
+    # Static Shots Maker
+    google_api_key: str = ""
+    shots_model: str = "gemini-3.1-flash-image-preview"
+    shots_prompt_model: str = "claude-opus-4-6"
+    shots_prompt_max_tokens: int = 4096
+    shots_max_concurrency: int = 10
+    shots_output_dir: Path = field(default_factory=lambda: Path("output/static_shots"))
+
 
 def load_settings(env_path: str = ".env") -> Settings:
     values = dotenv_values(env_path)
@@ -69,6 +77,12 @@ def load_settings(env_path: str = ".env") -> Settings:
         characters_dir=Path(values.get("CHARACTERS_DIR", "output/characters")),
         art_style_path=Path(values.get("ART_STYLE_PATH", "output/art_style.md")),
         scripts_output_dir=Path(values.get("SCRIPTS_OUTPUT_DIR", "output/scripts")),
+        google_api_key=values.get("GOOGLE_API_KEY", ""),
+        shots_model=values.get("SHOTS_MODEL", "gemini-3.1-flash-image-preview"),
+        shots_prompt_model=values.get("SHOTS_PROMPT_MODEL", "claude-opus-4-6"),
+        shots_prompt_max_tokens=int(values.get("SHOTS_PROMPT_MAX_TOKENS", "4096")),
+        shots_max_concurrency=int(values.get("SHOTS_MAX_CONCURRENCY", "10")),
+        shots_output_dir=Path(values.get("SHOTS_OUTPUT_DIR", "output/static_shots")),
     )
 
     if not settings.anthropic_api_key:

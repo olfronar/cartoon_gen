@@ -51,3 +51,20 @@ def call_llm_json(client, prompt: str, model: str, max_tokens: int) -> dict | li
 
     text = strip_code_fences(extract_text(response))
     return json.loads(text)
+
+
+def call_llm_text(client, prompt: str, model: str, max_tokens: int) -> str:
+    """Call Claude with streaming + adaptive thinking, return raw text.
+
+    Raises on API failure (caller decides fallback policy).
+    """
+    with client.messages.stream(
+        model=model,
+        max_tokens=max_tokens,
+        thinking={"type": "adaptive"},
+        temperature=1,
+        messages=[{"role": "user", "content": prompt}],
+    ) as stream:
+        response = stream.get_final_message()
+
+    return extract_text(response)

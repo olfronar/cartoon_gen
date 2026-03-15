@@ -2,6 +2,7 @@ from __future__ import annotations
 
 from dataclasses import asdict, dataclass, field
 from datetime import date, datetime
+from pathlib import Path
 
 
 @dataclass(slots=True)
@@ -115,3 +116,60 @@ class CartoonScript:
         data["date"] = self.date.isoformat()
         data["source_item"]["item"]["timestamp"] = self.source_item.item.timestamp.isoformat()
         return data
+
+    @classmethod
+    def from_dict(cls, data: dict) -> CartoonScript:
+        """Deserialize from a JSON-compatible dict."""
+        from shared.utils import parse_iso_utc
+
+        raw = data["source_item"]["item"]
+        raw["timestamp"] = parse_iso_utc(raw["timestamp"])
+        source_item = ScoredItem(
+            item=RawItem(**raw),
+            **{k: v for k, v in data["source_item"].items() if k != "item"},
+        )
+        return cls(
+            title=data["title"],
+            date=date.fromisoformat(data["date"]),
+            source_item=source_item,
+            logline=data["logline"],
+            synopsis=Synopsis(**data["synopsis"]),
+            scenes=[SceneScript(**s) for s in data["scenes"]],
+            end_card_prompt=data["end_card_prompt"],
+            characters_used=data["characters_used"],
+        )
+
+
+@dataclass(slots=True)
+class ShotResult:
+    script_index: int
+    scene_number: int  # 0 = end_card
+    success: bool
+    output_path: Path | None
+    error: str | None
+
+
+@dataclass(slots=True)
+class ShotsManifest:
+    script_title: str
+    script_index: int
+    date: date
+    shots: list[ShotResult]
+
+    def to_dict(self) -> dict:
+        """Serialize to a JSON-compatible dict."""
+        return {
+            "script_title": self.script_title,
+            "script_index": self.script_index,
+            "date": self.date.isoformat(),
+            "shots": [
+                {
+                    "script_index": s.script_index,
+                    "scene_number": s.scene_number,
+                    "success": s.success,
+                    "output_path": str(s.output_path) if s.output_path else None,
+                    "error": s.error,
+                }
+                for s in self.shots
+            ],
+        }
