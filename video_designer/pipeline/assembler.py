@@ -11,17 +11,14 @@ logger = logging.getLogger(__name__)
 def assemble_script_video(
     clip_paths: list[Path],
     output_path: Path,
-    transition_duration: float = 0.3,
 ) -> Path:
-    """Concatenate scene clips with short glitch interstitials.
+    """Concatenate scene clips sequentially (no transitions).
 
-    Generates a brief glitch clip (color noise) and inserts it between each
-    scene clip using the ffmpeg concat demuxer.
+    Uses the ffmpeg concat demuxer for a seamless join.
 
     Args:
         clip_paths: Ordered list of scene MP4 paths.
         output_path: Where to save the concatenated video.
-        transition_duration: Glitch interstitial duration in seconds.
 
     Returns:
         The output_path on success.
@@ -29,21 +26,7 @@ def assemble_script_video(
     if not clip_paths:
         raise ValueError("assemble_script_video requires at least 1 clip")
 
-    if len(clip_paths) == 1:
-        _run_ffmpeg(
-            [
-                "ffmpeg",
-                "-y",
-                "-i",
-                str(clip_paths[0]),
-                "-c",
-                "copy",
-                str(output_path),
-            ]
-        )
-    else:
-        _concat_with_glitch(clip_paths, output_path, transition_duration, add_beep=False)
-
+    _simple_concat(clip_paths, output_path)
     logger.info("Script video assembled: %s", output_path)
     return output_path
 
@@ -136,6 +119,30 @@ def _concat_with_glitch(
                 "aac",
                 "-movflags",
                 "+faststart",
+                str(output_path),
+            ]
+        )
+
+
+def _simple_concat(paths: list[Path], output_path: Path) -> None:
+    """Concatenate clips sequentially using the concat demuxer."""
+    with tempfile.TemporaryDirectory() as tmpdir:
+        concat_file = Path(tmpdir) / "concat.txt"
+        lines = [f"file '{clip.resolve()}'" for clip in paths]
+        concat_file.write_text("\n".join(lines), encoding="utf-8")
+
+        _run_ffmpeg(
+            [
+                "ffmpeg",
+                "-y",
+                "-f",
+                "concat",
+                "-safe",
+                "0",
+                "-i",
+                str(concat_file),
+                "-c",
+                "copy",
                 str(output_path),
             ]
         )
