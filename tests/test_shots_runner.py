@@ -35,16 +35,14 @@ class TestShotsRunner:
     @pytest.mark.asyncio
     @patch("static_shots_maker.pipeline.runner.generate_image")
     @patch("static_shots_maker.pipeline.runner.generate_scene_prompt")
-    @patch("static_shots_maker.pipeline.runner.generate_end_card_prompt")
     @patch("static_shots_maker.pipeline.runner.anthropic")
     @patch("static_shots_maker.pipeline.runner.genai")
     async def test_generates_manifest(
-        self, mock_genai, mock_anthropic_mod, mock_end_card, mock_scene, mock_img, mock_settings
+        self, mock_genai, mock_anthropic_mod, mock_scene, mock_img, mock_settings
     ):
         mock_anthropic_mod.Anthropic.return_value = MagicMock()
         mock_genai.Client.return_value = MagicMock()
         mock_scene.return_value = "optimized scene prompt"
-        mock_end_card.return_value = "optimized end card prompt"
 
         def fake_generate_image(*args):
             output_path = args[1]
@@ -60,7 +58,7 @@ class TestShotsRunner:
         manifest = manifests[0]
         assert manifest.script_title == "Episode 1"
         assert manifest.script_index == 1
-        assert len(manifest.shots) == 2  # 1 scene + 1 end card
+        assert len(manifest.shots) == 1  # 1 scene (no end card)
 
         # Check manifest file written
         manifest_path = mock_settings.shots_output_dir / "2026-03-15_1" / "manifest.json"
@@ -68,7 +66,7 @@ class TestShotsRunner:
 
         data = json.loads(manifest_path.read_text())
         assert data["script_title"] == "Episode 1"
-        assert len(data["shots"]) == 2
+        assert len(data["shots"]) == 1
 
     @pytest.mark.asyncio
     async def test_requires_google_api_key(self):
@@ -79,21 +77,19 @@ class TestShotsRunner:
     @pytest.mark.asyncio
     @patch("static_shots_maker.pipeline.runner.generate_image")
     @patch("static_shots_maker.pipeline.runner.generate_scene_prompt")
-    @patch("static_shots_maker.pipeline.runner.generate_end_card_prompt")
     @patch("static_shots_maker.pipeline.runner.anthropic")
     @patch("static_shots_maker.pipeline.runner.genai")
     async def test_image_failure_recorded(
-        self, mock_genai, mock_anthropic_mod, mock_end_card, mock_scene, mock_img, mock_settings
+        self, mock_genai, mock_anthropic_mod, mock_scene, mock_img, mock_settings
     ):
         mock_anthropic_mod.Anthropic.return_value = MagicMock()
         mock_genai.Client.return_value = MagicMock()
         mock_scene.return_value = "prompt"
-        mock_end_card.return_value = "prompt"
         mock_img.side_effect = RuntimeError("Gemini failed")
 
         manifests = await run(settings=mock_settings, target_date=date(2026, 3, 15))
 
         assert len(manifests) == 1
         failed = [s for s in manifests[0].shots if not s.success]
-        assert len(failed) == 2  # both scene and end card failed
+        assert len(failed) == 1  # 1 scene failed (no end card)
         assert "Gemini failed" in failed[0].error

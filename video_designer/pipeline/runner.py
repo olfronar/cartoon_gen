@@ -16,7 +16,7 @@ from shared.models import ClipResult, VideoManifest
 
 from .assembler import assemble_final_video, assemble_script_video
 from .manifest_reader import ScriptWithShots, read_manifests
-from .prompt_generator import generate_end_card_video_prompt, generate_video_prompt
+from .prompt_generator import generate_video_prompt
 from .video_generator import generate_video
 
 logger = logging.getLogger(__name__)
@@ -143,36 +143,12 @@ async def _process_script(
             )
         )
 
-    # End card
-    end_card_path = shot_paths.get(0)
-    if end_card_path:
-        tasks.append(
-            _process_clip(
-                label="End card",
-                scene_number=0,
-                script_index=entry.index,
-                output_path=output_dir / "end_card.mp4",
-                image_path=end_card_path,
-                prompt_fn=lambda: generate_end_card_video_prompt(
-                    entry.script,
-                    context_block,
-                    anthropic_client,
-                    settings.video_prompt_model,
-                    settings.video_prompt_max_tokens,
-                ),
-                xai_client=xai_client,
-                semaphore=semaphore,
-                settings=settings,
-            )
-        )
-
     # Level 2: parallel across scenes
     clips = list(await asyncio.gather(*tasks))
 
-    # Assemble script video from successful clips
+    # Assemble script video from successful clips (sorted by scene number)
     successful = [c for c in clips if c.success and c.output_path]
-    # Sort: scenes first (by number), end card (0) last
-    successful.sort(key=lambda c: (c.scene_number == 0, c.scene_number))
+    successful.sort(key=lambda c: c.scene_number)
     clip_paths = [c.output_path for c in successful]
 
     script_video_path = None

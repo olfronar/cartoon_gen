@@ -108,13 +108,13 @@ def _concat_with_glitch(
         glitch_path = tmp / "glitch.mp4"
         _generate_glitch_clip(glitch_path, glitch_duration, width, height, fps, add_beep)
 
-        # Build concat list file
+        # Build concat list file (absolute paths since concat file is in temp dir)
         concat_file = tmp / "concat.txt"
         lines = []
         for i, clip in enumerate(paths):
-            lines.append(f"file '{clip}'")
+            lines.append(f"file '{clip.resolve()}'")
             if i < len(paths) - 1:
-                lines.append(f"file '{glitch_path}'")
+                lines.append(f"file '{glitch_path.resolve()}'")
         concat_file.write_text("\n".join(lines), encoding="utf-8")
 
         # Run concat demuxer

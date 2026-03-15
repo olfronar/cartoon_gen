@@ -15,7 +15,7 @@ from shared.context_loader import build_context_block, load_art_style, load_char
 from shared.models import CartoonScript, ShotResult, ShotsManifest
 
 from .image_generator import generate_image
-from .prompt_generator import generate_end_card_prompt, generate_scene_prompt
+from .prompt_generator import generate_scene_prompt
 from .script_reader import read_scripts
 
 logger = logging.getLogger(__name__)
@@ -88,7 +88,7 @@ async def _process_script(
 
     print(f"  Script {index}: {script.title}")
 
-    # Build tasks for all scenes + end card
+    # Build tasks for all scenes
     tasks = []
     for scene in script.scenes:
         tasks.append(
@@ -110,26 +110,6 @@ async def _process_script(
                 model=settings.shots_model,
             )
         )
-
-    # End card (scene_number=0)
-    tasks.append(
-        _process_shot(
-            label="End card",
-            scene_number=0,
-            script_index=index,
-            output_path=output_dir / "end_card.png",
-            prompt_fn=lambda: generate_end_card_prompt(
-                script,
-                context_block,
-                anthropic_client,
-                settings.shots_prompt_model,
-                settings.shots_prompt_max_tokens,
-            ),
-            gemini_client=gemini_client,
-            semaphore=semaphore,
-            model=settings.shots_model,
-        )
-    )
 
     # Level 2: parallel across scenes within a script
     shots = await asyncio.gather(*tasks)

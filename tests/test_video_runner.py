@@ -23,7 +23,6 @@ def _setup_fixtures(tmp_path: Path) -> Settings:
     shot_dir = shots_dir / "2026-03-15_1"
     shot_dir.mkdir(parents=True)
     (shot_dir / "scene_1.png").write_bytes(b"fake png")
-    (shot_dir / "end_card.png").write_bytes(b"fake png")
 
     manifest = ShotsManifest(
         script_title="Episode 1",
@@ -35,13 +34,6 @@ def _setup_fixtures(tmp_path: Path) -> Settings:
                 scene_number=1,
                 success=True,
                 output_path=shot_dir / "scene_1.png",
-                error=None,
-            ),
-            ShotResult(
-                script_index=1,
-                scene_number=0,
-                success=True,
-                output_path=shot_dir / "end_card.png",
                 error=None,
             ),
         ],
@@ -69,14 +61,12 @@ class TestVideoRunner:
     @patch("video_designer.pipeline.runner.assemble_script_video")
     @patch("video_designer.pipeline.runner.generate_video")
     @patch("video_designer.pipeline.runner.generate_video_prompt")
-    @patch("video_designer.pipeline.runner.generate_end_card_video_prompt")
     @patch("video_designer.pipeline.runner.xai_sdk")
     @patch("video_designer.pipeline.runner.anthropic")
     async def test_produces_manifest(
         self,
         mock_anthropic,
         mock_xai,
-        mock_end_prompt,
         mock_scene_prompt,
         mock_gen_video,
         mock_assemble_script,
@@ -88,7 +78,6 @@ class TestVideoRunner:
         mock_anthropic.Anthropic.return_value = MagicMock()
         mock_xai.Client.return_value = MagicMock()
         mock_scene_prompt.return_value = "video prompt"
-        mock_end_prompt.return_value = "end card prompt"
 
         def fake_generate_video(*args, **kwargs):
             output_path = kwargs.get("output_path") or args[2]
@@ -98,7 +87,8 @@ class TestVideoRunner:
 
         mock_gen_video.side_effect = fake_generate_video
 
-        def fake_assemble(clips_or_scripts, out, **kw):
+        def fake_assemble(*args):
+            out = args[1]
             out.parent.mkdir(parents=True, exist_ok=True)
             out.write_bytes(b"assembled mp4")
             return out
@@ -113,7 +103,7 @@ class TestVideoRunner:
         assert manifest_path.exists()
         data = json.loads(manifest_path.read_text())
         assert data["script_title"] == "Episode 1"
-        assert len(data["clips"]) == 2
+        assert len(data["clips"]) == 1  # 1 scene (no end card)
 
     @pytest.mark.asyncio
     async def test_requires_xai_api_key(self):
