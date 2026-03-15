@@ -49,14 +49,6 @@ class TestGenerateImage:
         assert output_path.read_bytes() == data
         client.models.generate_content_stream.assert_called_once()
 
-    def test_creates_parent_dirs(self, tmp_path):
-        """Creates parent directories if needed."""
-        output_path = tmp_path / "sub" / "dir" / "scene_1.png"
-        client = _mock_client_with_image(b"data")
-
-        generate_image("prompt", output_path, client, MODEL)
-        assert output_path.exists()
-
     def test_raises_on_no_image(self, tmp_path):
         """Raises RuntimeError when Gemini returns no image data."""
         output_path = tmp_path / "scene_1.png"

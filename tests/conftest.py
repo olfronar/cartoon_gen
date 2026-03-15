@@ -1,8 +1,10 @@
 from __future__ import annotations
 
+import json
 from datetime import date, datetime, timezone
+from pathlib import Path
 
-from shared.models import ComedyBrief, RawItem, ScoredItem
+from shared.models import CartoonScript, ComedyBrief, RawItem, SceneScript, ScoredItem, Synopsis
 
 
 def make_raw_item(
@@ -56,3 +58,46 @@ def make_brief(
         top_picks=top_picks or [],
         also_notable=also_notable or [],
     )
+
+
+def make_scene(**overrides) -> SceneScript:
+    defaults = dict(
+        scene_number=1,
+        scene_title="Opening",
+        setting="Kitchen",
+        scene_prompt="A robot chef stands in a modern kitchen.",
+        dialogue=[{"character": "Bot", "line": "Hello!"}],
+        visual_gag="robot drops pan",
+        audio_direction="upbeat music",
+        duration_seconds=5,
+        camera_movement="slow zoom in",
+    )
+    defaults.update(overrides)
+    return SceneScript(**defaults)
+
+
+def make_script(**overrides) -> CartoonScript:
+    defaults = dict(
+        title="Test Episode",
+        date=date(2026, 3, 14),
+        source_item=make_scored_item(),
+        logline="A robot learns to cook",
+        synopsis=Synopsis(
+            setup="s",
+            escalation="e",
+            punchline="p",
+            estimated_scenes=2,
+            key_visual_gags=["gag"],
+        ),
+        scenes=[make_scene()],
+        end_card_prompt="Show logo with confetti",
+        characters_used=["Bot"],
+    )
+    defaults.update(overrides)
+    return CartoonScript(**defaults)
+
+
+def write_script_json(directory: Path, date_str: str, index: int, title: str = "Test") -> None:
+    script = make_script(title=title, date=date.fromisoformat(date_str))
+    path = directory / f"{date_str}_{index}.json"
+    path.write_text(json.dumps(script.to_dict()), encoding="utf-8")

@@ -3,6 +3,7 @@ from __future__ import annotations
 import asyncio
 import json
 import logging
+from collections.abc import Callable
 from datetime import date
 from pathlib import Path
 
@@ -91,31 +92,42 @@ async def _process_script(
     tasks = []
     for scene in script.scenes:
         tasks.append(
-            _process_scene(
+            _process_shot(
+                label=f"Scene {scene.scene_number}",
                 scene_number=scene.scene_number,
-                script=script,
                 script_index=index,
-                scene=scene,
-                context_block=context_block,
-                anthropic_client=anthropic_client,
+                output_path=output_dir / f"scene_{scene.scene_number}.png",
+                prompt_fn=lambda s=scene: generate_scene_prompt(
+                    s,
+                    script,
+                    context_block,
+                    anthropic_client,
+                    settings.shots_prompt_model,
+                    settings.shots_prompt_max_tokens,
+                ),
                 gemini_client=gemini_client,
                 semaphore=semaphore,
-                output_dir=output_dir,
-                settings=settings,
+                model=settings.shots_model,
             )
         )
 
     # End card (scene_number=0)
     tasks.append(
-        _process_end_card(
-            script=script,
+        _process_shot(
+            label="End card",
+            scene_number=0,
             script_index=index,
-            context_block=context_block,
-            anthropic_client=anthropic_client,
+            output_path=output_dir / "end_card.png",
+            prompt_fn=lambda: generate_end_card_prompt(
+                script,
+                context_block,
+                anthropic_client,
+                settings.shots_prompt_model,
+                settings.shots_prompt_max_tokens,
+            ),
             gemini_client=gemini_client,
             semaphore=semaphore,
-            output_dir=output_dir,
-            settings=settings,
+            model=settings.shots_model,
         )
     )
 
@@ -140,45 +152,26 @@ async def _process_script(
     return manifest
 
 
-async def _process_scene(
+async def _process_shot(
+    label: str,
     scene_number: int,
-    script: CartoonScript,
     script_index: int,
-    scene,
-    context_block: str,
-    anthropic_client,
+    output_path: Path,
+    prompt_fn: Callable[[], str],
     gemini_client,
     semaphore: asyncio.Semaphore,
-    output_dir: Path,
-    settings: Settings,
+    model: str,
 ) -> ShotResult:
-    """Generate a single scene shot."""
-    output_path = output_dir / f"scene_{scene_number}.png"
-
+    """Generate a single shot (scene or end card)."""
     try:
-        # Step 1: Rewrite prompt via Claude (or fallback)
-        if anthropic_client:
-            image_prompt = await asyncio.to_thread(
-                generate_scene_prompt,
-                scene,
-                script,
-                context_block,
-                anthropic_client,
-                settings.shots_prompt_model,
-                settings.shots_prompt_max_tokens,
-            )
-        else:
-            from .prompt_generator import _fallback_strip
+        # Step 1: Rewrite prompt via Claude (falls back to regex internally)
+        image_prompt = await asyncio.to_thread(prompt_fn)
 
-            image_prompt = _fallback_strip(scene.scene_prompt)
-
-        # Step 2: Generate image via Imagen (with semaphore)
+        # Step 2: Generate image via Gemini (with semaphore)
         async with semaphore:
-            await asyncio.to_thread(
-                generate_image, image_prompt, output_path, gemini_client, settings.shots_model
-            )
+            await asyncio.to_thread(generate_image, image_prompt, output_path, gemini_client, model)
 
-        print(f"    Scene {scene_number}: OK")
+        print(f"    {label}: OK")
         return ShotResult(
             script_index=script_index,
             scene_number=scene_number,
@@ -187,64 +180,11 @@ async def _process_scene(
             error=None,
         )
     except Exception as e:
-        logger.exception("Failed to generate scene %d for script %d", scene_number, script_index)
-        print(f"    Scene {scene_number}: FAILED ({e})")
+        logger.exception("Failed to generate %s for script %d", label, script_index)
+        print(f"    {label}: FAILED ({e})")
         return ShotResult(
             script_index=script_index,
             scene_number=scene_number,
-            success=False,
-            output_path=None,
-            error=str(e),
-        )
-
-
-async def _process_end_card(
-    script: CartoonScript,
-    script_index: int,
-    context_block: str,
-    anthropic_client,
-    gemini_client,
-    semaphore: asyncio.Semaphore,
-    output_dir: Path,
-    settings: Settings,
-) -> ShotResult:
-    """Generate the end card shot."""
-    output_path = output_dir / "end_card.png"
-
-    try:
-        if anthropic_client:
-            image_prompt = await asyncio.to_thread(
-                generate_end_card_prompt,
-                script,
-                context_block,
-                anthropic_client,
-                settings.shots_prompt_model,
-                settings.shots_prompt_max_tokens,
-            )
-        else:
-            from .prompt_generator import _fallback_strip
-
-            image_prompt = _fallback_strip(script.end_card_prompt)
-
-        async with semaphore:
-            await asyncio.to_thread(
-                generate_image, image_prompt, output_path, gemini_client, settings.shots_model
-            )
-
-        print("    End card: OK")
-        return ShotResult(
-            script_index=script_index,
-            scene_number=0,
-            success=True,
-            output_path=output_path,
-            error=None,
-        )
-    except Exception as e:
-        logger.exception("Failed to generate end card for script %d", script_index)
-        print(f"    End card: FAILED ({e})")
-        return ShotResult(
-            script_index=script_index,
-            scene_number=0,
             success=False,
             output_path=None,
             error=str(e),

@@ -79,6 +79,8 @@ ruff format .
 
 Pre-commit hooks run ruff (lint + format) and pytest on every commit.
 
+Test object factories (`make_raw_item`, `make_scored_item`, `make_script`, etc.) live in `tests/conftest.py` — never duplicate these across test files.
+
 ### Running Agents
 
 ```bash
@@ -119,9 +121,11 @@ Required for static shots: `GOOGLE_API_KEY` (Gemini image generation). Optional:
 - ISO timestamps with `Z` suffix: use `parse_iso_utc()` from `shared/utils.py`
 - Constants, lookup dicts, and compiled regexes belong at module level, not inside functions
 - Each piece of logic has one owner module — if a second copy appears, extract to `shared/`
+- Error handling and resource setup (fallback logic, directory creation) belong in the module that owns the operation — callers should not duplicate these concerns
 - LLM calls: use `call_llm_json(client, prompt, model, max_tokens)` from `shared/utils.py` — handles streaming, text extraction, code fence stripping, and JSON parsing. Use `call_llm_text()` for raw text responses. Create a single `anthropic.Anthropic` client per pipeline run and pass it through.
 - LLM response text extraction: use `extract_text(response)` from `shared/utils.py` for non-JSON responses
 - Context loading: use `shared/context_loader.py` for loading characters + art style (shared by script_writer and static_shots_maker)
+- Dataclass serialization: use `asdict()` with post-processing for non-serializable fields (dates, Paths). Never hand-build the dict — fields added later would be silently dropped
 
 ## Agent Researcher Internals
 

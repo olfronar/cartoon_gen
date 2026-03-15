@@ -63,4 +63,4 @@ def _find_latest_script_date(scripts_dir: Path) -> date:
     if not dates:
         raise FileNotFoundError(f"No script JSON files found in {scripts_dir}")
 
-    return date.fromisoformat(sorted(dates)[-1])
+    return date.fromisoformat(max(dates))

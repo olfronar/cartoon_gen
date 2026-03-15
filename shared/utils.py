@@ -33,28 +33,8 @@ def extract_text(response) -> str:
     return "".join(block.text for block in response.content if block.type == "text")
 
 
-def call_llm_json(client, prompt: str, model: str, max_tokens: int) -> dict | list:
-    """Call Claude with streaming + adaptive thinking, return parsed JSON.
-
-    Raises on API or parse failure (caller decides fallback policy).
-    """
-    import json
-
-    with client.messages.stream(
-        model=model,
-        max_tokens=max_tokens,
-        thinking={"type": "adaptive"},
-        temperature=1,
-        messages=[{"role": "user", "content": prompt}],
-    ) as stream:
-        response = stream.get_final_message()
-
-    text = strip_code_fences(extract_text(response))
-    return json.loads(text)
-
-
-def call_llm_text(client, prompt: str, model: str, max_tokens: int) -> str:
-    """Call Claude with streaming + adaptive thinking, return raw text.
+def _call_llm(client, prompt: str, model: str, max_tokens: int):
+    """Call Claude with streaming + adaptive thinking, return raw response.
 
     Raises on API failure (caller decides fallback policy).
     """
@@ -65,6 +45,23 @@ def call_llm_text(client, prompt: str, model: str, max_tokens: int) -> str:
         temperature=1,
         messages=[{"role": "user", "content": prompt}],
     ) as stream:
-        response = stream.get_final_message()
+        return stream.get_final_message()
 
-    return extract_text(response)
+
+def call_llm_json(client, prompt: str, model: str, max_tokens: int) -> dict | list:
+    """Call Claude with streaming + adaptive thinking, return parsed JSON.
+
+    Raises on API or parse failure (caller decides fallback policy).
+    """
+    import json
+
+    text = strip_code_fences(extract_text(_call_llm(client, prompt, model, max_tokens)))
+    return json.loads(text)
+
+
+def call_llm_text(client, prompt: str, model: str, max_tokens: int) -> str:
+    """Call Claude with streaming + adaptive thinking, return raw text.
+
+    Raises on API failure (caller decides fallback policy).
+    """
+    return extract_text(_call_llm(client, prompt, model, max_tokens))

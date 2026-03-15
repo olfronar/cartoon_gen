@@ -2,59 +2,20 @@ from __future__ import annotations
 
 import json
 from datetime import date
-from pathlib import Path
 from unittest.mock import MagicMock, patch
 
 import pytest
 
 from shared.config import Settings
-from shared.models import CartoonScript, SceneScript, Synopsis
 from static_shots_maker.pipeline.runner import run
-from tests.conftest import make_scored_item
-
-
-def _make_script(title: str = "Test", d: date = date(2026, 3, 15)) -> CartoonScript:
-    return CartoonScript(
-        title=title,
-        date=d,
-        source_item=make_scored_item(),
-        logline="test",
-        synopsis=Synopsis(
-            setup="s",
-            escalation="e",
-            punchline="p",
-            estimated_scenes=1,
-            key_visual_gags=[],
-        ),
-        scenes=[
-            SceneScript(
-                scene_number=1,
-                scene_title="S1",
-                setting="Lab",
-                scene_prompt="A robot.",
-                dialogue=[],
-                visual_gag=None,
-                audio_direction="silence",
-                duration_seconds=5,
-                camera_movement="static",
-            ),
-        ],
-        end_card_prompt="logo",
-        characters_used=["Bot"],
-    )
-
-
-def _write_script(scripts_dir: Path, d: str, index: int, title: str = "Test") -> None:
-    script = _make_script(title=title, d=date.fromisoformat(d))
-    path = scripts_dir / f"{d}_{index}.json"
-    path.write_text(json.dumps(script.to_dict()), encoding="utf-8")
+from tests.conftest import write_script_json
 
 
 @pytest.fixture
 def mock_settings(tmp_path):
     scripts_dir = tmp_path / "scripts"
     scripts_dir.mkdir()
-    _write_script(scripts_dir, "2026-03-15", 1, title="Episode 1")
+    write_script_json(scripts_dir, "2026-03-15", 1, title="Episode 1")
 
     chars_dir = tmp_path / "characters"
     chars_dir.mkdir()

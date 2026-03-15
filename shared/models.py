@@ -53,17 +53,21 @@ class ComedyBrief:
         )
 
 
-def _deserialize_scored_items(entries: list[dict]) -> list[ScoredItem]:
-    """Deserialize a list of ScoredItem dicts from JSON."""
+def _deserialize_scored_item(entry: dict) -> ScoredItem:
+    """Deserialize a single ScoredItem dict from JSON."""
     from shared.utils import parse_iso_utc
 
-    result = []
-    for entry in entries:
-        raw = entry["item"]
-        raw["timestamp"] = parse_iso_utc(raw["timestamp"])
-        scored_fields = {k: v for k, v in entry.items() if k != "item"}
-        result.append(ScoredItem(item=RawItem(**raw), **scored_fields))
-    return result
+    raw = entry["item"]
+    raw["timestamp"] = parse_iso_utc(raw["timestamp"])
+    return ScoredItem(
+        item=RawItem(**raw),
+        **{k: v for k, v in entry.items() if k != "item"},
+    )
+
+
+def _deserialize_scored_items(entries: list[dict]) -> list[ScoredItem]:
+    """Deserialize a list of ScoredItem dicts from JSON."""
+    return [_deserialize_scored_item(e) for e in entries]
 
 
 # --- Script Writer models ---
@@ -120,18 +124,10 @@ class CartoonScript:
     @classmethod
     def from_dict(cls, data: dict) -> CartoonScript:
         """Deserialize from a JSON-compatible dict."""
-        from shared.utils import parse_iso_utc
-
-        raw = data["source_item"]["item"]
-        raw["timestamp"] = parse_iso_utc(raw["timestamp"])
-        source_item = ScoredItem(
-            item=RawItem(**raw),
-            **{k: v for k, v in data["source_item"].items() if k != "item"},
-        )
         return cls(
             title=data["title"],
             date=date.fromisoformat(data["date"]),
-            source_item=source_item,
+            source_item=_deserialize_scored_item(data["source_item"]),
             logline=data["logline"],
             synopsis=Synopsis(**data["synopsis"]),
             scenes=[SceneScript(**s) for s in data["scenes"]],
@@ -158,18 +154,9 @@ class ShotsManifest:
 
     def to_dict(self) -> dict:
         """Serialize to a JSON-compatible dict."""
-        return {
-            "script_title": self.script_title,
-            "script_index": self.script_index,
-            "date": self.date.isoformat(),
-            "shots": [
-                {
-                    "script_index": s.script_index,
-                    "scene_number": s.scene_number,
-                    "success": s.success,
-                    "output_path": str(s.output_path) if s.output_path else None,
-                    "error": s.error,
-                }
-                for s in self.shots
-            ],
-        }
+        data = asdict(self)
+        data["date"] = self.date.isoformat()
+        for shot in data["shots"]:
+            path = shot["output_path"]
+            shot["output_path"] = str(path) if path else None
+        return data

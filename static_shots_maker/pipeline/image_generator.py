@@ -3,6 +3,8 @@ from __future__ import annotations
 import logging
 from pathlib import Path
 
+from google.genai import types
+
 logger = logging.getLogger(__name__)
 
 
@@ -10,6 +12,7 @@ def generate_image(prompt: str, output_path: Path, client, model: str) -> Path:
     """Generate a 9:16 PNG image via Gemini and save to output_path.
 
     Uses generate_content_stream with IMAGE response modality.
+    Caller must ensure output_path's parent directory exists.
 
     Args:
         prompt: Image generation prompt text.
@@ -23,8 +26,6 @@ def generate_image(prompt: str, output_path: Path, client, model: str) -> Path:
     Raises:
         RuntimeError: If image generation fails or returns no image data.
     """
-    from google.genai import types
-
     contents = [
         types.Content(
             role="user",
@@ -53,8 +54,6 @@ def generate_image(prompt: str, output_path: Path, client, model: str) -> Path:
     if not image_data:
         raise RuntimeError("Gemini returned no image data")
 
-    output_path.parent.mkdir(parents=True, exist_ok=True)
     output_path.write_bytes(image_data)
-
     logger.info("Saved image: %s", output_path)
     return output_path
