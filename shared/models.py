@@ -160,3 +160,36 @@ class ShotsManifest:
             path = shot["output_path"]
             shot["output_path"] = str(path) if path else None
         return data
+
+
+# --- Video Designer models ---
+
+
+@dataclass(slots=True)
+class ClipResult:
+    script_index: int
+    scene_number: int  # 0 = end_card
+    success: bool
+    output_path: Path | None
+    duration_seconds: float | None
+    error: str | None
+
+
+@dataclass(slots=True)
+class VideoManifest:
+    script_title: str
+    script_index: int
+    date: date
+    clips: list[ClipResult]
+    script_video_path: Path | None
+
+    def to_dict(self) -> dict:
+        """Serialize to a JSON-compatible dict."""
+        data = asdict(self)
+        data["date"] = self.date.isoformat()
+        for clip in data["clips"]:
+            path = clip["output_path"]
+            clip["output_path"] = str(path) if path else None
+        svp = data["script_video_path"]
+        data["script_video_path"] = str(svp) if svp else None
+        return data
