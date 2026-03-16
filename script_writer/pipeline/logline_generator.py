@@ -38,6 +38,7 @@ def generate_loglines(
             approach=entry["approach"],
             featured_characters=entry.get("featured_characters", []),
             visual_hook=entry.get("visual_hook", ""),
+            news_essence=entry.get("news_essence", ""),
         )
         for entry in data
     ]

@@ -31,6 +31,7 @@ def generate_synopsis(
         logline=logline.text,
         title=item.item.title,
         comedy_angle=item.comedy_angle,
+        snippet=item.item.snippet,
     )
 
     data = call_llm_json(client, prompt, model, max_tokens)
@@ -41,6 +42,7 @@ def generate_synopsis(
         punchline=data["punchline"],
         estimated_scenes=int(data.get("estimated_scenes", 3)),
         key_visual_gags=data.get("key_visual_gags", []),
+        news_explanation=data.get("news_explanation", ""),
     )
 
 
@@ -65,6 +67,9 @@ def expand_script(
         punchline=synopsis.punchline,
         visual_gags=", ".join(synopsis.key_visual_gags),
         num_scenes=synopsis.estimated_scenes,
+        comedy_angle=item.comedy_angle,
+        snippet=item.item.snippet,
+        news_explanation=synopsis.news_explanation,
     )
 
     data = call_llm_json(client, prompt, model, max_tokens)

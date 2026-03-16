@@ -22,10 +22,12 @@ def generate_video(
     """Generate a video from a static shot via Veo 3.1 (google-genai).
 
     Uses image-to-video generation with the static shot as the first frame.
-    Optionally provides next scene's static shot as last_frame for interpolation,
-    and reference images for character/style consistency.
+    Optionally provides next scene's static shot as last_frame for interpolation.
 
-    Falls back gracefully if features are mutually exclusive in the API.
+    Note: reference_images is accepted for interface compatibility but ignored —
+    Veo 3.1 does not support RawReferenceImage for video generation.
+
+    Falls back gracefully if last_frame is rejected by the API.
 
     Args:
         prompt: Video generation prompt text.
@@ -35,7 +37,7 @@ def generate_video(
         model: Veo model name (e.g. "veo-3.1-fast-generate-preview").
         duration: Video duration in seconds.
         next_scene_image: Optional path to next scene's static shot (last frame).
-        reference_images: Optional list of reference image Paths (characters, style).
+        reference_images: Ignored (Veo 3.1 doesn't support reference images for video).
 
     Returns:
         The output_path on success.
@@ -44,43 +46,33 @@ def generate_video(
         RuntimeError: If video generation fails.
     """
     source_image_bytes = image_path.read_bytes()
-    source_image = types.Image.from_bytes(data=source_image_bytes, mime_type="image/png")
+    source_image = types.Image(image_bytes=source_image_bytes, mime_type="image/png")
 
     last_frame = None
     if next_scene_image:
         try:
             last_frame_bytes = next_scene_image.read_bytes()
-            last_frame = types.Image.from_bytes(data=last_frame_bytes, mime_type="image/png")
+            last_frame = types.Image(image_bytes=last_frame_bytes, mime_type="image/png")
         except FileNotFoundError:
             logger.warning("Next scene image not found: %s", next_scene_image)
 
-    ref_images = None
-    if reference_images:
-        ref_images = []
-        for ref_path in reference_images:
-            ref_bytes = ref_path.read_bytes()
-            ref_images.append(
-                types.RawReferenceImage(
-                    reference_image=types.Image.from_bytes(data=ref_bytes, mime_type="image/png"),
-                    reference_id=ref_path.stem,
-                )
-            )
-
-    # Fallback chain: try most features first, degrade if API rejects
-    strategies = _build_strategies(source_image, last_frame, ref_images, prompt, duration, model)
+    # Fallback chain: try with last_frame first, degrade to image-only
+    strategies = _build_strategies(source_image, last_frame, prompt, duration, model)
 
     operation = None
+    last_error = None
     for strategy_name, config_kwargs in strategies:
         try:
             operation = client.models.generate_videos(**config_kwargs)
             logger.info("Video generation started with strategy: %s", strategy_name)
             break
-        except Exception:
-            logger.warning("Strategy '%s' failed, trying next fallback", strategy_name)
+        except Exception as exc:
+            last_error = exc
+            logger.warning("Strategy '%s' failed: %s", strategy_name, exc)
             continue
 
     if operation is None:
-        raise RuntimeError("All video generation strategies failed")
+        raise RuntimeError(f"All video generation strategies failed: {last_error}")
 
     # Poll until complete
     while not operation.done:
@@ -98,9 +90,7 @@ def generate_video(
     return output_path
 
 
-def _build_strategies(
-    source_image, last_frame, ref_images, prompt, duration, model
-) -> list[tuple[str, dict]]:
+def _build_strategies(source_image, last_frame, prompt, duration, model) -> list[tuple[str, dict]]:
     """Build ordered list of generation strategies with decreasing feature richness."""
     base_video_config = {
         "aspect_ratio": "9:16",
@@ -109,17 +99,8 @@ def _build_strategies(
 
     # (name, condition, extra config fields)
     candidates = [
-        (
-            "full",
-            last_frame and ref_images,
-            {
-                "last_frame": last_frame,
-                "reference_images": ref_images,
-            },
-        ),
-        ("source+last_frame", last_frame, {"last_frame": last_frame}),
-        ("source+refs", ref_images, {"reference_images": ref_images}),
-        ("source_only", True, {}),
+        ("image+last_frame", last_frame, {"last_frame": last_frame}),
+        ("image_only", True, {}),
     ]
 
     strategies = []
@@ -132,7 +113,7 @@ def _build_strategies(
                 {
                     "model": model,
                     "prompt": prompt,
-                    "source": {"image": source_image},
+                    "image": source_image,
                     "config": {**base_video_config, **extras},
                 },
             )

@@ -65,13 +65,6 @@ class TestLoadArtMaterials:
         assert len(materials) == 1
         assert "canonical_characters" in materials
 
-    def test_partial_materials(self, tmp_path):
-        (tmp_path / "canonical_characters.png").write_bytes(b"fake")
-
-        materials = load_art_materials(tmp_path)
-        assert len(materials) == 1
-        assert "canonical_characters" in materials
-
     def test_missing_directory(self, tmp_path):
         materials = load_art_materials(tmp_path / "nonexistent")
         assert materials == {}

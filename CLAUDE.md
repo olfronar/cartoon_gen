@@ -63,7 +63,7 @@ Dependencies are managed in `pyproject.toml` (not requirements.txt).
 Always use `.venv/bin/` prefixed commands (not `source .venv/bin/activate && ...`) — the direct binary paths are pre-approved in permission settings and won't prompt for approval.
 
 ```bash
-# Run all tests (182 tests)
+# Run all tests (181 tests)
 .venv/bin/pytest tests/ -v
 
 # Run a single test file
@@ -183,7 +183,7 @@ Pipeline: brief JSON ingestion → parallel logline generation + selection (all 
 - **Logline selector** (`pipeline/logline_selector.py`): Selects best 1 of 3 per item. Falls back to first logline on error.
 - **Script expander** (`pipeline/script_expander.py`): Two-step: synopsis → full script. All 5 items run in parallel via `asyncio.gather()`.
 - **Renderer** (`pipeline/renderer.py`): `CartoonScript` → `.md` (human-readable) + `.json` (machine-readable for static_shots_maker).
-- **Prompts** (`prompts.py`): All prompt templates. Shared humor preamble establishes the field-correspondent show format and three comedy traditions.
+- **Prompts** (`prompts.py`): All prompt templates. Shared humor preamble establishes the field-correspondent show format, news-explanatory comedy core promise, and three comedy traditions. Prompts emphasize dialogue as the primary vehicle for exposition + humor; `comedy_angle`, `snippet`, and `news_explanation` are passed through to the script expansion stage so the LLM never loses the factual news context.
 - **Runner** (`pipeline/runner.py`): Async orchestrator for the full pipeline.
 
 ### Setup tool
@@ -196,7 +196,7 @@ Pipeline: brief JSON ingestion → parallel logline generation + selection (all 
 ### Output
 
 - `output/scripts/<YYYY-MM-DD>_<N>.md` + `.json` — one pair per top pick (N = 1-5).
-- Scene prompts: 50-150 words, affirmative only, front-loaded key visuals, with dialogue quoted inline for Veo 3.1 audio generation. Duration fixed at 8 seconds. Emphasis on visual comedy over dialogue. Scenes are set at the news story location (field reporting format), not in a studio.
+- Scene prompts: 50-150 words, affirmative only, front-loaded key visuals, with dialogue quoted inline for Veo 3.1 audio generation. Duration fixed at 8 seconds. Dialogue is the primary vehicle for both comedy and exposition (2-3 lines per scene). Scenes are set at the news story location (field reporting format), not in a studio.
 
 ## Static Shots Maker Internals
 

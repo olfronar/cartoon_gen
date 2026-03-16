@@ -3,8 +3,13 @@ from __future__ import annotations
 HUMOR_PREAMBLE = """\
 You are a comedy writer for an animated field-report cartoon series. The show's \
 format: the characters go directly to the epicenter of each news story as field \
-correspondents, reporting live from the scene — never from a studio. Your scripts \
-blend three comedy traditions:
+correspondents, reporting live from the scene — never from a studio. The show's \
+core promise: every episode explains a real news story. A viewer who has never \
+heard the headline should understand what happened by the end. The comedy comes \
+from HOW the characters explain the news — through systems-thinking analogies, \
+absurd-but-accurate metaphors, and the reactions of people at the scene. The news \
+IS the comedy; the script makes the truth funnier than fiction, not replace it \
+with fiction. Your scripts blend three comedy traditions:
 
 1. **Absurdist character comedy** (Каламбур style): Recurring characters with \
 exaggerated fixed traits. Physical comedy. Characters oblivious to their own \
@@ -45,10 +50,17 @@ For each logline, include:
 - `featured_characters`: list of character names from the profiles above that appear
 - `visual_hook`: one key visual moment that would make a great video scene
 
+Each logline must contain enough information that someone unfamiliar with this \
+headline understands the basic story. The comedic premise should arise from the \
+real news — not replace it with an unrelated scenario.
+
 The characters are field correspondents — every logline must place them \
 physically at the scene of the news story, not in a studio.
 
-Return as a JSON array of 3 objects with keys: text, approach, featured_characters, visual_hook.
+Return as a JSON array of 3 objects with keys: text, approach, featured_characters, \
+visual_hook, news_essence.
+- `news_essence`: 1-2 sentences capturing what actually happened in the real world \
+(just the facts, no comedy).
 """
 
 LOGLINE_SELECTION_PROMPT = """\
@@ -68,10 +80,11 @@ Here are 3 candidate loglines:
 {loglines_formatted}
 
 Select the BEST one. Criteria (in order of importance):
-1. **Comedy strength** — is it genuinely funny? Does it have a clear comedic engine?
-2. **Character fit** — does it use the characters naturally, leveraging their traits?
-3. **Visual potential** — can this be made into compelling video scenes?
-4. **Originality** — does it avoid obvious/cliché approaches?
+1. **News clarity** — does the logline make the underlying news story understandable?
+2. **Comedy strength** — is it genuinely funny? Does it have a clear comedic engine?
+3. **Character fit** — does it use the characters naturally, leveraging their traits?
+4. **Visual potential** — can this be made into compelling video scenes?
+5. **Originality** — does it avoid obvious/cliché approaches?
 
 Return a JSON object with:
 - `selected_index`: 0, 1, or 2 (which logline to use)
@@ -90,19 +103,27 @@ Write a synopsis for this cartoon episode:
 **Logline**: {logline}
 **News source**: {title}
 **Comedy angle**: {comedy_angle}
+**News snippet**: {snippet}
 
 Structure the synopsis in three acts:
-- **setup**: The characters arrive at the scene (or are already there) — establish the \
-location, why they're reporting, and what's about to go wrong
-- **escalation**: Events unfold around them while they try to report — the comedic \
-complication spirals (2-3 escalating beats)
-- **punchline**: The climax and resolution (the biggest laugh, then a quick landing)
+- **setup**: Establish the news — what happened, who's involved. Billy arrives and \
+begins explaining the situation through dialogue with people at the scene. Viewer \
+understands the basic facts by end of this act.
+- **escalation**: Now that the viewer understands, push the real implications to their \
+logical-but-absurd extreme. One escalating beat.
+- **punchline**: Land a comedic insight that reframes how the viewer thinks about the news.
+
+This synopsis becomes 2-3 scenes of 8 seconds each (16-24 total). Each act = \
+2-3 sentences, not paragraphs. Think sketch-comedy cold open.
 
 Also provide:
 - **estimated_scenes**: how many scenes (2-3) this needs
 - **key_visual_gags**: list of 2-3 specific visual comedy moments
+- **news_explanation**: in 2-3 sentences, what is the real-world news story this \
+episode explains?
 
-Return as JSON with keys: setup, escalation, punchline, estimated_scenes, key_visual_gags.
+Return as JSON with keys: setup, escalation, punchline, estimated_scenes, \
+key_visual_gags, news_explanation.
 """
 
 SCRIPT_EXPANSION_PROMPT = """\
@@ -116,6 +137,9 @@ Write the full script for this cartoon episode.
 
 **Title**: {title}
 **Logline**: {logline}
+**Comedy angle**: {comedy_angle}
+**News snippet**: {snippet}
+**News explanation**: {news_explanation}
 **Synopsis**:
 - Setup: {setup}
 - Escalation: {escalation}
@@ -124,16 +148,25 @@ Write the full script for this cartoon episode.
 **Key visual gags to include**: {visual_gags}
 
 **CREATIVE DIRECTION**:
+- Every episode is a news explainer. Scene 1 must establish what happened. By \
+the end, the viewer understands: who did what, why it matters, why it's absurd.
 - The characters are field correspondents reporting from the scene. Every scene \
 is set AT the location of the news story — streets, labs, server rooms, launch \
-pads, conference halls, etc. The comedy comes from the contrast between \
-professional reporting and the chaos unfolding around them.
+pads, conference halls, etc.
 - Keep the plot simple and direct. One clear comedic premise, escalated once, \
-resolved with a visual punchline.
-- Prioritize VISUAL comedy beats over dialogue. Every scene must have a clear \
-visual gag or physical comedy moment that works with zero sound.
-- Dialogue should be minimal, punchy, and edgy — at most 1-2 short lines per \
-scene. If the comedy works visually, omit dialogue entirely.
+resolved with an insight that reframes the news.
+- Dialogue is the primary vehicle for both comedy and exposition. Billy explains \
+through conversation — with bystanders, officials, confused participants, or to \
+camera. His systems-thinking analogies make complex stories accessible. People at \
+the scene react, push back, misunderstand.
+- Aim for 2-3 dialogue lines per scene. Each line must be short enough to speak \
+in 1-2 seconds (8-second scenes). Dialogue should feel like actual people talking \
+— reactions, interruptions — not standalone aphorisms.
+- Visual comedy enhances dialogue, doesn't replace it. The gap between what Billy \
+calmly explains and what the viewer sees behind him IS the comedy.
+- Scene structure: Scene 1 = news setup (what happened), Scene 2 = absurd \
+escalation (real implications pushed to extreme), Scene 3 = comedic reframe \
+(Billy's closing insight).
 - When dialogue IS included, write it as spoken lines with character attribution \
 — the video model generates audio natively from quoted dialogue in scene_prompt.
 
@@ -151,7 +184,9 @@ Affirmative descriptions ONLY — no negative prompts (never say "no", "without"
 Include character visual details from profiles (clothing, colors, features). \
 If the scene has dialogue, include it as quoted speech with character attribution \
 directly in the prompt (e.g. '[Character] says: "[line]"').
-- `dialogue`: array of objects with "character" and "line" keys (can be empty array)
+- `dialogue`: array of objects with "character" and "line" keys. Aim for 2-3 \
+lines per scene with conversational flow — Billy explaining + reactions from \
+people at the scene.
 - `visual_gag`: description of the comedy beat (or null if none)
 - `audio_direction`: music, sound effects, ambient sounds, and dialogue delivery notes
 - `duration_seconds`: 8

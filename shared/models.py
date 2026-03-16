@@ -79,6 +79,7 @@ class Logline:
     approach: str  # "absurdist" | "satirical" | "surreal"
     featured_characters: list[str]
     visual_hook: str
+    news_essence: str = ""
 
 
 @dataclass(slots=True)
@@ -88,6 +89,7 @@ class Synopsis:
     punchline: str
     estimated_scenes: int
     key_visual_gags: list[str]
+    news_explanation: str = ""
 
 
 @dataclass(slots=True)
