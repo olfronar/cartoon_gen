@@ -60,21 +60,23 @@ Dependencies are managed in `pyproject.toml` (not requirements.txt).
 
 ### Testing & Linting
 
+Always use `.venv/bin/` prefixed commands (not `source .venv/bin/activate && ...`) — the direct binary paths are pre-approved in permission settings and won't prompt for approval.
+
 ```bash
 # Run all tests (182 tests)
-pytest
+.venv/bin/pytest tests/ -v
 
 # Run a single test file
-pytest tests/test_dedup.py
+.venv/bin/pytest tests/test_dedup.py
 
 # Run a single test
-pytest tests/test_dedup.py::TestDedupAndFilter::test_url_dedup_merges_sources -v
+.venv/bin/pytest tests/test_dedup.py::TestDedupAndFilter::test_url_dedup_merges_sources -v
 
 # Lint
-ruff check .
+.venv/bin/ruff check .
 
 # Format
-ruff format .
+.venv/bin/ruff format .
 ```
 
 Pre-commit hooks run ruff (lint + format) and pytest on every commit.
@@ -181,7 +183,7 @@ Pipeline: brief JSON ingestion → parallel logline generation + selection (all 
 - **Logline selector** (`pipeline/logline_selector.py`): Selects best 1 of 3 per item. Falls back to first logline on error.
 - **Script expander** (`pipeline/script_expander.py`): Two-step: synopsis → full script. All 5 items run in parallel via `asyncio.gather()`.
 - **Renderer** (`pipeline/renderer.py`): `CartoonScript` → `.md` (human-readable) + `.json` (machine-readable for static_shots_maker).
-- **Prompts** (`prompts.py`): All prompt templates. Shared humor preamble establishes three comedy traditions.
+- **Prompts** (`prompts.py`): All prompt templates. Shared humor preamble establishes the field-correspondent show format and three comedy traditions.
 - **Runner** (`pipeline/runner.py`): Async orchestrator for the full pipeline.
 
 ### Setup tool
@@ -189,12 +191,12 @@ Pipeline: brief JSON ingestion → parallel logline generation + selection (all 
 - **Interviewer** (`setup/interviewer.py`): Generic multi-turn LLM conversation engine. Detects `INTERVIEW_COMPLETE` marker.
 - **Character builder** (`setup/character_builder.py`): Interactive character design interview → `output/characters/<name>.md`.
 - **Art style builder** (`setup/art_style_builder.py`): Interactive art style interview → `output/art_style.md`.
-- **Art materials builder** (`setup/art_materials_builder.py`): Automated (non-interactive) generation of canonical reference images via Gemini → `output/art_materials/canonical_characters.png` + `art_style_guide.png`. Requires `GOOGLE_API_KEY`. Run separately after characters + art style exist.
+- **Art materials builder** (`setup/art_materials_builder.py`): Automated (non-interactive) generation of canonical reference images via Gemini → `output/art_materials/canonical_characters.png`. Requires `GOOGLE_API_KEY`. Run separately after characters + art style exist.
 
 ### Output
 
 - `output/scripts/<YYYY-MM-DD>_<N>.md` + `.json` — one pair per top pick (N = 1-5).
-- Scene prompts: 50-150 words, affirmative only, front-loaded key visuals, with dialogue quoted inline for Veo 3.1 audio generation. Duration fixed at 8 seconds. Emphasis on visual comedy over dialogue.
+- Scene prompts: 50-150 words, affirmative only, front-loaded key visuals, with dialogue quoted inline for Veo 3.1 audio generation. Duration fixed at 8 seconds. Emphasis on visual comedy over dialogue. Scenes are set at the news story location (field reporting format), not in a studio.
 
 ## Static Shots Maker Internals
 

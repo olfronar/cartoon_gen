@@ -11,28 +11,16 @@ from static_shots_maker.pipeline.image_generator import generate_image
 logger = logging.getLogger(__name__)
 
 CHARACTER_SHEET_PROMPT = """\
-Character reference sheet showing ALL of the following characters together \
-in a single image, 9:16 vertical portrait format.
+All characters standing together on a plain white background, \
+9:16 vertical portrait format.
 
 {characters_block}
 
 Art style: {art_style_summary}
 
 Draw each character full-body, facing the viewer, in a neutral standing pose. \
-Label each character with their name below them. Clean background. \
-Consistent proportions and art style across all characters. \
-This is a canonical reference — every future frame must match these designs exactly.
-"""
-
-ART_STYLE_GUIDE_PROMPT = """\
-Art style reference guide, 9:16 vertical portrait format.
-
-{art_style}
-
-Show a sample scene demonstrating this art style. Include: \
-color palette swatches in the corner, example lighting, example textures, \
-example character rendering style. This is a canonical style guide — \
-every future frame must match this look exactly.
+Plain white background with no text, labels, or annotations. \
+Consistent proportions and art style across all characters.
 """
 
 
@@ -43,11 +31,10 @@ def create_art_materials(
     art_materials_dir: Path,
     model: str = "gemini-3.1-flash-image-preview",
 ) -> list[Path]:
-    """Generate canonical reference images for characters and art style.
+    """Generate canonical reference images for characters.
 
     Reads existing character profiles and art style doc, then generates:
     - canonical_characters.png: all characters in one reference sheet
-    - art_style_guide.png: visual style reference
 
     Returns list of generated file paths.
     """
@@ -79,14 +66,6 @@ def create_art_materials(
     generate_image(char_prompt, char_path, client, model)
     generated.append(char_path)
     print(f"  Saved: {char_path}")
-
-    # 2. Art style guide
-    style_prompt = ART_STYLE_GUIDE_PROMPT.format(art_style=art_style)
-    style_path = art_materials_dir / f"{ART_MATERIAL_NAMES[1]}.png"
-    print("Generating art style guide...")
-    generate_image(style_prompt, style_path, client, model)
-    generated.append(style_path)
-    print(f"  Saved: {style_path}")
 
     print(f"\nDone! {len(generated)} art materials generated in {art_materials_dir}")
     return generated

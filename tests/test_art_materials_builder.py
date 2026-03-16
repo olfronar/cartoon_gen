@@ -8,8 +8,8 @@ from script_writer.setup.art_materials_builder import create_art_materials
 class TestCreateArtMaterials:
     @patch("script_writer.setup.art_materials_builder.generate_image")
     @patch("script_writer.setup.art_materials_builder.genai")
-    def test_generates_both_images(self, mock_genai, mock_gen_img, tmp_path):
-        """Generates canonical_characters.png and art_style_guide.png."""
+    def test_generates_character_sheet(self, mock_genai, mock_gen_img, tmp_path):
+        """Generates canonical_characters.png."""
         chars_dir = tmp_path / "characters"
         chars_dir.mkdir()
         (chars_dir / "bot.md").write_text("# Bot\nA robot", encoding="utf-8")
@@ -34,10 +34,9 @@ class TestCreateArtMaterials:
             art_materials_dir=art_materials_dir,
         )
 
-        assert len(result) == 2
+        assert len(result) == 1
         assert (art_materials_dir / "canonical_characters.png").exists()
-        assert (art_materials_dir / "art_style_guide.png").exists()
-        assert mock_gen_img.call_count == 2
+        assert mock_gen_img.call_count == 1
 
     def test_no_characters_returns_empty(self, tmp_path):
         """Returns empty list when no character profiles exist."""

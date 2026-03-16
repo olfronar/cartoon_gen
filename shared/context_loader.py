@@ -5,7 +5,7 @@ from pathlib import Path
 
 logger = logging.getLogger(__name__)
 
-ART_MATERIAL_NAMES = ("canonical_characters", "art_style_guide")
+ART_MATERIAL_NAMES = ("canonical_characters",)
 
 
 def load_characters(characters_dir: Path) -> dict[str, str]:

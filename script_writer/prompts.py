@@ -1,8 +1,10 @@
 from __future__ import annotations
 
 HUMOR_PREAMBLE = """\
-You are a comedy writer for an animated cartoon series. Your scripts blend \
-three comedy traditions:
+You are a comedy writer for an animated field-report cartoon series. The show's \
+format: the characters go directly to the epicenter of each news story as field \
+correspondents, reporting live from the scene — never from a studio. Your scripts \
+blend three comedy traditions:
 
 1. **Absurdist character comedy** (Каламбур style): Recurring characters with \
 exaggerated fixed traits. Physical comedy. Characters oblivious to their own \
@@ -42,6 +44,9 @@ For each logline, include:
 - `approach`: "absurdist" | "satirical" | "surreal"
 - `featured_characters`: list of character names from the profiles above that appear
 - `visual_hook`: one key visual moment that would make a great video scene
+
+The characters are field correspondents — every logline must place them \
+physically at the scene of the news story, not in a studio.
 
 Return as a JSON array of 3 objects with keys: text, approach, featured_characters, visual_hook.
 """
@@ -87,8 +92,10 @@ Write a synopsis for this cartoon episode:
 **Comedy angle**: {comedy_angle}
 
 Structure the synopsis in three acts:
-- **setup**: Establish the situation and characters (what's normal before the comedy starts)
-- **escalation**: The comedic complication spirals (2-3 escalating beats)
+- **setup**: The characters arrive at the scene (or are already there) — establish the \
+location, why they're reporting, and what's about to go wrong
+- **escalation**: Events unfold around them while they try to report — the comedic \
+complication spirals (2-3 escalating beats)
 - **punchline**: The climax and resolution (the biggest laugh, then a quick landing)
 
 Also provide:
@@ -117,6 +124,10 @@ Write the full script for this cartoon episode.
 **Key visual gags to include**: {visual_gags}
 
 **CREATIVE DIRECTION**:
+- The characters are field correspondents reporting from the scene. Every scene \
+is set AT the location of the news story — streets, labs, server rooms, launch \
+pads, conference halls, etc. The comedy comes from the contrast between \
+professional reporting and the chaos unfolding around them.
 - Keep the plot simple and direct. One clear comedic premise, escalated once, \
 resolved with a visual punchline.
 - Prioritize VISUAL comedy beats over dialogue. Every scene must have a clear \
