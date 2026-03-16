@@ -7,6 +7,8 @@ from pathlib import Path
 
 logger = logging.getLogger(__name__)
 
+_ENCODE_ARGS = ["-c:v", "libx264", "-preset", "fast", "-c:a", "aac"]
+
 
 def assemble_script_video(
     clip_paths: list[Path],
@@ -37,7 +39,7 @@ def assemble_final_video(
     output_path: Path,
     transition_duration: float = 1.0,
 ) -> Path:
-    """Concatenate script videos with glitch interstitials + beep.
+    """Concatenate script videos with glitch interstitials + silence.
 
     Args:
         script_video_paths: Ordered list of script video MP4 paths.
@@ -76,12 +78,7 @@ def _concat_clips(paths: list[Path], output_path: Path) -> None:
                 "0",
                 "-i",
                 str(concat_file),
-                "-c:v",
-                "libx264",
-                "-preset",
-                "fast",
-                "-c:a",
-                "aac",
+                *_ENCODE_ARGS,
                 "-movflags",
                 "+faststart",
                 str(output_path),
@@ -94,7 +91,7 @@ def _concat_with_glitch(
     output_path: Path,
     glitch_duration: float,
 ) -> None:
-    """Concatenate clips with glitch + beep interstitials using concat demuxer."""
+    """Concatenate clips with glitch + silence interstitials using concat demuxer."""
     width, height, fps = _probe_video(paths[0])
 
     with tempfile.TemporaryDirectory() as tmpdir:
@@ -121,12 +118,7 @@ def _concat_with_glitch(
                 "0",
                 "-i",
                 str(concat_file),
-                "-c:v",
-                "libx264",
-                "-preset",
-                "fast",
-                "-c:a",
-                "aac",
+                *_ENCODE_ARGS,
                 "-movflags",
                 "+faststart",
                 str(output_path),
@@ -160,12 +152,7 @@ def _generate_glitch_clip(
             "lavfi",
             "-i",
             audio_src,
-            "-c:v",
-            "libx264",
-            "-preset",
-            "fast",
-            "-c:a",
-            "aac",
+            *_ENCODE_ARGS,
             "-shortest",
             str(output_path),
         ]

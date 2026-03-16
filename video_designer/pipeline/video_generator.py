@@ -47,9 +47,12 @@ def generate_video(
     source_image = types.Image.from_bytes(data=source_image_bytes, mime_type="image/png")
 
     last_frame = None
-    if next_scene_image and next_scene_image.exists():
-        last_frame_bytes = next_scene_image.read_bytes()
-        last_frame = types.Image.from_bytes(data=last_frame_bytes, mime_type="image/png")
+    if next_scene_image:
+        try:
+            last_frame_bytes = next_scene_image.read_bytes()
+            last_frame = types.Image.from_bytes(data=last_frame_bytes, mime_type="image/png")
+        except FileNotFoundError:
+            logger.warning("Next scene image not found: %s", next_scene_image)
 
     ref_images = None
     if reference_images:
@@ -99,45 +102,40 @@ def _build_strategies(
     source_image, last_frame, ref_images, prompt, duration, model
 ) -> list[tuple[str, dict]]:
     """Build ordered list of generation strategies with decreasing feature richness."""
-    strategies = []
-
-    base_config = {
-        "model": model,
-        "prompt": prompt,
-        "config": {
-            "aspect_ratio": "9:16",
-            "duration_seconds": duration,
-        },
+    base_video_config = {
+        "aspect_ratio": "9:16",
+        "duration_seconds": duration,
     }
 
-    # Strategy 1: source + last_frame + reference_images
-    if last_frame and ref_images:
-        config = {**base_config}
-        config["source"] = {"image": source_image}
-        config["config"] = {
-            **config["config"],
-            "last_frame": last_frame,
-            "reference_images": ref_images,
-        }
-        strategies.append(("full", config))
+    # (name, condition, extra config fields)
+    candidates = [
+        (
+            "full",
+            last_frame and ref_images,
+            {
+                "last_frame": last_frame,
+                "reference_images": ref_images,
+            },
+        ),
+        ("source+last_frame", last_frame, {"last_frame": last_frame}),
+        ("source+refs", ref_images, {"reference_images": ref_images}),
+        ("source_only", True, {}),
+    ]
 
-    # Strategy 2: source + last_frame (no refs)
-    if last_frame:
-        config = {**base_config}
-        config["source"] = {"image": source_image}
-        config["config"] = {**config["config"], "last_frame": last_frame}
-        strategies.append(("source+last_frame", config))
-
-    # Strategy 3: source + reference_images (no last_frame)
-    if ref_images:
-        config = {**base_config}
-        config["source"] = {"image": source_image}
-        config["config"] = {**config["config"], "reference_images": ref_images}
-        strategies.append(("source+refs", config))
-
-    # Strategy 4: source only (always available)
-    config = {**base_config}
-    config["source"] = {"image": source_image}
-    strategies.append(("source_only", config))
+    strategies = []
+    for name, condition, extras in candidates:
+        if not condition:
+            continue
+        strategies.append(
+            (
+                name,
+                {
+                    "model": model,
+                    "prompt": prompt,
+                    "source": {"image": source_image},
+                    "config": {**base_video_config, **extras},
+                },
+            )
+        )
 
     return strategies

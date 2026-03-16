@@ -5,6 +5,8 @@ from pathlib import Path
 
 logger = logging.getLogger(__name__)
 
+ART_MATERIAL_NAMES = ("canonical_characters", "art_style_guide")
+
 
 def load_characters(characters_dir: Path) -> dict[str, str]:
     """Load all character profile files. Returns {name: content}."""
@@ -38,7 +40,7 @@ def load_art_materials(art_materials_dir: Path) -> dict[str, Path]:
         return {}
 
     materials: dict[str, Path] = {}
-    for name in ("canonical_characters", "art_style_guide"):
+    for name in ART_MATERIAL_NAMES:
         path = art_materials_dir / f"{name}.png"
         if path.exists():
             materials[name] = path
@@ -50,7 +52,7 @@ def load_art_materials(art_materials_dir: Path) -> dict[str, Path]:
 def build_reference_image_list(art_materials: dict[str, Path]) -> list[Path]:
     """Build ordered list of reference image paths from art materials."""
     paths: list[Path] = []
-    for name in ("canonical_characters", "art_style_guide"):
+    for name in ART_MATERIAL_NAMES:
         if name in art_materials:
             paths.append(art_materials[name])
     return paths

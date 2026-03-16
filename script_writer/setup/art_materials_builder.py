@@ -5,7 +5,7 @@ from pathlib import Path
 
 from google import genai
 
-from shared.context_loader import load_art_style, load_characters
+from shared.context_loader import ART_MATERIAL_NAMES, load_art_style, load_characters
 from static_shots_maker.pipeline.image_generator import generate_image
 
 logger = logging.getLogger(__name__)
@@ -74,7 +74,7 @@ def create_art_materials(
         characters_block=characters_block,
         art_style_summary=art_style_first_line,
     )
-    char_path = art_materials_dir / "canonical_characters.png"
+    char_path = art_materials_dir / f"{ART_MATERIAL_NAMES[0]}.png"
     print("Generating canonical character sheet...")
     generate_image(char_prompt, char_path, client, model)
     generated.append(char_path)
@@ -82,7 +82,7 @@ def create_art_materials(
 
     # 2. Art style guide
     style_prompt = ART_STYLE_GUIDE_PROMPT.format(art_style=art_style)
-    style_path = art_materials_dir / "art_style_guide.png"
+    style_path = art_materials_dir / f"{ART_MATERIAL_NAMES[1]}.png"
     print("Generating art style guide...")
     generate_image(style_prompt, style_path, client, model)
     generated.append(style_path)

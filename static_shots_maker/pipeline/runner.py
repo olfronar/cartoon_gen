@@ -111,7 +111,7 @@ async def _process_script(
     for scene in script.scenes:
         # Build reference list: art materials + previous scene
         scene_refs = list(reference_images or [])
-        if prev_scene_path and prev_scene_path.exists():
+        if prev_scene_path:
             scene_refs.append(prev_scene_path)
 
         shot = await _process_shot(
