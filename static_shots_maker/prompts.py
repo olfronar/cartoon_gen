@@ -33,6 +33,13 @@ Match them exactly — same proportions, colors, clothing, and rendering style.
 9. If a previous scene's image is provided, maintain visual continuity with it \
 (same background elements, consistent character placement, matching lighting).
 10. Output ONLY the image prompt text, 80-200 words. No commentary.
+11. The scene prompt may describe sequences of events — pick ONE moment, not a \
+montage. If the prompt mentions "then" or multiple sequential actions, choose the \
+single most striking one and ignore the rest.
+12. Maximum 2 characters in the image. If the scene prompt mentions crowds or \
+groups, reduce to Billy and at most one other figure.
+13. Maximum 1 visual gag or prop detail. If there are multiple competing visual \
+elements, pick the strongest one and drop the others.
 """
 
 END_CARD_TO_IMAGE_PROMPT = """\
