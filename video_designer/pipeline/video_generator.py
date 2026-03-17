@@ -1,11 +1,20 @@
 from __future__ import annotations
 
+import asyncio
 import base64
 import logging
 import urllib.request
 from pathlib import Path
 
 logger = logging.getLogger(__name__)
+
+_DOWNLOAD_TIMEOUT = 120  # seconds
+
+
+def _download(url: str) -> bytes:
+    """Download a URL with a timeout. Runs in a thread pool."""
+    with urllib.request.urlopen(url, timeout=_DOWNLOAD_TIMEOUT) as resp:  # noqa: S310
+        return resp.read()
 
 
 async def generate_video(
@@ -38,7 +47,7 @@ async def generate_video(
         FileNotFoundError: If image_path does not exist.
         RuntimeError: If video generation fails or is blocked by moderation.
     """
-    image_bytes = image_path.read_bytes()
+    image_bytes = await asyncio.to_thread(image_path.read_bytes)
     b64 = base64.b64encode(image_bytes).decode("ascii")
     data_uri = f"data:image/png;base64,{b64}"
 
@@ -57,9 +66,8 @@ async def generate_video(
     if not response.url:
         raise RuntimeError("xAI returned no video URL")
 
-    with urllib.request.urlopen(response.url) as resp:  # noqa: S310
-        video_data = resp.read()
+    video_data = await asyncio.to_thread(_download, response.url)
 
-    output_path.write_bytes(video_data)
+    await asyncio.to_thread(output_path.write_bytes, video_data)
     logger.info("Saved video: %s", output_path)
     return output_path

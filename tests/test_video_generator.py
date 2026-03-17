@@ -23,17 +23,11 @@ def _mock_xai_client(
 
 class TestGenerateVideo:
     @pytest.mark.asyncio
-    @patch("video_designer.pipeline.video_generator.urllib.request.urlopen")
-    async def test_generates_and_saves(self, mock_urlopen, tmp_path):
+    @patch("video_designer.pipeline.video_generator._download", return_value=b"fake mp4 data")
+    async def test_generates_and_saves(self, mock_download, tmp_path):
         image_path = tmp_path / "scene_1.png"
         image_path.write_bytes(b"\x89PNG\r\n\x1a\nfake")
         output_path = tmp_path / "scene_1.mp4"
-
-        mock_resp = MagicMock()
-        mock_resp.read.return_value = b"fake mp4 data"
-        mock_resp.__enter__ = MagicMock(return_value=mock_resp)
-        mock_resp.__exit__ = MagicMock(return_value=False)
-        mock_urlopen.return_value = mock_resp
 
         client = _mock_xai_client()
 
