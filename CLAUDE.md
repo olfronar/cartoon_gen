@@ -27,7 +27,7 @@ cartoon_maker/
 
 3. **static_shots_maker** — Reads script JSONs, uses Claude to rewrite video prompts into image-optimized prompts, generates 9:16 PNGs via Gemini, outputs shots + manifest per script.
 
-4. **video_designer** — Reads static shots + script JSONs, uses Claude to compose video prompts, generates 8s clips via Veo 3.1 (with native audio), assembles with glitch transitions into final cartoon videos.
+4. **video_designer** — Reads static shots + script JSONs, uses Claude to compose video prompts, generates 15s clips via xAI grok-imagine-video (with native audio), assembles with glitch transitions into final cartoon videos.
 
 ### Design Principles
 
@@ -123,7 +123,7 @@ Environment variables loaded from `.env` (see `.env.example` for template). Miss
 
 Required: `ANTHROPIC_API_KEY` (without it, scorer falls back to raw score sorting — no comedy angles).
 
-Required for static shots and video: `GOOGLE_API_KEY` (Gemini image generation + Veo 3.1 video generation). Optional: `ANTHROPIC_API_KEY` enables Claude prompt rewriting (falls back to regex stripping for shots, original prompts for video).
+Required for static shots: `GOOGLE_API_KEY` (Gemini image generation). Required for video: `XAI_API_KEY` (xAI grok-imagine-video). Optional: `ANTHROPIC_API_KEY` enables Claude prompt rewriting (falls back to regex stripping for shots, original prompts for video).
 
 ## Code Conventions
 
@@ -179,11 +179,11 @@ Pipeline: brief JSON ingestion → parallel logline generation + selection (all 
 
 - **Brief reader** (`pipeline/brief_reader.py`): Reads `output/briefs/YYYY-MM-DD.json` sidecar. Auto-detects latest date if none specified.
 - **Context loader** (`shared/context_loader.py`, re-exported from `pipeline/context_loader.py`): Loads `output/characters/*.md` and `output/art_style.md` into a shared prompt context block.
-- **Logline generator** (`pipeline/logline_generator.py`): 3 loglines per news item (absurdist / satirical / surreal). Uses Claude Opus with adaptive thinking.
+- **Logline generator** (`pipeline/logline_generator.py`): 3 loglines per news item (observational / satirical / metaphorical). Uses Claude Opus with adaptive thinking.
 - **Logline selector** (`pipeline/logline_selector.py`): Selects best 1 of 3 per item. Falls back to first logline on error.
 - **Script expander** (`pipeline/script_expander.py`): Two-step: synopsis → full script. All 5 items run in parallel via `asyncio.gather()`.
 - **Renderer** (`pipeline/renderer.py`): `CartoonScript` → `.md` (human-readable) + `.json` (machine-readable for static_shots_maker).
-- **Prompts** (`prompts.py`): All prompt templates. Shared humor preamble establishes the field-correspondent show format, news-explanatory comedy core promise, and three comedy traditions. Prompts emphasize dialogue as the primary vehicle for exposition + humor; `comedy_angle`, `snippet`, and `news_explanation` are passed through to the script expansion stage so the LLM never loses the factual news context.
+- **Prompts** (`prompts.py`): All prompt templates. Shared humor preamble establishes the field-correspondent show format, news-explanatory comedy core promise, and three comedy traditions (dry observation, deadpan absurdism, quiet irony). Prompts enforce calm single-location scenes with maximum 2 characters; dialogue is the primary vehicle for exposition + humor; `comedy_angle`, `snippet`, and `news_explanation` are passed through to the script expansion stage so the LLM never loses the factual news context.
 - **Runner** (`pipeline/runner.py`): Async orchestrator for the full pipeline.
 
 ### Setup tool
@@ -196,7 +196,7 @@ Pipeline: brief JSON ingestion → parallel logline generation + selection (all 
 ### Output
 
 - `output/scripts/<YYYY-MM-DD>_<N>.md` + `.json` — one pair per top pick (N = 1-5).
-- Scene prompts: 50-150 words, affirmative only, front-loaded key visuals, with dialogue quoted inline for Veo 3.1 audio generation. Duration fixed at 8 seconds. Dialogue is the primary vehicle for both comedy and exposition (2-3 lines per scene). Scenes are set at the news story location (field reporting format), not in a studio.
+- Scene prompts: 80-150 words describing a single frozen moment (photograph-style), affirmative only, front-loaded key visuals, with dialogue quoted inline for native audio generation. Duration fixed at 15 seconds. 1 scene per script. Maximum 2 characters per scene, 1 visual gag/prop. Billy stays in one location throughout. Dialogue is the primary vehicle for both comedy and exposition (2-3 lines per scene).
 
 ## Static Shots Maker Internals
 
@@ -217,19 +217,19 @@ Pipeline: script JSON ingestion → sequential prompt rewriting + image generati
 
 ## Video Designer Internals
 
-Pipeline: manifest + script ingestion → parallel video prompt composition (Claude, includes dialogue formatting) → parallel video generation (Veo 3.1 with native audio) → ffmpeg assembly with glitch transitions. Two-level `asyncio.gather()` with semaphore for rate limiting.
+Pipeline: manifest + script ingestion → parallel video prompt composition (Claude, includes dialogue formatting) → parallel video generation (xAI grok-imagine-video with native audio) → ffmpeg assembly with glitch transitions. Two-level `asyncio.gather()` with semaphore for rate limiting.
 
 ### Pipeline stages
 
 - **Manifest reader** (`pipeline/manifest_reader.py`): Reads `output/static_shots/<date>_<N>/manifest.json` + pairs with `output/scripts/<date>_<N>.json`. Auto-detects latest date. Skips scripts with no successful shots.
 - **Prompt generator** (`pipeline/prompt_generator.py`): Claude composes video-generation prompts from scene details + character profiles + art style + formatted dialogue. Falls back to original scene_prompt if Claude unavailable.
-- **Video generator** (`pipeline/video_generator.py`): Google Veo 3.1 (`veo-3.1-fast-generate-preview`) image-to-video with native audio generation. Uses static shot as source image, next scene as last_frame for interpolation, art materials as reference images. Fallback chain degrades gracefully if features are mutually exclusive.
+- **Video generator** (`pipeline/video_generator.py`): xAI grok-imagine-video (`grok-imagine-video`) image-to-video with native audio generation. Uses static shot as source image via base64 data URI. SDK handles polling internally.
 - **Assembler** (`pipeline/assembler.py`): ffmpeg concatenation with re-encoding (`libx264 + aac`) for audio normalization. Glitch transitions (1.0s) with silence between scripts.
-- **Prompts** (`prompts.py`): `SCENE_TO_VIDEO_PROMPT` and `END_CARD_TO_VIDEO_PROMPT` templates. Include audio/dialogue direction for Veo 3.1's native audio generation.
-- **Runner** (`pipeline/runner.py`): Async orchestrator. Level 1 parallel across scripts, Level 2 parallel across scenes. Uses `google.genai.Client` (requires `GOOGLE_API_KEY`). Loads art materials and passes next-scene images for interpolation.
+- **Prompts** (`prompts.py`): `SCENE_TO_VIDEO_PROMPT` and `END_CARD_TO_VIDEO_PROMPT` templates. Include audio/dialogue direction for native audio generation.
+- **Runner** (`pipeline/runner.py`): Async orchestrator. Level 1 parallel across scripts, Level 2 parallel across scenes. Uses `xai_sdk.AsyncClient` (requires `XAI_API_KEY`).
 
 ### Output
 
 - `output/videos/<YYYY-MM-DD>_<N>/scene_<M>.mp4` + `end_card.mp4` + `script_video.mp4` + `video_manifest.json` per script.
 - `output/videos/final_<YYYY-MM-DD>.mp4` — all scripts concatenated with glitch transitions + silence.
-- Video clips include native audio (dialogue, sound effects, ambient) generated by Veo 3.1.
+- Video clips include native audio (dialogue, sound effects, ambient) generated by grok-imagine-video.

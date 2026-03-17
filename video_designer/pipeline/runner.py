@@ -8,13 +8,11 @@ from datetime import date
 from pathlib import Path
 
 import anthropic
-from google import genai
+import xai_sdk
 
 from shared.config import Settings, load_settings
 from shared.context_loader import (
     build_context_block,
-    build_reference_image_list,
-    load_art_materials,
     load_art_style,
     load_characters,
 )
@@ -35,8 +33,8 @@ async def run(
     """Run the full video designer pipeline. Returns path to final video."""
     settings = settings or load_settings()
 
-    if not settings.google_api_key:
-        raise RuntimeError("GOOGLE_API_KEY required for video generation")
+    if not settings.xai_api_key:
+        raise RuntimeError("XAI_API_KEY required for video generation")
 
     has_anthropic = bool(settings.anthropic_api_key)
     if not has_anthropic:
@@ -46,42 +44,40 @@ async def run(
     anthropic_client = (
         anthropic.Anthropic(api_key=settings.anthropic_api_key) if has_anthropic else None
     )
-    genai_client = genai.Client(api_key=settings.google_api_key)
+    xai_client = xai_sdk.AsyncClient(api_key=settings.xai_api_key)
 
-    # Load context
-    characters = load_characters(settings.characters_dir)
-    art_style = load_art_style(settings.art_style_path)
-    context_block = build_context_block(characters, art_style)
+    try:
+        # Load context
+        characters = load_characters(settings.characters_dir)
+        art_style = load_art_style(settings.art_style_path)
+        context_block = build_context_block(characters, art_style)
 
-    # Load art materials (reference images for consistency)
-    art_materials = load_art_materials(settings.art_materials_dir)
-    reference_images = build_reference_image_list(art_materials)
+        # Read manifests + scripts
+        data = read_manifests(
+            target_date=target_date,
+            shots_dir=settings.shots_output_dir,
+            scripts_dir=settings.scripts_output_dir,
+        )
+        logger.info("Processing %d scripts", len(data))
 
-    # Read manifests + scripts
-    data = read_manifests(
-        target_date=target_date,
-        shots_dir=settings.shots_output_dir,
-        scripts_dir=settings.scripts_output_dir,
-    )
-    logger.info("Processing %d scripts", len(data))
+        semaphore = asyncio.Semaphore(settings.video_max_concurrency)
 
-    semaphore = asyncio.Semaphore(settings.video_max_concurrency)
-
-    # Level 1: parallel across scripts
-    results = await asyncio.gather(
-        *[
-            _process_script(
-                entry=entry,
-                context_block=context_block,
-                anthropic_client=anthropic_client,
-                genai_client=genai_client,
-                semaphore=semaphore,
-                settings=settings,
-                reference_images=reference_images,
-            )
-            for entry in data
-        ]
-    )
+        # Level 1: parallel across scripts
+        results = await asyncio.gather(
+            *[
+                _process_script(
+                    entry=entry,
+                    context_block=context_block,
+                    anthropic_client=anthropic_client,
+                    xai_client=xai_client,
+                    semaphore=semaphore,
+                    settings=settings,
+                )
+                for entry in data
+            ]
+        )
+    finally:
+        await xai_client.close()
 
     # Filter to scripts that produced a video
     script_videos = [(manifest, path) for manifest, path in results if path is not None]
@@ -109,10 +105,9 @@ async def _process_script(
     entry: ScriptWithShots,
     context_block: str,
     anthropic_client,
-    genai_client,
+    xai_client,
     semaphore: asyncio.Semaphore,
     settings: Settings,
-    reference_images: list[Path] | None = None,
 ) -> tuple[VideoManifest, Path | None]:
     """Process a single script: generate clips + assemble script video."""
     output_dir = settings.video_output_dir / (f"{entry.script.date.isoformat()}_{entry.index}")
@@ -130,14 +125,8 @@ async def _process_script(
     # Build tasks for each scene
     tasks = []
     scenes_with_shots = [s for s in entry.script.scenes if shot_paths.get(s.scene_number)]
-    for i, scene in enumerate(scenes_with_shots):
+    for scene in scenes_with_shots:
         image_path = shot_paths[scene.scene_number]
-
-        # Determine next scene's static shot for last_frame interpolation
-        next_scene_image = None
-        if i + 1 < len(scenes_with_shots):
-            next_scene = scenes_with_shots[i + 1]
-            next_scene_image = shot_paths.get(next_scene.scene_number)
 
         tasks.append(
             _process_clip(
@@ -154,11 +143,9 @@ async def _process_script(
                     settings.video_prompt_model,
                     settings.video_prompt_max_tokens,
                 ),
-                genai_client=genai_client,
+                xai_client=xai_client,
                 semaphore=semaphore,
                 settings=settings,
-                next_scene_image=next_scene_image,
-                reference_images=reference_images,
             )
         )
 
@@ -203,27 +190,23 @@ async def _process_clip(
     output_path: Path,
     image_path: Path,
     prompt_fn: Callable[[], str],
-    genai_client,
+    xai_client,
     semaphore: asyncio.Semaphore,
     settings: Settings,
-    next_scene_image: Path | None = None,
-    reference_images: list[Path] | None = None,
 ) -> ClipResult:
     """Generate a single video clip (scene or end card)."""
     try:
         video_prompt = await asyncio.to_thread(prompt_fn)
 
         async with semaphore:
-            await asyncio.to_thread(
-                generate_video,
+            await generate_video(
                 video_prompt,
                 image_path,
                 output_path,
-                genai_client,
+                xai_client,
                 settings.video_model,
                 settings.video_duration,
-                next_scene_image,
-                reference_images,
+                settings.video_resolution,
             )
 
         print(f"    {label}: OK")

@@ -3,7 +3,7 @@ from __future__ import annotations
 import json
 from datetime import date
 from pathlib import Path
-from unittest.mock import MagicMock, patch
+from unittest.mock import AsyncMock, MagicMock, patch
 
 import pytest
 
@@ -45,7 +45,7 @@ def _setup_fixtures(tmp_path: Path) -> Settings:
 
     return Settings(
         anthropic_api_key="test-key",
-        google_api_key="test-google-key",
+        xai_api_key="test-xai-key",
         scripts_output_dir=scripts_dir,
         shots_output_dir=shots_dir,
         characters_dir=chars_dir,
@@ -57,32 +57,30 @@ def _setup_fixtures(tmp_path: Path) -> Settings:
 
 class TestVideoRunner:
     @pytest.mark.asyncio
-    @patch("video_designer.pipeline.runner.load_art_materials")
     @patch("video_designer.pipeline.runner.assemble_final_video")
     @patch("video_designer.pipeline.runner.assemble_script_video")
     @patch("video_designer.pipeline.runner.generate_video")
     @patch("video_designer.pipeline.runner.generate_video_prompt")
-    @patch("video_designer.pipeline.runner.genai")
+    @patch("video_designer.pipeline.runner.xai_sdk")
     @patch("video_designer.pipeline.runner.anthropic")
     async def test_produces_manifest(
         self,
         mock_anthropic,
-        mock_genai,
+        mock_xai_sdk,
         mock_scene_prompt,
         mock_gen_video,
         mock_assemble_script,
         mock_assemble_final,
-        mock_art_materials,
         tmp_path,
     ):
         settings = _setup_fixtures(tmp_path)
 
         mock_anthropic.Anthropic.return_value = MagicMock()
-        mock_genai.Client.return_value = MagicMock()
+        mock_xai_client = AsyncMock()
+        mock_xai_sdk.AsyncClient.return_value = mock_xai_client
         mock_scene_prompt.return_value = "video prompt"
-        mock_art_materials.return_value = {}
 
-        def fake_generate_video(_prompt, _image_path, output_path, *_rest, **_kwargs):
+        async def fake_generate_video(_prompt, _image_path, output_path, *_rest, **_kwargs):
             output_path.parent.mkdir(parents=True, exist_ok=True)
             output_path.write_bytes(b"fake mp4")
             return output_path
@@ -108,7 +106,7 @@ class TestVideoRunner:
         assert len(data["clips"]) == 1  # 1 scene (no end card)
 
     @pytest.mark.asyncio
-    async def test_requires_google_api_key(self):
-        settings = Settings(google_api_key="")
-        with pytest.raises(RuntimeError, match="GOOGLE_API_KEY"):
+    async def test_requires_xai_api_key(self):
+        settings = Settings(xai_api_key="")
+        with pytest.raises(RuntimeError, match="XAI_API_KEY"):
             await run(settings=settings)

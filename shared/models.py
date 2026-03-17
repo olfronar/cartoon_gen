@@ -76,7 +76,7 @@ def _deserialize_scored_items(entries: list[dict]) -> list[ScoredItem]:
 @dataclass(slots=True)
 class Logline:
     text: str
-    approach: str  # "absurdist" | "satirical" | "surreal"
+    approach: str  # "observational" | "satirical" | "metaphorical"
     featured_characters: list[str]
     visual_hook: str
     news_essence: str = ""
@@ -97,7 +97,7 @@ class SceneScript:
     scene_number: int
     scene_title: str
     setting: str
-    scene_prompt: str  # 50-150 words, xAI golden formula
+    scene_prompt: str  # 80-150 words, single 15s scene
     dialogue: list[dict]  # [{"character": ..., "line": ...}]
     visual_gag: str | None
     audio_direction: str

@@ -69,7 +69,7 @@ def make_scene(**overrides) -> SceneScript:
         dialogue=[{"character": "Bot", "line": "Hello!"}],
         visual_gag="robot drops pan",
         audio_direction="upbeat music",
-        duration_seconds=5,
+        duration_seconds=15,
         camera_movement="slow zoom in",
     )
     defaults.update(overrides)
@@ -86,7 +86,7 @@ def make_script(**overrides) -> CartoonScript:
             setup="s",
             escalation="e",
             punchline="p",
-            estimated_scenes=2,
+            estimated_scenes=1,
             key_visual_gags=["gag"],
         ),
         scenes=[make_scene()],

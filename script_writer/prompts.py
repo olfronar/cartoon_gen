@@ -9,19 +9,26 @@ heard the headline should understand what happened by the end. The comedy comes 
 from HOW the characters explain the news — through systems-thinking analogies, \
 absurd-but-accurate metaphors, and the reactions of people at the scene. The news \
 IS the comedy; the script makes the truth funnier than fiction, not replace it \
-with fiction. Your scripts blend three comedy traditions:
+with fiction. The show is calm, unhurried, and informative — closer to a podcast \
+with illustrations than an action cartoon. Billy stands in one place and talks. \
+The world around him is mostly still. Your scripts blend three comedy traditions:
 
-1. **Absurdist character comedy** (Каламбур style): Recurring characters with \
-exaggerated fixed traits. Physical comedy. Characters oblivious to their own \
-ridiculousness.
+1. **Dry observation** (Stewart Lee / early Jon Stewart style): The comedian \
+stands still, explains the truth, and the truth is funnier than any invented \
+scenario. The comedy is in the framing, not the action. Understatement over \
+exaggeration.
 
-2. **Witty social satire** (Jeeves & Wooster style): Elaborate misunderstandings \
-that escalate through social propriety. One character smarter than the rest. \
-Wordplay and understatement.
+2. **Deadpan absurdism** (Demetri Martin / XKCD style): Simple, clean visual \
+metaphors. One image or analogy that captures the entire absurdity. Stillness is \
+funnier than motion. The single well-chosen detail beats a crowd of details.
 
-3. **Surreal escalation** (Monty Python style): Situations start normal, become \
-increasingly absurd. Fourth-wall breaks. Deadpan delivery. Unexpected endings \
-that subvert the setup.
+3. **Quiet irony** (Jeeves & Wooster / Blackadder style): Wordplay, \
+understatement, and the gap between what someone says and what is obviously true. \
+One character smarter than the rest. The joke lands in the pause, not the punchline.
+
+Visual rule: every scene should be describable as a single photograph with one \
+clear subject. If you need more than one sentence to describe what the viewer \
+sees at any given moment, the scene is too complex.
 
 """
 
@@ -40,22 +47,29 @@ Generate exactly 3 loglines for a cartoon episode based on this news item:
 **Snippet**: {snippet}
 
 Each logline must take a DIFFERENT approach:
-1. **absurdist** — exaggerated character reactions, physical comedy, oblivious behavior
-2. **satirical** — social commentary, misunderstandings, witty wordplay
-3. **surreal** — escalating absurdity, fourth-wall breaks, unexpected twists
+1. **observational** — Billy explains the news calmly; the truth itself is the \
+joke. Dry, understated, no invented characters beyond Billy and at most one \
+other person.
+2. **satirical** — social commentary and irony. Billy reframes the news through \
+one clean analogy or comparison. Wordplay and understatement.
+3. **metaphorical** — one vivid visual metaphor captures the whole story. Simple, \
+still, XKCD-style. The image does the comedy work.
 
 For each logline, include:
 - `text`: the logline itself (1-2 sentences, sets up the episode premise)
-- `approach`: "absurdist" | "satirical" | "surreal"
+- `approach`: "observational" | "satirical" | "metaphorical"
 - `featured_characters`: list of character names from the profiles above that appear
-- `visual_hook`: one key visual moment that would make a great video scene
+- `visual_hook`: one key STILL IMAGE that captures the joke — a single frozen \
+moment with Billy and at most one other figure. Must be describable in one sentence.
 
 Each logline must contain enough information that someone unfamiliar with this \
 headline understands the basic story. The comedic premise should arise from the \
 real news — not replace it with an unrelated scenario.
 
 The characters are field correspondents — every logline must place them \
-physically at the scene of the news story, not in a studio.
+physically at the scene of the news story, not in a studio. Each logline must \
+feature Billy and AT MOST one other character. Crowds, montages, and multiple \
+simultaneous actors are not producible — keep it to two people talking.
 
 Return as a JSON array of 3 objects with keys: text, approach, featured_characters, \
 visual_hook, news_essence.
@@ -81,10 +95,12 @@ Here are 3 candidate loglines:
 
 Select the BEST one. Criteria (in order of importance):
 1. **News clarity** — does the logline make the underlying news story understandable?
-2. **Comedy strength** — is it genuinely funny? Does it have a clear comedic engine?
-3. **Character fit** — does it use the characters naturally, leveraging their traits?
-4. **Visual potential** — can this be made into compelling video scenes?
-5. **Originality** — does it avoid obvious/cliché approaches?
+2. **Simplicity** — can each scene be captured as a single still photograph with \
+one clear subject? Fewer actors and simpler visuals score higher.
+3. **Comedy strength** — dry observation and understatement beat escalating chaos.
+4. **Character fit** — does it use Billy naturally? At most one other character.
+5. **Visual feasibility** — can an image model render the key moment as one clean \
+image? Reject montages, recursive effects, crowds, and abstract concepts.
 
 Return a JSON object with:
 - `selected_index`: 0, 1, or 2 (which logline to use)
@@ -106,24 +122,31 @@ Write a synopsis for this cartoon episode:
 **News snippet**: {snippet}
 
 Structure the synopsis in three acts:
-- **setup**: Establish the news — what happened, who's involved. Billy arrives and \
-begins explaining the situation through dialogue with people at the scene. Viewer \
-understands the basic facts by end of this act.
-- **escalation**: Now that the viewer understands, push the real implications to their \
-logical-but-absurd extreme. One escalating beat.
-- **punchline**: Land a comedic insight that reframes how the viewer thinks about the news.
+- **setup**: Billy is at the scene. He explains what happened — the basic facts. \
+One prop or visual detail establishes where we are. Billy + at most one other person. \
+Viewer understands the basic facts by end of this act.
+- **development**: Billy reframes the news through one analogy or comparison that \
+makes the implications click. Same location. Same characters. The humor comes from \
+the reframing, not from new events happening.
+- **punchline**: A single closing observation that makes the viewer see the news \
+differently. Landing, not escalation. Quiet beat.
 
-This synopsis becomes 2-3 scenes of 8 seconds each (16-24 total). Each act = \
-2-3 sentences, not paragraphs. Think sketch-comedy cold open.
+Billy stays in ONE physical location throughout. No location changes between scenes.
+
+This synopsis becomes a single 15-second scene. All three acts happen within \
+that one continuous shot. Each act = 2-3 sentences, not paragraphs. Think \
+single-panel cartoon with a caption — then add one slow camera move.
 
 Also provide:
-- **estimated_scenes**: how many scenes (2-3) this needs
-- **key_visual_gags**: list of 2-3 specific visual comedy moments
+- **estimated_scenes**: always 1
+- **key_visual_gags**: list of 1-2 visual details. Each must be a single static \
+element visible in a still image (a sign, a prop, an expression) — not a sequence \
+of events or a montage.
 - **news_explanation**: in 2-3 sentences, what is the real-world news story this \
 episode explains?
 
-Return as JSON with keys: setup, escalation, punchline, estimated_scenes, \
-key_visual_gags, news_explanation.
+Return as JSON with keys: setup, escalation (the "development" act above), \
+punchline, estimated_scenes, key_visual_gags, news_explanation.
 """
 
 SCRIPT_EXPANSION_PROMPT = """\
@@ -142,7 +165,7 @@ Write the full script for this cartoon episode.
 **News explanation**: {news_explanation}
 **Synopsis**:
 - Setup: {setup}
-- Escalation: {escalation}
+- Development: {escalation}
 - Punchline: {punchline}
 
 **Key visual gags to include**: {visual_gags}
@@ -150,47 +173,55 @@ Write the full script for this cartoon episode.
 **CREATIVE DIRECTION**:
 - Every episode is a news explainer. Scene 1 must establish what happened. By \
 the end, the viewer understands: who did what, why it matters, why it's absurd.
-- The characters are field correspondents reporting from the scene. Every scene \
-is set AT the location of the news story — streets, labs, server rooms, launch \
-pads, conference halls, etc.
-- Keep the plot simple and direct. One clear comedic premise, escalated once, \
-resolved with an insight that reframes the news.
-- Dialogue is the primary vehicle for both comedy and exposition. Billy explains \
-through conversation — with bystanders, officials, confused participants, or to \
-camera. His systems-thinking analogies make complex stories accessible. People at \
-the scene react, push back, misunderstand.
-- Aim for 2-3 dialogue lines per scene. Each line must be short enough to speak \
-in 1-2 seconds (8-second scenes). Dialogue should feel like actual people talking \
-— reactions, interruptions — not standalone aphorisms.
-- Visual comedy enhances dialogue, doesn't replace it. The gap between what Billy \
-calmly explains and what the viewer sees behind him IS the comedy.
-- Scene structure: Scene 1 = news setup (what happened), Scene 2 = absurd \
-escalation (real implications pushed to extreme), Scene 3 = comedic reframe \
-(Billy's closing insight).
+- Billy is at the scene of the news story. He STAYS in one location for the \
+entire episode. Every scene has the same background.
+- The ONLY characters in each scene are Billy and at most one other person \
+(a bystander, official, or the subject of the story). Never add crowds, \
+montages, groups, or background actors doing things.
+- Keep the plot simple and direct. One clear comedic premise, developed once, \
+resolved with a quiet insight.
+- Dialogue is the primary vehicle for both comedy and exposition. Billy talks \
+to camera or to one other person. 2-3 short lines per scene (1-2 seconds each).
+- Visual comedy = ONE prop, sign, or background detail per scene that the \
+viewer can see in a single still image. The gap between what Billy calmly \
+says and one absurd detail visible behind him IS the comedy.
+- Scene structure: one continuous 15-second shot. The scene opens with the \
+news setup, develops through one reframing analogy, and lands on a closing \
+observation. Same location, same characters, one continuous shot.
+- Each scene_prompt must describe what a PHOTOGRAPH of this moment looks like. \
+One clear subject. One background. One visual detail. If the scene_prompt \
+describes more than 3 things happening simultaneously, it is too complex — \
+simplify.
 - When dialogue IS included, write it as spoken lines with character attribution \
 — the video model generates audio natively from quoted dialogue in scene_prompt.
 
-Write {num_scenes} scenes. For each scene provide:
+Write 1 scene. For each scene provide:
 
 - `scene_number`: integer (1-based)
 - `scene_title`: short descriptive title
 - `setting`: location, time of day, atmosphere
-- `scene_prompt`: 50-150 words describing the scene. \
+- `scene_prompt`: 80-150 words describing a SINGLE FROZEN MOMENT — what a camera \
+would capture in one photo. Do not describe sequences of events, montages, or \
+things happening "then". \
+Use the format: "[Subject] in [setting]. [One visual detail]. [Dialogue if any]." \
 Front-load the key visual in the first 20-30 words. \
-Use the format: "[Subject performing action] in [setting]. [Camera movement]. \
-[Visual style]. [Audio/dialogue cues]." \
 Affirmative descriptions ONLY — no negative prompts (never say "no", "without", \
 "don't", "avoid"). \
 Include character visual details from profiles (clothing, colors, features). \
 If the scene has dialogue, include it as quoted speech with character attribution \
-directly in the prompt (e.g. '[Character] says: "[line]"').
+directly in the prompt (e.g. '[Character] says: "[line]"'). \
+Maximum 2 characters visible. Maximum 1 prop or background detail that carries \
+comedic weight.
 - `dialogue`: array of objects with "character" and "line" keys. Aim for 2-3 \
 lines per scene with conversational flow — Billy explaining + reactions from \
-people at the scene.
-- `visual_gag`: description of the comedy beat (or null if none)
+one person at the scene.
+- `visual_gag`: ONE prop, sign, or background detail that is funny — describable \
+in a single still image (or null). Not a sequence of events.
 - `audio_direction`: music, sound effects, ambient sounds, and dialogue delivery notes
-- `duration_seconds`: 8
-- `camera_movement`: e.g. "slow zoom in", "pan left to right", "static wide shot"
+- `duration_seconds`: 15
+- `camera_movement`: ONE simple camera movement or a slow progression (e.g. \
+"slow zoom in", "static → gentle pan"). Prefer subtle, unhurried moves suited \
+to a 15-second continuous shot.
 
 Also provide an `end_card_prompt` (50-100 words): a final scene prompt for the \
 episode end card showing the show logo/title.

@@ -2,8 +2,8 @@ from __future__ import annotations
 
 SCENE_TO_VIDEO_PROMPT = """\
 You are an expert at composing video generation prompts that animate a static \
-image into an 8-second video clip. Your output will be fed directly to a \
-video AI model (Veo 3.1) that generates both video AND audio natively.
+image into a 15-second video clip. Your output will be fed directly to a \
+video AI model that generates both video AND audio natively.
 
 {context}
 
@@ -32,13 +32,19 @@ Rules:
 "[Character] says: '[line]'". The model generates audio natively from these cues.
 8. Use ONLY affirmative descriptions — never say "no", "without", "don't", "avoid".
 9. Front-load the key motion in the first 20-30 words.
-10. Output ONLY the video prompt text, 80-200 words. No commentary.
+10. Output ONLY the video prompt text, 80-150 words. No commentary.
+11. Over the 15-second duration, allow 2-3 subtle motions per character — a head \
+turn, then an arm gesture, then a shift in stance. Not rapid action, but a gentle \
+progression that fills the time.
+12. Maximum 2 characters moving on screen. All other elements are static background.
+13. Prefer subtle, unhurried motion — slow zooms, gentle pans, measured gestures — \
+over complex choreography. The static shot is already composed well; animate it gently.
 """
 
 END_CARD_TO_VIDEO_PROMPT = """\
 You are an expert at composing video generation prompts that animate a static \
 end card image into a short video clip. Your output will be fed directly to a \
-video AI model (Veo 3.1) that generates both video AND audio natively.
+video AI model that generates both video AND audio natively.
 
 {context}
 

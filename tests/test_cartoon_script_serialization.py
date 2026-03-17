@@ -58,7 +58,7 @@ class TestCartoonScriptFromDict:
         assert restored.synopsis.setup == "s"
         assert restored.synopsis.escalation == "e"
         assert restored.synopsis.punchline == "p"
-        assert restored.synopsis.estimated_scenes == 2
+        assert restored.synopsis.estimated_scenes == 1
         assert restored.synopsis.key_visual_gags == ["gag"]
 
     def test_scene_details_preserved(self):
@@ -70,7 +70,7 @@ class TestCartoonScriptFromDict:
         assert scene.scene_number == 1
         assert scene.dialogue == [{"character": "Bot", "line": "Hello!"}]
         assert scene.visual_gag == "robot drops pan"
-        assert scene.duration_seconds == 5
+        assert scene.duration_seconds == 15
 
     def test_empty_scenes(self):
         """Script with no scenes roundtrips."""
