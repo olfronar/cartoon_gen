@@ -23,7 +23,7 @@ def render_script_markdown(script: CartoonScript) -> str:
 
     # Synopsis
     lines.append(
-        f"- **Synopsis**: {script.synopsis.setup} {script.synopsis.escalation} "
+        f"- **Synopsis**: {script.synopsis.setup} {script.synopsis.development} "
         f"{script.synopsis.punchline}"
     )
     lines.append("")

@@ -84,7 +84,7 @@ def make_script(**overrides) -> CartoonScript:
         logline="A robot learns to cook",
         synopsis=Synopsis(
             setup="s",
-            escalation="e",
+            development="e",
             punchline="p",
             estimated_scenes=1,
             key_visual_gags=["gag"],

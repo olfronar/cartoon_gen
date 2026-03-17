@@ -63,7 +63,7 @@ Dependencies are managed in `pyproject.toml` (not requirements.txt).
 Always use `.venv/bin/` prefixed commands (not `source .venv/bin/activate && ...`) — the direct binary paths are pre-approved in permission settings and won't prompt for approval.
 
 ```bash
-# Run all tests (181 tests)
+# Run all tests (180 tests)
 .venv/bin/pytest tests/ -v
 
 # Run a single test file
@@ -163,7 +163,7 @@ Tier freshness cutoffs: discovery/validation = 24h, context = 48h.
 - **Dedup** (`dedup.py`): URL normalization + `rapidfuzz` title similarity (threshold 85). Merges multi-source items rather than discarding.
 - **Scorer** (`scorer.py`): streams to `claude-opus-4-6` with adaptive thinking, 32k max tokens. Rewrites titles for clarity, generates comedy explanations for every item. Falls back to raw score sorting if API key missing or call fails.
 - **xAI source** (`sources/xai.py`): uses `grok-4.20-beta-latest-non-reasoning` with `web_search(allowed_domains=["x.com"])` tool for live X data.
-- **Data contracts** (`shared/models.py`): `RawItem` → `ScoredItem` → `ComedyBrief` → `Logline` → `Synopsis` → `SceneScript` → `CartoonScript` → `ShotResult` → `ShotsManifest` → `ClipResult` → `VideoManifest`. All agents share these.
+- **Data contracts** (`shared/models.py`): `RawItem` → `ScoredItem` → `ComedyBrief` → `Logline` → `Synopsis` → `SceneScript` → `CartoonScript` → `ShotResult` → `ShotsManifest` → `ClipResult` → `VideoManifest`. All agents share these. `Synopsis.from_dict()` accepts both `development` and legacy `escalation` keys for backward compatibility.
 - **Shared utilities** (`shared/utils.py`): `strip_code_fences()`, `parse_iso_utc()`, `strip_html()`, `extract_text()`, `call_llm_json()`, `call_llm_text()`.
 - **Context loader** (`shared/context_loader.py`): `load_characters()`, `load_art_style()`, `load_art_materials()`, `build_context_block()`, `build_reference_image_list()`. Used by script_writer, static_shots_maker, and video_designer.
 - **Delivery** (`delivery/`): local `.md` file (always) + Notion page (if `NOTION_API_KEY` configured).
@@ -183,7 +183,7 @@ Pipeline: brief JSON ingestion → parallel logline generation + selection (all 
 - **Logline selector** (`pipeline/logline_selector.py`): Selects best 1 of 3 per item. Falls back to first logline on error.
 - **Script expander** (`pipeline/script_expander.py`): Two-step: synopsis → full script. All 5 items run in parallel via `asyncio.gather()`.
 - **Renderer** (`pipeline/renderer.py`): `CartoonScript` → `.md` (human-readable) + `.json` (machine-readable for static_shots_maker).
-- **Prompts** (`prompts.py`): All prompt templates. Shared humor preamble establishes the field-correspondent show format, news-explanatory comedy core promise, and three comedy traditions (dry observation, deadpan absurdism, quiet irony). Prompts enforce calm single-location scenes with maximum 2 characters; dialogue is the primary vehicle for exposition + humor; `comedy_angle`, `snippet`, and `news_explanation` are passed through to the script expansion stage so the LLM never loses the factual news context.
+- **Prompts** (`prompts.py`): All prompt templates. Shared humor preamble establishes the field-correspondent show format, CRITICAL visual rule (single photograph per scene), and three comedy traditions (dry observation, deadpan absurdism, quiet irony). Downstream prompts (script expansion, image, video) use tiered rules: NON-NEGOTIABLE/CRITICAL → REQUIRED → STYLE/FORMAT. Script expansion includes a `compliance_check` validation checklist and a concrete JSON example. `comedy_angle`, `snippet`, and `news_explanation` are passed through to the script expansion stage so the LLM never loses the factual news context.
 - **Runner** (`pipeline/runner.py`): Async orchestrator for the full pipeline.
 
 ### Setup tool
@@ -207,7 +207,7 @@ Pipeline: script JSON ingestion → sequential prompt rewriting + image generati
 - **Script reader** (`pipeline/script_reader.py`): Reads `output/scripts/<date>_<N>.json` sidecars. Auto-detects latest date if none specified. Uses `CartoonScript.from_dict()`.
 - **Prompt generator** (`pipeline/prompt_generator.py`): Claude rewrites video-oriented scene prompts into static image prompts (strips motion/audio/duration, picks peak visual moment, weaves in character details + art style). Falls back to regex stripping if Claude unavailable.
 - **Image generator** (`pipeline/image_generator.py`): Gemini `gemini-3.1-flash-image-preview` generates 9:16 PNGs. Accepts optional `reference_images` (art materials + previous scene) for visual consistency.
-- **Prompts** (`prompts.py`): `SCENE_TO_IMAGE_PROMPT` and `END_CARD_TO_IMAGE_PROMPT` templates. References art materials and previous scene for consistency.
+- **Prompts** (`prompts.py`): `SCENE_TO_IMAGE_PROMPT` and `END_CARD_TO_IMAGE_PROMPT` templates. Rules tiered as CRITICAL/REQUIRED/FORMAT. Image role declaration: reference images are STYLE REFERENCES. References art materials and previous scene for consistency.
 - **Runner** (`pipeline/runner.py`): Async orchestrator. Level 1 parallel across scripts, scenes sequential within each script (visual continuity chain). Loads art materials as reference images.
 
 ### Output
@@ -225,7 +225,7 @@ Pipeline: manifest + script ingestion → parallel video prompt composition (Cla
 - **Prompt generator** (`pipeline/prompt_generator.py`): Claude composes video-generation prompts from scene details + character profiles + art style + formatted dialogue. Falls back to original scene_prompt if Claude unavailable.
 - **Video generator** (`pipeline/video_generator.py`): xAI grok-imagine-video (`grok-imagine-video`) image-to-video with native audio generation. Uses static shot as source image via base64 data URI. SDK handles polling internally.
 - **Assembler** (`pipeline/assembler.py`): ffmpeg concatenation with re-encoding (`libx264 + aac`) for audio normalization. Glitch transitions (1.0s) with silence between scripts.
-- **Prompts** (`prompts.py`): `SCENE_TO_VIDEO_PROMPT` and `END_CARD_TO_VIDEO_PROMPT` templates. Include audio/dialogue direction for native audio generation.
+- **Prompts** (`prompts.py`): `SCENE_TO_VIDEO_PROMPT` and `END_CARD_TO_VIDEO_PROMPT` templates. Rules tiered as CRITICAL/REQUIRED/FORMAT. Include audio/dialogue direction for native audio generation.
 - **Runner** (`pipeline/runner.py`): Async orchestrator. Level 1 parallel across scripts, Level 2 parallel across scenes. Uses `xai_sdk.AsyncClient` (requires `XAI_API_KEY`).
 
 ### Output

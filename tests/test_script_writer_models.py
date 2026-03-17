@@ -55,7 +55,7 @@ class TestSynopsis:
     def test_creation(self):
         syn = Synopsis(
             setup="Robot opens restaurant",
-            escalation="Health inspector arrives, is also a robot",
+            development="Health inspector arrives, is also a robot",
             punchline="They merge into one super-robot",
             estimated_scenes=6,
             key_visual_gags=["robot melting cheese with laser eyes"],
@@ -73,7 +73,7 @@ class TestCartoonScript:
             logline="A robot learns to cook",
             synopsis=Synopsis(
                 setup="s",
-                escalation="e",
+                development="e",
                 punchline="p",
                 estimated_scenes=2,
                 key_visual_gags=["gag"],
@@ -108,7 +108,7 @@ class TestCartoonScript:
             logline="test",
             synopsis=Synopsis(
                 setup="s",
-                escalation="e",
+                development="e",
                 punchline="p",
                 estimated_scenes=2,
                 key_visual_gags=[],

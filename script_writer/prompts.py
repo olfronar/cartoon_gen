@@ -11,7 +11,13 @@ absurd-but-accurate metaphors, and the reactions of people at the scene. The new
 IS the comedy; the script makes the truth funnier than fiction, not replace it \
 with fiction. The show is calm, unhurried, and informative — closer to a podcast \
 with illustrations than an action cartoon. Billy stands in one place and talks. \
-The world around him is mostly still. Your scripts blend three comedy traditions:
+The world around him is mostly still.
+
+**CRITICAL visual rule**: every scene must be describable as a single photograph \
+with one clear subject. If you need more than one sentence to describe what the \
+viewer sees at any given moment, the scene is too complex.
+
+Your scripts blend three comedy traditions:
 
 1. **Dry observation** (Stewart Lee / early Jon Stewart style): The comedian \
 stands still, explains the truth, and the truth is funnier than any invented \
@@ -25,10 +31,6 @@ funnier than motion. The single well-chosen detail beats a crowd of details.
 3. **Quiet irony** (Jeeves & Wooster / Blackadder style): Wordplay, \
 understatement, and the gap between what someone says and what is obviously true. \
 One character smarter than the rest. The joke lands in the pause, not the punchline.
-
-Visual rule: every scene should be describable as a single photograph with one \
-clear subject. If you need more than one sentence to describe what the viewer \
-sees at any given moment, the scene is too complex.
 
 """
 
@@ -56,6 +58,9 @@ one clean analogy or comparison. Wordplay and understatement.
 still, XKCD-style. The image does the comedy work.
 
 For each logline, include:
+- `news_essence`: 1-2 sentences capturing what actually happened in the real world \
+(just the facts, no comedy). This grounds the episode — without it, the comedy \
+disconnects from reality.
 - `text`: the logline itself (1-2 sentences, sets up the episode premise)
 - `approach`: "observational" | "satirical" | "metaphorical"
 - `featured_characters`: list of character names from the profiles above that appear
@@ -73,8 +78,6 @@ simultaneous actors are not producible — keep it to two people talking.
 
 Return as a JSON array of 3 objects with keys: text, approach, featured_characters, \
 visual_hook, news_essence.
-- `news_essence`: 1-2 sentences capturing what actually happened in the real world \
-(just the facts, no comedy).
 """
 
 LOGLINE_SELECTION_PROMPT = """\
@@ -105,6 +108,9 @@ image? Reject montages, recursive effects, crowds, and abstract concepts.
 Return a JSON object with:
 - `selected_index`: 0, 1, or 2 (which logline to use)
 - `reasoning`: 1-2 sentences explaining why
+
+If none of the three loglines passes visual feasibility (criterion 5), \
+select the closest and note the issue in reasoning.
 """
 
 SYNOPSIS_PROMPT = """\
@@ -145,8 +151,11 @@ of events or a montage.
 - **news_explanation**: in 2-3 sentences, what is the real-world news story this \
 episode explains?
 
-Return as JSON with keys: setup, escalation (the "development" act above), \
-punchline, estimated_scenes, key_visual_gags, news_explanation.
+Return as JSON with keys: setup, development, \
+punchline, estimated_scenes, key_visual_gags, news_explanation, \
+news_explanation_check.
+- `news_explanation_check`: boolean — true if your news_explanation would let \
+someone who never heard this headline understand the basic story.
 """
 
 SCRIPT_EXPANSION_PROMPT = """\
@@ -165,33 +174,35 @@ Write the full script for this cartoon episode.
 **News explanation**: {news_explanation}
 **Synopsis**:
 - Setup: {setup}
-- Development: {escalation}
+- Development: {development}
 - Punchline: {punchline}
 
 **Key visual gags to include**: {visual_gags}
 
 **CREATIVE DIRECTION**:
-- Every episode is a news explainer. Scene 1 must establish what happened. By \
+
+**NON-NEGOTIABLE** (pipeline breaks if violated):
+- scene_prompt describes a SINGLE PHOTOGRAPH — one subject, one background, one \
+visual detail. If the scene_prompt describes more than 3 things happening \
+simultaneously, it is too complex — simplify.
+- Maximum 2 characters visible in the scene. Never add crowds, montages, groups, \
+or background actors doing things.
+- Billy stays in ONE location for the entire episode. Every scene has the same background.
+
+**CORE** (standard quality):
+- Every episode is a news explainer. The scene must establish what happened. By \
 the end, the viewer understands: who did what, why it matters, why it's absurd.
-- Billy is at the scene of the news story. He STAYS in one location for the \
-entire episode. Every scene has the same background.
-- The ONLY characters in each scene are Billy and at most one other person \
-(a bystander, official, or the subject of the story). Never add crowds, \
-montages, groups, or background actors doing things.
-- Keep the plot simple and direct. One clear comedic premise, developed once, \
-resolved with a quiet insight.
 - Dialogue is the primary vehicle for both comedy and exposition. Billy talks \
 to camera or to one other person. 2-3 short lines per scene (1-2 seconds each).
+- Scene structure: one continuous 15-second shot. The scene opens with the \
+news setup, develops through one reframing analogy, and lands on a closing observation.
+
+**STYLE** (creative polish):
 - Visual comedy = ONE prop, sign, or background detail per scene that the \
 viewer can see in a single still image. The gap between what Billy calmly \
 says and one absurd detail visible behind him IS the comedy.
-- Scene structure: one continuous 15-second shot. The scene opens with the \
-news setup, develops through one reframing analogy, and lands on a closing \
-observation. Same location, same characters, one continuous shot.
-- Each scene_prompt must describe what a PHOTOGRAPH of this moment looks like. \
-One clear subject. One background. One visual detail. If the scene_prompt \
-describes more than 3 things happening simultaneously, it is too complex — \
-simplify.
+- Keep the plot simple and direct. One clear comedic premise, developed once, \
+resolved with a quiet insight.
 - When dialogue IS included, write it as spoken lines with character attribution \
 — the video model generates audio natively from quoted dialogue in scene_prompt.
 
@@ -223,14 +234,62 @@ in a single still image (or null). Not a sequence of events.
 "slow zoom in", "static → gentle pan"). Prefer subtle, unhurried moves suited \
 to a 15-second continuous shot.
 
+**Example output** (fictional topic — adapt structure, not content):
+{{
+  "title": "The Last Fax Machine",
+  "scenes": [{{
+    "scene_number": 1,
+    "scene_title": "End of an Era",
+    "setting": "Government office lobby, midday, fluorescent lighting",
+    "scene_prompt": "Billy in a beige suit stands in a drab government office \
+lobby beside a hulking fax machine wrapped in black mourning ribbon. A \
+hand-lettered sign taped to the wall reads 'THANK YOU FOR 43 YEARS OF SERVICE.' \
+Billy gestures toward the machine with quiet reverence. Billy says: 'They finally \
+did it. The last government fax machine has been decommissioned.' A middle-aged \
+clerk in a grey cardigan clutches a stack of thermal paper to her chest, visibly \
+emotional. The clerk says: 'I just printed my resignation letter on it. Seemed \
+fitting.'",
+    "dialogue": [
+      {{"character": "Billy", \
+"line": "They finally did it. The last government fax machine has been decommissioned."}},
+      {{"character": "Clerk", \
+"line": "I just printed my resignation letter on it. Seemed fitting."}}
+    ],
+    "visual_gag": "mourning ribbon on fax machine with 'THANK YOU FOR 43 YEARS OF SERVICE' sign",
+    "audio_direction": "quiet office hum, fax machine dying screech, melancholic piano note",
+    "duration_seconds": 15,
+    "camera_movement": "slow zoom in from lobby wide shot to fax machine close-up"
+  }}],
+  "end_card_prompt": "Show logo with faded fax paper texture background",
+  "characters_used": ["Billy"],
+  "compliance_check": {{
+    "single_scene": true,
+    "max_two_characters": true,
+    "photograph_test": true,
+    "news_explained": true,
+    "word_count_ok": true
+  }}
+}}
+
 Also provide an `end_card_prompt` (50-100 words): a final scene prompt for the \
 episode end card showing the show logo/title.
+
+Before returning, verify your output against this checklist:
+- `single_scene`: exactly 1 scene in the scenes array
+- `max_two_characters`: at most 2 characters visible in scene_prompt
+- `photograph_test`: scene_prompt describes one frozen moment, not a sequence
+- `news_explained`: a viewer would understand what happened in the real world
+- `word_count_ok`: scene_prompt is 80-150 words
+
+If any check fails, revise the scene before returning.
 
 Return as JSON with keys:
 - `title`: episode title
 - `scenes`: array of scene objects
 - `end_card_prompt`: string
 - `characters_used`: list of character names that appear
+- `compliance_check`: object with boolean keys: single_scene, max_two_characters, \
+photograph_test, news_explained, word_count_ok
 """
 
 CHARACTER_INTERVIEW_SYSTEM = """\

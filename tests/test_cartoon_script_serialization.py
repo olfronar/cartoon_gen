@@ -56,7 +56,7 @@ class TestCartoonScriptFromDict:
         restored = CartoonScript.from_dict(original.to_dict())
 
         assert restored.synopsis.setup == "s"
-        assert restored.synopsis.escalation == "e"
+        assert restored.synopsis.development == "e"
         assert restored.synopsis.punchline == "p"
         assert restored.synopsis.estimated_scenes == 1
         assert restored.synopsis.key_visual_gags == ["gag"]

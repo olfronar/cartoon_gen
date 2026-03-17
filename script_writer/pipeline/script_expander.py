@@ -38,7 +38,7 @@ def generate_synopsis(
 
     return Synopsis(
         setup=data["setup"],
-        escalation=data["escalation"],
+        development=data.get("development", data.get("escalation", "")),
         punchline=data["punchline"],
         estimated_scenes=int(data.get("estimated_scenes", 3)),
         key_visual_gags=data.get("key_visual_gags", []),
@@ -63,10 +63,9 @@ def expand_script(
         title=item.item.title,
         logline=logline.text,
         setup=synopsis.setup,
-        escalation=synopsis.escalation,
+        development=synopsis.development,
         punchline=synopsis.punchline,
         visual_gags=", ".join(synopsis.key_visual_gags),
-        num_scenes=synopsis.estimated_scenes,
         comedy_angle=item.comedy_angle,
         snippet=item.item.snippet,
         news_explanation=synopsis.news_explanation,

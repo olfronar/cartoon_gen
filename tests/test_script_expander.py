@@ -25,7 +25,7 @@ def _mock_stream_response(json_data):
 
 MOCK_SYNOPSIS = {
     "setup": "Robot opens restaurant",
-    "escalation": "Health inspector arrives",
+    "development": "Health inspector arrives",
     "punchline": "Inspector is also a robot",
     "estimated_scenes": 6,
     "key_visual_gags": ["robot cooking", "inspector gasping"],

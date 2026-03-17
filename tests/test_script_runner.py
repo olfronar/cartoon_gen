@@ -46,7 +46,7 @@ MOCK_SELECTION = {"selected_index": 0, "reasoning": "Best"}
 
 MOCK_SYNOPSIS = {
     "setup": "s",
-    "escalation": "e",
+    "development": "e",
     "punchline": "p",
     "estimated_scenes": 2,
     "key_visual_gags": ["gag"],

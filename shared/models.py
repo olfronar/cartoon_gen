@@ -85,11 +85,23 @@ class Logline:
 @dataclass(slots=True)
 class Synopsis:
     setup: str
-    escalation: str
+    development: str
     punchline: str
     estimated_scenes: int
     key_visual_gags: list[str]
     news_explanation: str = ""
+
+    @classmethod
+    def from_dict(cls, data: dict) -> Synopsis:
+        """Deserialize from a JSON-compatible dict (accepts 'escalation' for backward compat)."""
+        return cls(
+            setup=data["setup"],
+            development=data.get("development", data.get("escalation", "")),
+            punchline=data["punchline"],
+            estimated_scenes=int(data.get("estimated_scenes", 1)),
+            key_visual_gags=data.get("key_visual_gags", []),
+            news_explanation=data.get("news_explanation", ""),
+        )
 
 
 @dataclass(slots=True)
@@ -131,7 +143,7 @@ class CartoonScript:
             date=date.fromisoformat(data["date"]),
             source_item=_deserialize_scored_item(data["source_item"]),
             logline=data["logline"],
-            synopsis=Synopsis(**data["synopsis"]),
+            synopsis=Synopsis.from_dict(data["synopsis"]),
             scenes=[SceneScript(**s) for s in data["scenes"]],
             end_card_prompt=data["end_card_prompt"],
             characters_used=data["characters_used"],

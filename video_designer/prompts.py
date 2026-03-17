@@ -21,24 +21,28 @@ Compose a video generation prompt to animate this static scene shot.
 **Duration**: {duration_seconds} seconds
 **Dialogue**: {dialogue_formatted}
 
-Rules:
-1. Describe MOTION starting from the static shot — what moves, how, and when.
-2. Include camera movement: {camera_movement}.
-3. Reference character animations using their visual details from profiles above.
-4. Enforce the art style from the style guide above.
-5. Maintain 9:16 vertical composition throughout.
-6. Include AUDIO direction — sound effects, ambient sounds, and mood music.
-7. For dialogue, write spoken lines with character attribution: \
+**CRITICAL** (pipeline breaks if violated):
+- Prefer subtle, unhurried motion — slow zooms, gentle pans, measured gestures — \
+over complex choreography. The static shot is already composed well; animate it gently.
+- Maximum 2 characters moving on screen. All other elements are static background.
+- Use ONLY affirmative descriptions — never say "no", "without", "don't", "avoid".
+
+**REQUIRED** (standard quality):
+- Describe MOTION starting from the static shot — what moves, how, and when.
+- For dialogue, write spoken lines with character attribution: \
 "[Character] says: '[line]'". The model generates audio natively from these cues.
-8. Use ONLY affirmative descriptions — never say "no", "without", "don't", "avoid".
-9. Front-load the key motion in the first 20-30 words.
-10. Output ONLY the video prompt text, 80-150 words. No commentary.
-11. Over the 15-second duration, allow 2-3 subtle motions per character — a head \
+- Include AUDIO direction — sound effects, ambient sounds, and mood music.
+- Enforce the art style from the style guide above.
+- Maintain 9:16 vertical composition throughout.
+- Over the 15-second duration, allow 2-3 subtle motions per character — a head \
 turn, then an arm gesture, then a shift in stance. Not rapid action, but a gentle \
 progression that fills the time.
-12. Maximum 2 characters moving on screen. All other elements are static background.
-13. Prefer subtle, unhurried motion — slow zooms, gentle pans, measured gestures — \
-over complex choreography. The static shot is already composed well; animate it gently.
+
+**FORMAT**:
+- Front-load the key motion in the first 20-30 words.
+- Include camera movement: {camera_movement}.
+- Reference character animations using their visual details from profiles above.
+- Output ONLY the video prompt text, 80-150 words. No commentary.
 """
 
 END_CARD_TO_VIDEO_PROMPT = """\
@@ -55,11 +59,15 @@ Compose a video generation prompt to subtly animate this end card.
 **Episode title**: {title}
 **Original end-card prompt**: {end_card_prompt}
 
-Rules:
-1. Keep animation subtle — logo shimmer, gentle particle effects, credits fade-in.
-2. Enforce the art style from the style guide above.
-3. Maintain 9:16 vertical composition.
-4. Include ambient audio — a short musical sting or gentle outro sound.
-5. Use ONLY affirmative descriptions — never say "no", "without", "don't", "avoid".
-6. Output ONLY the video prompt text, 50-120 words. No commentary.
+**CRITICAL**:
+- Keep animation subtle — logo shimmer, gentle particle effects, credits fade-in.
+- Use ONLY affirmative descriptions — never say "no", "without", "don't", "avoid".
+
+**REQUIRED**:
+- Enforce the art style from the style guide above.
+- Maintain 9:16 vertical composition.
+- Include ambient audio — a short musical sting or gentle outro sound.
+
+**FORMAT**:
+- Output ONLY the video prompt text, 50-120 words. No commentary.
 """

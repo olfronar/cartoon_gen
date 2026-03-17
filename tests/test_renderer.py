@@ -16,7 +16,7 @@ def _make_script() -> CartoonScript:
         logline="A robot tries to cook dinner",
         synopsis=Synopsis(
             setup="Robot opens kitchen",
-            escalation="Everything catches fire",
+            development="Everything catches fire",
             punchline="Robot orders pizza",
             estimated_scenes=2,
             key_visual_gags=["fire", "pizza"],
