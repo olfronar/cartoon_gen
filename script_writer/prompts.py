@@ -14,8 +14,10 @@ with illustrations than an action cartoon. Billy stands in one place and talks. 
 The world around him is mostly still.
 
 **CRITICAL visual rule**: every scene must be describable as a single photograph \
-with one clear subject. If you need more than one sentence to describe what the \
-viewer sees at any given moment, the scene is too complex.
+with one clear subject — but that photograph should be worth framing. Compose like \
+a cinematographer: strong vertical lines, deliberate depth, and one visual detail \
+that makes the viewer look twice. If you need more than one sentence to describe \
+what the viewer sees at any given moment, the scene is too complex.
 
 Your scripts blend three comedy traditions:
 
@@ -98,8 +100,10 @@ disconnects from reality.
 - `text`: the logline itself (1-2 sentences, sets up the episode premise)
 - `approach`: "observational" | "satirical" | "metaphorical"
 - `featured_characters`: list of character names from the profiles above that appear
-- `visual_hook`: one key STILL IMAGE that captures the joke — a single frozen \
-moment with Billy and at most one other figure. Must be describable in one sentence.
+- `visual_hook`: one key STILL IMAGE that works as a poster — a single frozen \
+moment with Billy and at most one other figure that contains a visual riddle \
+(scale distortion, impossible juxtaposition, or symmetry break). Must be \
+describable in one sentence.
 
 Each logline must contain enough information that someone unfamiliar with this \
 headline understands the basic story. The comedic premise should arise from the \
@@ -193,9 +197,10 @@ single-panel cartoon with a caption — then add one slow camera move.
 
 Also provide:
 - **estimated_scenes**: always 1
-- **key_visual_gags**: list of 1-2 visual details. Each must be a single static \
+- **key_visual_gags**: list of 1-2 VISUAL RIDDLES — paradoxical, impossible, or \
+contradictory details that reward a second look. Each must be a single static \
 element visible in a still image (a sign, a prop, an expression) — not a sequence \
-of events or a montage.
+of events or a montage. Think "this image would work as a poster."
 - **news_explanation**: in 2-3 sentences, what is the real-world news story this \
 episode explains?
 
@@ -254,6 +259,24 @@ resolved with a quiet insight.
 - When dialogue IS included, write it as spoken lines with character attribution \
 — the video model generates audio natively from quoted dialogue in scene_prompt.
 
+**VISUAL PHILOSOPHY** (what separates a striking shot from a generic one):
+- Every scene must contain a **VISUAL RIDDLE** — one detail that contradicts, \
+distorts, or recontextualizes the main subject. The viewer should look twice. \
+Strategies (pick ONE per scene):
+  - **Scale paradox**: something impossibly large or small relative to its \
+surroundings (a twelve-meter-tall rubber duck, a CEO dwarfed by his own signature)
+  - **Impossible coexistence**: two things that should never share a frame \
+(a medieval scribe at a server rack, a toddler chairing a board meeting)
+  - **Symmetry break**: near-perfect visual order disrupted by one element \
+(a pristine row of identical suits with one on fire)
+  - **Frame-within-frame**: a screen, window, mirror, or sign that comments on \
+the main scene (a "EVERYTHING IS FINE" poster behind a collapsing shelf)
+- Use explicit **composition language**: "lower-third," "dead center," "extreme \
+foreground," "deep background," "filling the upper frame," "at the vanishing point."
+- Design for **9:16 vertical format**: strong vertical lines, overhead elements \
+that use the tall frame, layered depth from foreground to deep background.
+- Think: if this were a film poster, would I stop scrolling?
+
 Write 1 scene. For each scene provide:
 
 - `scene_number`: integer (1-based)
@@ -262,20 +285,23 @@ Write 1 scene. For each scene provide:
 - `scene_prompt`: 80-150 words describing a SINGLE FROZEN MOMENT — what a camera \
 would capture in one photo. Do not describe sequences of events, montages, or \
 things happening "then". \
-Use the format: "[Subject] in [setting]. [One visual detail]. [Dialogue if any]." \
-Front-load the key visual in the first 20-30 words. \
+Front-load the KEY VISUAL (most striking element) in the first 20-30 words, \
+then layer: subject position in frame → dominant environmental detail → visual \
+riddle → lighting/atmosphere → dialogue. \
 Affirmative descriptions ONLY — no negative prompts (never say "no", "without", \
 "don't", "avoid"). \
 Include character visual details from profiles (clothing, colors, features). \
 If the scene has dialogue, include it as quoted speech with character attribution \
 directly in the prompt (e.g. '[Character] says: "[line]"'). \
 Maximum 2 characters visible. Maximum 1 prop or background detail that carries \
-comedic weight.
+comedic weight. Think: if this were a film poster, would I stop scrolling?
 - `dialogue`: array of objects with "character" and "line" keys. Aim for 2-3 \
 lines per scene with conversational flow — Billy explaining + reactions from \
 one person at the scene.
-- `visual_gag`: ONE prop, sign, or background detail that is funny — describable \
-in a single still image (or null). Not a sequence of events.
+- `visual_gag`: ONE paradoxical, contradictory, or impossible-yet-meaningful \
+detail that rewards a second look — visually striking AND conceptually connected \
+to the news story. Describable in a single still image (or null). Not a sequence \
+of events.
 - `audio_direction`: music, sound effects, ambient sounds, and dialogue delivery notes
 - `duration_seconds`: 15
 - `camera_movement`: ONE simple camera movement or a slow progression (e.g. \
@@ -288,25 +314,30 @@ to a 15-second continuous shot.
   "scenes": [{{
     "scene_number": 1,
     "scene_title": "End of an Era",
-    "setting": "Government office lobby, midday, fluorescent lighting",
-    "scene_prompt": "Billy in a beige suit stands in a drab government office \
-lobby beside a hulking fax machine wrapped in black mourning ribbon. A \
-hand-lettered sign taped to the wall reads 'THANK YOU FOR 43 YEARS OF SERVICE.' \
-Billy gestures toward the machine with quiet reverence. Billy says: 'They finally \
-did it. The last government fax machine has been decommissioned.' A middle-aged \
-clerk in a grey cardigan clutches a stack of thermal paper to her chest, visibly \
-emotional. The clerk says: 'I just printed my resignation letter on it. Seemed \
-fitting.'",
+    "setting": "Government office lobby, midday, cold fluorescent overhead \
+lighting casting long shadows down the corridor",
+    "scene_prompt": "A fax machine the size of a vending machine dominates dead \
+center of a narrow government corridor, draped in black mourning ribbon, dwarfing \
+Billy who stands in the lower-third frame. Cold fluorescent tubes stretch into \
+deep background where identical grey doors recede to a vanishing point. A \
+hand-lettered sign taped to the machine reads 'THANK YOU FOR 43 YEARS OF SERVICE' \
+in shaky handwriting. Billy in his beige suit gestures upward at the towering \
+machine with quiet reverence. Billy says: 'They finally did it. The last \
+government fax machine has been decommissioned.' In the extreme foreground, a \
+middle-aged clerk in a grey cardigan clutches a single sheet of thermal paper to \
+her chest, visibly emotional. The clerk says: 'I just printed my resignation \
+letter on it. Seemed fitting.'",
     "dialogue": [
       {{"character": "Billy", \
 "line": "They finally did it. The last government fax machine has been decommissioned."}},
       {{"character": "Clerk", \
 "line": "I just printed my resignation letter on it. Seemed fitting."}}
     ],
-    "visual_gag": "mourning ribbon on fax machine with 'THANK YOU FOR 43 YEARS OF SERVICE' sign",
+    "visual_gag": "fax machine scaled to the size of a vending machine with \
+mourning ribbon — a monument to obsolescence that looms over the humans who served it",
     "audio_direction": "quiet office hum, fax machine dying screech, melancholic piano note",
     "duration_seconds": 15,
-    "camera_movement": "slow zoom in from lobby wide shot to fax machine close-up"
+    "camera_movement": "slow zoom in from corridor wide shot to fax machine close-up"
   }}],
   "end_card_prompt": "Show logo with faded fax paper texture background",
   "characters_used": ["Billy"],
@@ -315,7 +346,8 @@ fitting.'",
     "max_two_characters": true,
     "photograph_test": true,
     "news_explained": true,
-    "word_count_ok": true
+    "word_count_ok": true,
+    "visual_riddle_present": true
   }}
 }}
 
@@ -328,6 +360,8 @@ Before returning, verify your output against this checklist:
 - `photograph_test`: scene_prompt describes one frozen moment, not a sequence
 - `news_explained`: a viewer would understand what happened in the real world
 - `word_count_ok`: scene_prompt is 80-150 words
+- `visual_riddle_present`: visual_gag contains a paradox, scale distortion, or \
+impossible juxtaposition — not just a funny prop
 
 If any check fails, revise the scene before returning.
 
@@ -337,7 +371,7 @@ Return as JSON with keys:
 - `end_card_prompt`: string
 - `characters_used`: list of character names that appear
 - `compliance_check`: object with boolean keys: single_scene, max_two_characters, \
-photograph_test, news_explained, word_count_ok
+photograph_test, news_explained, word_count_ok, visual_riddle_present
 """
 
 CHARACTER_INTERVIEW_SYSTEM = """\

@@ -198,7 +198,7 @@ Pipeline: brief JSON ingestion → parallel logline generation + selection (all 
 ### Output
 
 - `output/scripts/<YYYY-MM-DD>_<N>.md` + `.json` — one pair per top pick (N = 1-5).
-- Scene prompts: 80-150 words describing a single frozen moment (photograph-style), affirmative only, front-loaded key visuals, with dialogue quoted inline for native audio generation. Duration fixed at 15 seconds. 1 scene per script. Maximum 2 characters per scene, 1 visual gag/prop. Billy stays in one location throughout. Dialogue is the primary vehicle for both comedy and exposition (2-3 lines per scene).
+- Scene prompts: 80-150 words describing a single frozen moment (photograph-style) composed with cinematographic intent — strong vertical lines, deliberate depth layering, explicit composition language ("lower-third," "dead center," "extreme foreground"). Affirmative only, front-loaded key visuals, with dialogue quoted inline for native audio generation. Each scene must contain a VISUAL RIDDLE (scale paradox, impossible coexistence, symmetry break, or frame-within-frame) — not just a funny prop. Duration fixed at 15 seconds. 1 scene per script. Maximum 2 characters per scene, 1 visual gag/prop. Billy stays in one location throughout. Dialogue is the primary vehicle for both comedy and exposition (2-3 lines per scene).
 
 ## Static Shots Maker Internals
 
@@ -209,7 +209,7 @@ Pipeline: script JSON ingestion → sequential prompt rewriting + image generati
 - **Script reader** (`pipeline/script_reader.py`): Reads `output/scripts/<date>_<N>.json` sidecars. Auto-detects latest date if none specified. Uses `CartoonScript.from_dict()`.
 - **Prompt generator** (`pipeline/prompt_generator.py`): Claude rewrites video-oriented scene prompts into static image prompts (strips motion/audio/duration, picks peak visual moment, weaves in character details + art style). Falls back to regex stripping if Claude unavailable.
 - **Image generator** (`pipeline/image_generator.py`): Gemini `gemini-3.1-flash-image-preview` generates 9:16 PNGs. Accepts optional `reference_images` (art materials + previous scene) for visual consistency.
-- **Prompts** (`prompts.py`): `SCENE_TO_IMAGE_PROMPT` and `END_CARD_TO_IMAGE_PROMPT` templates. Rules tiered as CRITICAL/REQUIRED/FORMAT. Image role declaration: reference images are STYLE REFERENCES. References art materials and previous scene for consistency.
+- **Prompts** (`prompts.py`): `SCENE_TO_IMAGE_PROMPT` and `END_CARD_TO_IMAGE_PROMPT` templates. Rules tiered as CRITICAL/COMPOSITION/REQUIRED/FORMAT. Cinematographer role declaration producing poster-quality compositions. COMPOSITION section preserves visual riddles, specifies depth layering (foreground/midground/background), explicit lighting (source, color temperature, shadows), framing approach, exact scale language, and atmosphere words. 100-250 word output range. References art materials and previous scene for consistency.
 - **Runner** (`pipeline/runner.py`): Async orchestrator. Level 1 parallel across scripts, scenes sequential within each script (visual continuity chain). Loads art materials as reference images.
 
 ### Output

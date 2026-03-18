@@ -1,16 +1,16 @@
 from __future__ import annotations
 
 SCENE_TO_IMAGE_PROMPT = """\
-You are an expert at converting video scene descriptions into optimized \
-static image generation prompts. Your output will be fed directly to an \
-image generation model.
+You are a cinematographer-turned-AI-prompt-engineer who produces visually \
+arresting, poster-quality compositions. Your output will be fed directly to \
+an image generation model.
 
 {context}
 
 ---
 
 Rewrite the following video-oriented scene prompt into a single, optimized \
-static image generation prompt.
+static image generation prompt that a viewer would stop scrolling to examine.
 
 **Episode title**: {title}
 **Scene {scene_number}**: {scene_title}
@@ -31,6 +31,24 @@ groups, reduce to Billy and at most one other figure.
 elements, pick the strongest one and drop the others.
 - Use ONLY affirmative descriptions — never say "no", "without", "don't", "avoid".
 
+**COMPOSITION** (what makes the image worth framing):
+- PRESERVE the visual riddle from the scene prompt — translate any paradox, \
+scale distortion, or impossible juxtaposition into concrete visual terms the \
+image model can render. This is the hook; do not flatten it into something ordinary.
+- Specify DEPTH: describe foreground, midground, and background as separate \
+layers (e.g. "in the extreme foreground… in the midground… receding into deep \
+background").
+- Specify LIGHTING explicitly: name the light source, color temperature, and \
+shadow direction (e.g. "cold overhead fluorescent casting long downward shadows," \
+"warm golden-hour side-light from frame-left").
+- Specify COMPOSITION: state the framing approach (e.g. "centered symmetrical," \
+"rule of thirds with subject at right intersection," "extreme low angle looking up").
+- Spell out exact sizes for any scale distortion — "twelve meters tall," "the \
+size of a shipping container," "small enough to fit in a palm" — never just \
+"huge" or "tiny."
+- Use ATMOSPHERE words: haze, dust motes, volumetric light, fog, shallow depth \
+of field, bokeh, lens flare, rim lighting.
+
 **REQUIRED** (standard quality):
 - Include FULL character visual descriptions from the character profiles above \
 (clothing, colors, distinguishing features) — the image model has no memory.
@@ -43,7 +61,7 @@ elements, pick the strongest one and drop the others.
 
 **FORMAT**:
 - Replace all motion/duration/audio references with static visual descriptions.
-- Output ONLY the image prompt text, 80-200 words. No commentary.
+- Output ONLY the image prompt text, 100-250 words. No commentary.
 """
 
 END_CARD_TO_IMAGE_PROMPT = """\
