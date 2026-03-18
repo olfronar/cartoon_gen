@@ -20,7 +20,7 @@ def _mock_stream_response(json_data):
     return mock_stream
 
 
-MOCK_LOGLINES = [
+MOCK_LOGLINES_ARRAY = [
     {
         "text": "Robot starts cooking show",
         "approach": "absurdist",
@@ -40,6 +40,17 @@ MOCK_LOGLINES = [
         "visual_hook": "oven walks away",
     },
 ]
+
+MOCK_LOGLINES = {
+    "story_hook": {
+        "topic": "AI cooking",
+        "angle": "Robot trusted to cook but can't taste food",
+        "conflict": "efficiency vs sensory experience",
+        "stakes": "humans lose the last thing that made dinner personal",
+        "surprise": "the robot's recipes are just scraped from Reddit",
+    },
+    "loglines": MOCK_LOGLINES_ARRAY,
+}
 
 
 class TestGenerateLoglines:

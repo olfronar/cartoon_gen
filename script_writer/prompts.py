@@ -48,14 +48,48 @@ Generate exactly 3 loglines for a cartoon episode based on this news item:
 **Comedy angle**: {comedy_angle}
 **Snippet**: {snippet}
 
-Each logline must take a DIFFERENT approach:
-1. **observational** — Billy explains the news calmly; the truth itself is the \
-joke. Dry, understated, no invented characters beyond Billy and at most one \
-other person.
-2. **satirical** — social commentary and irony. Billy reframes the news through \
-one clean analogy or comparison. Wordplay and understatement.
-3. **metaphorical** — one vivid visual metaphor captures the whole story. Simple, \
-still, XKCD-style. The image does the comedy work.
+**STEP 1 — SHARPEN YOUR ANGLE**
+
+Before writing any loglines, analyze the story. A topic is not an angle. \
+"AI regulation" is a topic. "The committee regulating AI can't open a PDF" is \
+an angle. Find the angle.
+
+Output a `story_hook` object with:
+- `topic`: the broad subject area
+- `angle`: the specific absurd detail or tension that makes this story funny
+- `conflict`: who/what vs who/what — every funny story has a tension
+- `stakes`: who loses, what breaks, what's absurd about the outcome
+- `surprise`: what most people don't realize or won't say out loud about this
+
+**STEP 2 — WRITE THREE LOGLINES**
+
+Each logline must take a DIFFERENT approach. Each approach must identify the \
+*specific feeling people are avoiding* about this news and build the comedy \
+around naming that feeling:
+
+1. **observational** — Find the uncomfortable truth everyone's politely ignoring. \
+What's the thing people feel but won't say out loud? The embarrassment, the guilt, \
+the quiet dread? Billy states it flatly and the audience laughs because they've been \
+caught. The comedy is in the relief of finally hearing it said. Dry, understated, \
+no invented characters beyond Billy and at most one other person.
+2. **satirical** — Expose the hypocrisy or contradiction that a powerful entity \
+would prefer you didn't notice. What's the gap between what's being said and what's \
+actually happening? Billy reframes it through one clean analogy that makes the \
+contradiction undeniable. The laugh comes from the catharsis of seeing the lie named.
+3. **metaphorical** — Find the one image that's almost offensive in how accurate \
+it is. What visual captures the feeling people are swallowing — the absurdity, the \
+futility, the cognitive dissonance? The image should trigger recognition: "oh god, \
+that's exactly what this is." Simple, still, XKCD-style.
+
+**ANTI-PATTERNS** (if you catch yourself doing these, start over):
+- Writing a vague observation about a broad topic instead of a pointed take on a \
+specific detail (information dump)
+- Describing "a thing that happened" without stakes or conflict (no-stakes pitch)
+- Hedging or being balanced — take a position on why the news is absurd
+- Being so inside-baseball that a normal person wouldn't get it
+
+**THE DINNER TABLE TEST**: Each logline should work as a one-sentence pitch at a \
+dinner party that makes someone snort-laugh and say "wait, really?"
 
 For each logline, include:
 - `news_essence`: 1-2 sentences capturing what actually happened in the real world \
@@ -76,8 +110,10 @@ physically at the scene of the news story, not in a studio. Each logline must \
 feature Billy and AT MOST one other character. Crowds, montages, and multiple \
 simultaneous actors are not producible — keep it to two people talking.
 
-Return as a JSON array of 3 objects with keys: text, approach, featured_characters, \
-visual_hook, news_essence.
+Return as a JSON object with keys:
+- `story_hook`: object with keys: topic, angle, conflict, stakes, surprise
+- `loglines`: array of 3 objects with keys: text, approach, featured_characters, \
+visual_hook, news_essence
 """
 
 LOGLINE_SELECTION_PROMPT = """\
@@ -97,13 +133,20 @@ Here are 3 candidate loglines:
 {loglines_formatted}
 
 Select the BEST one. Criteria (in order of importance):
-1. **News clarity** — does the logline make the underlying news story understandable?
-2. **Simplicity** — can each scene be captured as a single still photograph with \
+1. **News clarity** — does the logline make the underlying news story understandable? \
+The news must land for the comedy to land.
+2. **Comedy punch** — does it make you laugh or at least exhale sharply? Would you \
+share it? Does it name a feeling people are avoiding? A logline that makes you feel \
+something beats one that merely informs.
+3. **Point of view** — does it take a stance? Edgy > safe. A pointed observation \
+that names what people are thinking but not saying beats a neutral summary.
+4. **Specificity** — concrete details over abstractions. A specific number, name, \
+or detail beats a generality. "The committee" < "the 74-year-old senator."
+5. **Simplicity** — can each scene be captured as a single still photograph with \
 one clear subject? Fewer actors and simpler visuals score higher.
-3. **Comedy strength** — dry observation and understatement beat escalating chaos.
-4. **Character fit** — does it use Billy naturally? At most one other character.
-5. **Visual feasibility** — can an image model render the key moment as one clean \
-image? Reject montages, recursive effects, crowds, and abstract concepts.
+6. **Character fit + visual feasibility** — does it use Billy naturally? At most \
+one other character. Can an image model render the key moment as one clean image? \
+Reject montages, recursive effects, crowds, and abstract concepts.
 
 Return a JSON object with:
 - `selected_index`: 0, 1, or 2 (which logline to use)
@@ -128,14 +171,19 @@ Write a synopsis for this cartoon episode:
 **News snippet**: {snippet}
 
 Structure the synopsis in three acts:
-- **setup**: Billy is at the scene. He explains what happened — the basic facts. \
-One prop or visual detail establishes where we are. Billy + at most one other person. \
-Viewer understands the basic facts by end of this act.
-- **development**: Billy reframes the news through one analogy or comparison that \
-makes the implications click. Same location. Same characters. The humor comes from \
-the reframing, not from new events happening.
-- **punchline**: A single closing observation that makes the viewer see the news \
-differently. Landing, not escalation. Quiet beat.
+- **setup**: Don't just establish facts — establish *stakes*. Who's losing? What's \
+broken? What's the uncomfortable question nobody's asking? The viewer should \
+immediately feel "oh no" or "wait, what?" One prop or visual detail establishes \
+where we are. Billy + at most one other person. Viewer understands both the basic \
+facts AND why they should care by end of this act.
+- **development**: The reframing should make the viewer slightly uncomfortable \
+because it's *too accurate*. Not a gentle analogy — a pointed comparison that \
+exposes the absurdity. Think: the angle that turns a topic into a story. Same \
+location. Same characters. The humor comes from naming what everyone's thinking \
+but nobody's saying.
+- **punchline**: Should land like a gut punch, not a gentle observation. The \
+viewer should wince and laugh simultaneously. Aim for the line people quote to \
+their friends the next day. Landing, not escalation — but a landing that stings.
 
 Billy stays in ONE physical location throughout. No location changes between scenes.
 

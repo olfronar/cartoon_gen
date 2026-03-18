@@ -32,6 +32,8 @@ def generate_loglines(
         logger.exception("Logline generation failed for: %s", item.item.title)
         return []
 
+    entries = data["loglines"] if isinstance(data, dict) else data
+
     loglines = [
         Logline(
             text=entry["text"],
@@ -40,7 +42,7 @@ def generate_loglines(
             visual_hook=entry.get("visual_hook", ""),
             news_essence=entry.get("news_essence", ""),
         )
-        for entry in data
+        for entry in entries
     ]
 
     logger.info("Generated %d loglines for: %s", len(loglines), item.item.title)
