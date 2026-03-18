@@ -77,13 +77,21 @@ class TestShotsRunner:
             await run(settings=settings)
 
     @pytest.mark.asyncio
+    @patch("asyncio.sleep", return_value=None)
     @patch("static_shots_maker.pipeline.runner.load_art_materials")
     @patch("static_shots_maker.pipeline.runner.generate_image")
     @patch("static_shots_maker.pipeline.runner.generate_scene_prompt")
     @patch("static_shots_maker.pipeline.runner.anthropic")
     @patch("static_shots_maker.pipeline.runner.genai")
     async def test_image_failure_recorded(
-        self, mock_genai, mock_anthropic_mod, mock_scene, mock_img, mock_art, mock_settings
+        self,
+        mock_genai,
+        mock_anthropic_mod,
+        mock_scene,
+        mock_img,
+        mock_art,
+        _mock_sleep,
+        mock_settings,
     ):
         mock_anthropic_mod.Anthropic.return_value = MagicMock()
         mock_genai.Client.return_value = MagicMock()
