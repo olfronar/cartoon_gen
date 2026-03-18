@@ -9,12 +9,15 @@ from pathlib import Path
 # Suppress noisy gRPC fork/absl warnings from google-genai SDK
 os.environ.setdefault("GRPC_VERBOSITY", "ERROR")
 os.environ.setdefault("GLOG_minloglevel", "2")
+os.environ.setdefault("GRPC_ENABLE_FORK_SUPPORT", "0")
 
 logging.basicConfig(
     level=logging.INFO,
     format="%(asctime)s [%(name)s] %(levelname)s: %(message)s",
     datefmt="%H:%M:%S",
 )
+# Suppress google_genai AFC info spam
+logging.getLogger("google_genai.models").setLevel(logging.WARNING)
 
 # Add project root to path so shared/ is importable
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
