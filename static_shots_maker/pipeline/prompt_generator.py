@@ -17,6 +17,10 @@ _STRIP_MOTION_RE = re.compile(
     r"(?:pan(?:ning|s)?\s|zoom(?:ing|s)?\s|tracking\s|dolly\s|tilt(?:ing|s)?\s)",
     re.IGNORECASE,
 )
+_STRIP_DIALOGUE_RE = re.compile(
+    r"\b\w+ says:\s*['\"].+?['\"]\.?",
+    re.IGNORECASE,
+)
 
 
 def generate_scene_prompt(
@@ -69,7 +73,8 @@ def generate_end_card_prompt(
 
 
 def _fallback_strip(prompt: str) -> str:
-    """Strip audio/duration/motion references from an original prompt via regex."""
+    """Strip audio/duration/motion/dialogue references from an original prompt via regex."""
     text = _STRIP_AUDIO_RE.sub("", prompt)
     text = _STRIP_MOTION_RE.sub("", text)
+    text = _STRIP_DIALOGUE_RE.sub("", text)
     return re.sub(r"\s+", " ", text).strip()

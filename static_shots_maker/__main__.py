@@ -1,9 +1,14 @@
 import argparse
 import asyncio
 import logging
+import os
 import sys
 from datetime import date
 from pathlib import Path
+
+# Suppress noisy gRPC fork/absl warnings from google-genai SDK
+os.environ.setdefault("GRPC_VERBOSITY", "ERROR")
+os.environ.setdefault("GLOG_minloglevel", "2")
 
 logging.basicConfig(
     level=logging.INFO,

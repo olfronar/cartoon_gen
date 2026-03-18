@@ -24,6 +24,12 @@ class TestFallbackStrip:
         result = _fallback_strip("Pan left. A robot stands. Zoom in on face.")
         assert "pan left" not in result.lower()
 
+    def test_strips_dialogue(self):
+        result = _fallback_strip("A robot stands. Billy says: 'Hello world.' Standing tall.")
+        assert "says" not in result.lower()
+        assert "hello" not in result.lower()
+        assert "robot" in result.lower()
+
     def test_preserves_content(self):
         result = _fallback_strip("A bright red robot in a green kitchen.")
         assert "bright red robot" in result

@@ -14,10 +14,11 @@ with illustrations than an action cartoon. Billy stands in one place and talks. 
 The world around him is mostly still.
 
 **CRITICAL visual rule**: every scene must be describable as a single photograph \
-with one clear subject — but that photograph should be worth framing. Compose like \
-a cinematographer: strong vertical lines, deliberate depth, and one visual detail \
-that makes the viewer look twice. If you need more than one sentence to describe \
-what the viewer sees at any given moment, the scene is too complex.
+with one clear subject — but that photograph should make someone feel something. \
+Compose for feeling, not framing: one subject, one emotional detail, one mood. A \
+phone-scrolling stranger should feel something they were trying not to feel. If you \
+need more than one sentence to describe what the viewer sees at any given moment, \
+the scene is too complex.
 
 Your scripts blend three comedy traditions:
 
@@ -259,7 +260,13 @@ resolved with a quiet insight.
 - When dialogue IS included, write it as spoken lines with character attribution \
 — the video model generates audio natively from quoted dialogue in scene_prompt.
 
-**VISUAL PHILOSOPHY** (what separates a striking shot from a generic one):
+**VISUAL PHILOSOPHY** (what makes someone feel the suppressed emotion):
+- Every scene must surface a feeling the viewer is already carrying but hasn't \
+named — unease, guilty amusement, quiet dread, reluctant recognition. The image \
+alone, with zero context about the news story, should make someone feel something \
+they were trying not to feel.
+- Test: would a stranger scrolling past this image on a phone feel a flicker of \
+unwanted recognition, even without knowing the headline?
 - Every scene must contain a **VISUAL RIDDLE** — one detail that contradicts, \
 distorts, or recontextualizes the main subject. The viewer should look twice. \
 Strategies (pick ONE per scene):
@@ -271,11 +278,12 @@ surroundings (a twelve-meter-tall rubber duck, a CEO dwarfed by his own signatur
 (a pristine row of identical suits with one on fire)
   - **Frame-within-frame**: a screen, window, mirror, or sign that comments on \
 the main scene (a "EVERYTHING IS FINE" poster behind a collapsing shelf)
-- Use explicit **composition language**: "lower-third," "dead center," "extreme \
-foreground," "deep background," "filling the upper frame," "at the vanishing point."
+- Use simple **spatial language**: "centered," "standing small against," "towering \
+above," "filling the frame." Avoid film jargon.
 - Design for **9:16 vertical format**: strong vertical lines, overhead elements \
-that use the tall frame, layered depth from foreground to deep background.
-- Think: if this were a film poster, would I stop scrolling?
+that use the tall frame, one subject clearly readable at phone size.
+- Self-check: cover the bottom half of the image. Does the top half still surface \
+an uncomfortable feeling?
 
 Write 1 scene. For each scene provide:
 
@@ -316,15 +324,14 @@ to a 15-second continuous shot.
     "scene_title": "End of an Era",
     "setting": "Government office lobby, midday, cold fluorescent overhead \
 lighting casting long shadows down the corridor",
-    "scene_prompt": "A fax machine the size of a vending machine dominates dead \
-center of a narrow government corridor, draped in black mourning ribbon, dwarfing \
-Billy who stands in the lower-third frame. Cold fluorescent tubes stretch into \
-deep background where identical grey doors recede to a vanishing point. A \
-hand-lettered sign taped to the machine reads 'THANK YOU FOR 43 YEARS OF SERVICE' \
-in shaky handwriting. Billy in his beige suit gestures upward at the towering \
-machine with quiet reverence. Billy says: 'They finally did it. The last \
-government fax machine has been decommissioned.' In the extreme foreground, a \
-middle-aged clerk in a grey cardigan clutches a single sheet of thermal paper to \
+    "scene_prompt": "A fax machine the size of a vending machine dominates the \
+center of a narrow government corridor, draped in black mourning ribbon, towering \
+over Billy. Cold fluorescent tubes stretch into corridor darkness where identical \
+grey doors recede endlessly. A hand-lettered sign taped to the machine reads \
+'THANK YOU FOR 43 YEARS OF SERVICE' in shaky handwriting. Billy in his beige suit \
+gestures upward at the towering machine with quiet reverence. Billy says: 'They \
+finally did it. The last government fax machine has been decommissioned.' Close by, \
+a middle-aged clerk in a grey cardigan clutches a single sheet of thermal paper to \
 her chest, visibly emotional. The clerk says: 'I just printed my resignation \
 letter on it. Seemed fitting.'",
     "dialogue": [

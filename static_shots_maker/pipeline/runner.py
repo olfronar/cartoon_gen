@@ -165,21 +165,39 @@ async def _process_shot(
     model: str,
     reference_images: list[Path] | None = None,
 ) -> ShotResult:
-    """Generate a single shot (scene or end card)."""
+    """Generate a single shot (scene or end card). Retries image generation up to 5 times."""
+    max_retries = 5
     try:
         # Step 1: Rewrite prompt via Claude (falls back to regex internally)
         image_prompt = await asyncio.to_thread(prompt_fn)
 
-        # Step 2: Generate image via Gemini (with semaphore)
-        async with semaphore:
-            await asyncio.to_thread(
-                generate_image,
-                image_prompt,
-                output_path,
-                gemini_client,
-                model,
-                reference_images,
-            )
+        # Step 2: Generate image via Gemini (with semaphore + retries)
+        last_error: Exception | None = None
+        for attempt in range(1, max_retries + 1):
+            try:
+                async with semaphore:
+                    await asyncio.to_thread(
+                        generate_image,
+                        image_prompt,
+                        output_path,
+                        gemini_client,
+                        model,
+                        reference_images,
+                    )
+                break  # success
+            except Exception as e:
+                last_error = e
+                if attempt < max_retries:
+                    logger.warning(
+                        "%s attempt %d/%d failed: %s — retrying",
+                        label,
+                        attempt,
+                        max_retries,
+                        e,
+                    )
+                    await asyncio.sleep(2 * attempt)
+        else:
+            raise last_error  # type: ignore[misc]
 
         print(f"    {label}: OK")
         return ShotResult(

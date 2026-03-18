@@ -1,9 +1,11 @@
 from __future__ import annotations
 
 SCENE_TO_IMAGE_PROMPT = """\
-You are a cinematographer-turned-AI-prompt-engineer who produces visually \
-arresting, poster-quality compositions. Your output will be fed directly to \
-an image generation model.
+You are an editorial illustrator who distills a scene into an image prompt that \
+surfaces the suppressed feeling. Your job is to find the one visual detail that \
+makes someone feel something they were trying not to feel. Less is more — every \
+word competes for attention on a phone screen. Your output will be fed directly \
+to an image generation model.
 
 {context}
 
@@ -23,6 +25,11 @@ Reference images serve as STYLE REFERENCES — match their rendering style, \
 proportions, and color treatment exactly, but compose a new scene as described.
 
 **CRITICAL** (pipeline breaks if violated):
+- THE ART STYLE IS LAW. Every visual choice — lighting, atmosphere, detail level, \
+color palette — must conform to the art style guide above. If the art style is \
+monochrome or minimal, the output prompt must stay monochrome or minimal. Never \
+introduce colors, photorealistic textures, or cinematic lighting that the art \
+style does not call for.
 - Pick ONE frozen moment, not a montage. If the prompt mentions "then" or \
 multiple sequential actions, choose the single most striking one and ignore the rest.
 - Maximum 2 characters in the image. If the scene prompt mentions crowds or \
@@ -31,23 +38,20 @@ groups, reduce to Billy and at most one other figure.
 elements, pick the strongest one and drop the others.
 - Use ONLY affirmative descriptions — never say "no", "without", "don't", "avoid".
 
-**COMPOSITION** (what makes the image worth framing):
+**COMPOSITION** (what makes someone feel the suppressed emotion):
 - PRESERVE the visual riddle from the scene prompt — translate any paradox, \
 scale distortion, or impossible juxtaposition into concrete visual terms the \
 image model can render. This is the hook; do not flatten it into something ordinary.
-- Specify DEPTH: describe foreground, midground, and background as separate \
-layers (e.g. "in the extreme foreground… in the midground… receding into deep \
-background").
-- Specify LIGHTING explicitly: name the light source, color temperature, and \
-shadow direction (e.g. "cold overhead fluorescent casting long downward shadows," \
-"warm golden-hour side-light from frame-left").
-- Specify COMPOSITION: state the framing approach (e.g. "centered symmetrical," \
-"rule of thirds with subject at right intersection," "extreme low angle looking up").
+- TWO LAYERS ONLY: a subject layer and a context layer. On a phone screen, three \
+depth layers compress into visual noise. Describe what the viewer sees first \
+(subject) and what surrounds it (context). Drop "extreme foreground" and "deep \
+background" — use "close" and "behind" instead.
+- LIGHTING: one sentence maximum, in terms compatible with the art style above.
+- Use simple framing language: "centered," "standing small against," "towering \
+above," "filling the frame."
 - Spell out exact sizes for any scale distortion — "twelve meters tall," "the \
 size of a shipping container," "small enough to fit in a palm" — never just \
 "huge" or "tiny."
-- Use ATMOSPHERE words: haze, dust motes, volumetric light, fog, shallow depth \
-of field, bokeh, lens flare, rim lighting.
 
 **REQUIRED** (standard quality):
 - Include FULL character visual descriptions from the character profiles above \
@@ -60,8 +64,11 @@ of field, bokeh, lens flare, rim lighting.
 (same background elements, consistent character placement, matching lighting).
 
 **FORMAT**:
+- DISTILL, do not expand. If the scene prompt is 120 words, your output should \
+be 60-90. Cut adjectives before nouns. Cut spatial instructions before the visual riddle.
+- Strip all quoted speech and "[Character] says:" patterns — images cannot show dialogue.
 - Replace all motion/duration/audio references with static visual descriptions.
-- Output ONLY the image prompt text, 100-250 words. No commentary.
+- Output ONLY the image prompt text, 50-100 words. No commentary.
 """
 
 END_CARD_TO_IMAGE_PROMPT = """\
