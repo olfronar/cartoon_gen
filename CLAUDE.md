@@ -226,7 +226,7 @@ Pipeline: manifest + script ingestion → parallel video prompt composition (Cla
 - **Manifest reader** (`pipeline/manifest_reader.py`): Reads `output/static_shots/<date>_<N>/manifest.json` + pairs with `output/scripts/<date>_<N>.json`. Auto-detects latest date. Skips scripts with no successful shots.
 - **Prompt generator** (`pipeline/prompt_generator.py`): Claude composes video-generation prompts from scene details + character profiles + art style + formatted dialogue. Falls back to original scene_prompt if Claude unavailable.
 - **Video generator** (`pipeline/video_generator.py`): xAI grok-imagine-video (`grok-imagine-video`) image-to-video with native audio generation. Uses static shot as source image via base64 data URI. SDK handles polling internally.
-- **Assembler** (`pipeline/assembler.py`): ffmpeg concatenation with re-encoding (`libx264 + aac`) for audio normalization. Glitch transitions (1.0s) with silence between scripts.
+- **Assembler** (`pipeline/assembler.py`): ffmpeg concatenation with re-encoding (`libx264 + aac`) for audio normalization. Glitch transitions (0.5s) with silence between scripts.
 - **Prompts** (`prompts.py`): `SCENE_TO_VIDEO_PROMPT` and `END_CARD_TO_VIDEO_PROMPT` templates. Rules tiered as CRITICAL/REQUIRED/FORMAT. Include audio/dialogue direction for native audio generation.
 - **Runner** (`pipeline/runner.py`): Async orchestrator. Level 1 parallel across scripts, Level 2 parallel across scenes. Uses `xai_sdk.AsyncClient` (requires `XAI_API_KEY`).
 

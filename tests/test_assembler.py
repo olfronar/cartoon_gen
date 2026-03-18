@@ -34,7 +34,7 @@ class TestAssembleFinalVideo:
 
         result = assemble_final_video(scripts, output)
         assert result == output
-        mock_concat.assert_called_once_with(scripts, output, 1.0)
+        mock_concat.assert_called_once_with(scripts, output, 0.5)
 
     @patch("video_designer.pipeline.assembler._concat_clips")
     def test_single_uses_plain_concat(self, mock_concat, tmp_path):

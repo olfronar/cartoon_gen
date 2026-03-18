@@ -37,7 +37,7 @@ def assemble_script_video(
 def assemble_final_video(
     script_video_paths: list[Path],
     output_path: Path,
-    transition_duration: float = 1.0,
+    transition_duration: float = 0.5,
 ) -> Path:
     """Concatenate script videos with glitch interstitials + silence.
 
