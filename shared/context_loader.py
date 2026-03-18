@@ -10,12 +10,14 @@ ART_MATERIAL_NAMES = ("canonical_characters",)
 
 def load_characters(characters_dir: Path) -> dict[str, str]:
     """Load all character profile files. Returns {name: content}."""
-    if not characters_dir.exists():
+    characters: dict[str, str] = {}
+    try:
+        paths = sorted(characters_dir.glob("*.md"))
+    except OSError:
         logger.warning("Characters directory not found: %s", characters_dir)
         return {}
 
-    characters: dict[str, str] = {}
-    for path in sorted(characters_dir.glob("*.md")):
+    for path in paths:
         characters[path.stem] = path.read_text(encoding="utf-8")
 
     logger.info("Loaded %d character profiles", len(characters))
@@ -24,27 +26,27 @@ def load_characters(characters_dir: Path) -> dict[str, str]:
 
 def load_art_style(art_style_path: Path) -> str:
     """Load the art style document. Returns empty string if not found."""
-    if not art_style_path.exists():
+    try:
+        content = art_style_path.read_text(encoding="utf-8")
+    except FileNotFoundError:
         logger.warning("Art style file not found: %s", art_style_path)
         return ""
 
-    content = art_style_path.read_text(encoding="utf-8")
     logger.info("Loaded art style from %s", art_style_path)
     return content
 
 
 def load_art_materials(art_materials_dir: Path) -> dict[str, Path]:
     """Load art material image paths. Returns {name: Path} for existing PNGs."""
-    if not art_materials_dir.exists():
-        logger.info("Art materials directory not found: %s", art_materials_dir)
-        return {}
-
     materials: dict[str, Path] = {}
     for name in ART_MATERIAL_NAMES:
         path = art_materials_dir / f"{name}.png"
-        if path.exists():
-            materials[name] = path
-            logger.info("Loaded art material: %s", path)
+        try:
+            path.stat()
+        except FileNotFoundError:
+            continue
+        materials[name] = path
+        logger.info("Loaded art material: %s", path)
 
     return materials
 

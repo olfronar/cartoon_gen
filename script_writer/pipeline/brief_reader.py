@@ -22,10 +22,10 @@ def read_brief(brief_date: date | None = None, briefs_dir: Path | None = None) -
 
     json_path = briefs_dir / f"{brief_date.isoformat()}.json"
 
-    if not json_path.exists():
-        raise FileNotFoundError(f"No brief found at {json_path}")
-
-    data = json.loads(json_path.read_text(encoding="utf-8"))
+    try:
+        data = json.loads(json_path.read_text(encoding="utf-8"))
+    except FileNotFoundError:
+        raise FileNotFoundError(f"No brief found at {json_path}") from None
     brief = ComedyBrief.from_dict(data)
 
     logger.info("Loaded brief for %s: %d top picks", brief.date, len(brief.top_picks))
@@ -34,10 +34,10 @@ def read_brief(brief_date: date | None = None, briefs_dir: Path | None = None) -
 
 def _find_latest_brief_date(briefs_dir: Path) -> date:
     """Find the most recent brief date by scanning JSON sidecar files."""
-    if not briefs_dir.exists():
-        raise FileNotFoundError(f"Briefs directory not found: {briefs_dir}")
-
-    json_files = sorted(briefs_dir.glob("*.json"), reverse=True)
+    try:
+        json_files = sorted(briefs_dir.glob("*.json"), reverse=True)
+    except OSError:
+        raise FileNotFoundError(f"Briefs directory not found: {briefs_dir}") from None
     if not json_files:
         raise FileNotFoundError(f"No brief JSON files found in {briefs_dir}")
 

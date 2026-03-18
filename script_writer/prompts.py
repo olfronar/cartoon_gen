@@ -294,7 +294,7 @@ Include character visual details from profiles (clothing, colors, features). \
 If the scene has dialogue, include it as quoted speech with character attribution \
 directly in the prompt (e.g. '[Character] says: "[line]"'). \
 Maximum 2 characters visible. Maximum 1 prop or background detail that carries \
-comedic weight. Think: if this were a film poster, would I stop scrolling?
+comedic weight.
 - `dialogue`: array of objects with "character" and "line" keys. Aim for 2-3 \
 lines per scene with conversational flow — Billy explaining + reactions from \
 one person at the scene.
@@ -360,8 +360,8 @@ Before returning, verify your output against this checklist:
 - `photograph_test`: scene_prompt describes one frozen moment, not a sequence
 - `news_explained`: a viewer would understand what happened in the real world
 - `word_count_ok`: scene_prompt is 80-150 words
-- `visual_riddle_present`: visual_gag contains a paradox, scale distortion, or \
-impossible juxtaposition — not just a funny prop
+- `visual_riddle_present`: visual_gag contains a scale paradox, impossible \
+coexistence, symmetry break, or frame-within-frame — not just a funny prop
 
 If any check fails, revise the scene before returning.
 

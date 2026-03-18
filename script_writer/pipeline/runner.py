@@ -7,10 +7,10 @@ from datetime import date
 import anthropic
 
 from shared.config import Settings, load_settings
+from shared.context_loader import build_context_block, load_art_style, load_characters
 from shared.models import CartoonScript, Logline, ScoredItem
 
 from .brief_reader import read_brief
-from .context_loader import build_context_block, load_art_style, load_characters
 from .logline_generator import generate_loglines
 from .logline_selector import select_logline
 from .renderer import write_script

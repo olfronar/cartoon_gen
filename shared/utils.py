@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import json
 import re
 from datetime import datetime, timezone
 
@@ -53,8 +54,6 @@ def call_llm_json(client, prompt: str, model: str, max_tokens: int) -> dict | li
 
     Raises on API or parse failure (caller decides fallback policy).
     """
-    import json
-
     text = strip_code_fences(extract_text(_call_llm(client, prompt, model, max_tokens)))
     return json.loads(text)
 

@@ -1,8 +1,8 @@
 from __future__ import annotations
 
 import asyncio
+import contextlib
 import logging
-from pathlib import Path
 
 from shared.config import Settings, load_settings
 from shared.models import ComedyBrief, RawItem
@@ -71,9 +71,8 @@ async def _pipeline(settings: Settings) -> ComedyBrief:
     logger.info("After dedup/filter: %d items", len(filtered))
 
     # Cross-day history filter
-    briefs_dir = Path("output/briefs")
-    if briefs_dir.is_dir():
-        filtered = filter_already_covered(filtered, briefs_dir)
+    with contextlib.suppress(OSError):
+        filtered = filter_already_covered(filtered, settings.output_dir)
 
     # LLM scoring
     scored = await asyncio.to_thread(score_items, filtered, settings)

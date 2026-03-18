@@ -180,7 +180,7 @@ Pipeline: brief JSON ingestion → parallel logline generation + selection (all 
 ### Pipeline stages
 
 - **Brief reader** (`pipeline/brief_reader.py`): Reads `output/briefs/YYYY-MM-DD.json` sidecar. Auto-detects latest date if none specified.
-- **Context loader** (`shared/context_loader.py`, re-exported from `pipeline/context_loader.py`): Loads `output/characters/*.md` and `output/art_style.md` into a shared prompt context block.
+- **Context loader** (`shared/context_loader.py`): Loads `output/characters/*.md` and `output/art_style.md` into a shared prompt context block.
 - **Logline generator** (`pipeline/logline_generator.py`): Structured "angle sharpening" (`story_hook` analysis) before generating 3 loglines per news item (observational / satirical / metaphorical). Each approach targets a specific feeling people are avoiding about the news. Uses Claude Opus with adaptive thinking. Response format: `{"story_hook": {...}, "loglines": [...]}` — parser extracts `loglines` array, `story_hook` exists only to improve quality.
 - **Logline selector** (`pipeline/logline_selector.py`): Selects best 1 of 3 per item. Prioritizes news clarity, then comedy punch and point of view over simplicity. Falls back to first logline on error.
 - **Script expander** (`pipeline/script_expander.py`): Two-step: synopsis → full script. All 5 items run in parallel via `asyncio.gather()`.

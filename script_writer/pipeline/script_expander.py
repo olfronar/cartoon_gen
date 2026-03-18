@@ -36,14 +36,7 @@ def generate_synopsis(
 
     data = call_llm_json(client, prompt, model, max_tokens)
 
-    return Synopsis(
-        setup=data["setup"],
-        development=data.get("development", data.get("escalation", "")),
-        punchline=data["punchline"],
-        estimated_scenes=int(data.get("estimated_scenes", 3)),
-        key_visual_gags=data.get("key_visual_gags", []),
-        news_explanation=data.get("news_explanation", ""),
-    )
+    return Synopsis.from_dict(data)
 
 
 def expand_script(

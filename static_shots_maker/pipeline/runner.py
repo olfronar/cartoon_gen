@@ -140,7 +140,7 @@ async def _process_script(
         script_title=script.title,
         script_index=index,
         date=script.date,
-        shots=list(shots),
+        shots=shots,
     )
 
     # Write manifest

@@ -51,11 +51,13 @@ def read_scripts(
 
 def _find_latest_script_date(scripts_dir: Path) -> date:
     """Find the most recent script date by scanning JSON filenames."""
-    if not scripts_dir.exists():
-        raise FileNotFoundError(f"Scripts directory not found: {scripts_dir}")
+    try:
+        json_files = list(scripts_dir.glob("*.json"))
+    except OSError:
+        raise FileNotFoundError(f"Scripts directory not found: {scripts_dir}") from None
 
     dates: set[str] = set()
-    for path in scripts_dir.glob("*.json"):
+    for path in json_files:
         match = _SCRIPT_FILENAME_RE.match(path.name)
         if match:
             dates.add(match.group(1))

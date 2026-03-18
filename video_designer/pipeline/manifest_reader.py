@@ -34,9 +34,6 @@ def read_manifests(
     shots_dir = shots_dir or Path("output/static_shots")
     scripts_dir = scripts_dir or Path("output/scripts")
 
-    if not shots_dir.exists():
-        raise FileNotFoundError(f"Shots directory not found: {shots_dir}")
-
     if target_date is None:
         target_date = _find_latest_date(shots_dir)
 
@@ -53,10 +50,6 @@ def read_manifests(
 
         manifest_path = manifest_dir / "manifest.json"
         script_path = scripts_dir / f"{date_str}_{index}.json"
-
-        if not manifest_path.exists() or not script_path.exists():
-            logger.warning("Missing manifest or script for index %d, skipping", index)
-            continue
 
         try:
             manifest_data = json.loads(manifest_path.read_text(encoding="utf-8"))

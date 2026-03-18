@@ -5,7 +5,7 @@ import logging
 
 import anthropic
 
-from shared.utils import strip_code_fences
+from shared.utils import extract_text, strip_code_fences
 
 logger = logging.getLogger(__name__)
 
@@ -42,10 +42,7 @@ def run_interview(
             messages=messages,
         )
 
-        assistant_text = ""
-        for block in response.content:
-            if block.type == "text":
-                assistant_text += block.text
+        assistant_text = extract_text(response)
 
         messages.append({"role": "assistant", "content": assistant_text})
 

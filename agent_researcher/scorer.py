@@ -8,7 +8,7 @@ import anthropic
 
 from shared.config import Settings
 from shared.models import RawItem, ScoredItem
-from shared.utils import strip_code_fences
+from shared.utils import extract_text, strip_code_fences
 
 logger = logging.getLogger(__name__)
 
@@ -90,14 +90,8 @@ def score_items(items: list[RawItem], settings: Settings) -> list[ScoredItem]:
         logger.exception("Claude API call failed")
         return _fallback_scoring(items)
 
-    # Extract text content
-    text = ""
-    for block in response.content:
-        if block.type == "text":
-            text += block.text
-
-    # Parse JSON from response (handle markdown code blocks)
-    text = strip_code_fences(text)
+    # Extract text content and strip markdown code fences
+    text = strip_code_fences(extract_text(response))
 
     try:
         scored_data = json.loads(text)
