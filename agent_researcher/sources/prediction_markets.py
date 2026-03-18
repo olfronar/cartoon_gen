@@ -55,8 +55,10 @@ class PredictionMarketsSource:
                     created = datetime.now(timezone.utc)
 
                 slug = market.get("slug", "")
+                if not slug:
+                    continue
                 creator = market.get("creatorUsername", "")
-                market_url = f"https://manifold.markets/{creator}/{slug}" if slug else ""
+                market_url = f"https://manifold.markets/{creator}/{slug}"
 
                 # Volume spike indicator: high 24h volume relative to total
                 is_spike = volume_24h > 0 and volume > 0 and (volume_24h / volume) > 0.3

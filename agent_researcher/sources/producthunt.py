@@ -108,6 +108,10 @@ class ProductHuntSource:
             if not name:
                 continue
 
+            url = node.get("url", "").strip()
+            if not url:
+                continue
+
             timestamp = parse_iso_utc(node.get("createdAt", ""))
 
             tagline = node.get("tagline", "")
@@ -115,7 +119,7 @@ class ProductHuntSource:
             items.append(
                 RawItem(
                     title=f"{name}: {tagline}" if tagline else name,
-                    url=node.get("url", ""),
+                    url=url,
                     sources=["producthunt"],
                     tier="discovery",
                     score=node.get("votesCount", 0),

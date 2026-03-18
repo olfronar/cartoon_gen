@@ -29,12 +29,14 @@ biotechnology, tech industry.
 
 For each, return:
 - "title": post summary (1–2 sentences)
-- "url": post URL (x.com link), or empty string if unavailable
+- "url": direct x.com post URL (REQUIRED — must be a valid x.com link, \
+skip items without a URL)
 - "why_trending": why it's getting traction (1 sentence)
 - "engagement": one of "viral", "high", "moderate"
 
 Focus on: surprising claims, failures, hype, controversy, absurd announcements.
 Exclude: pure news headlines with no reaction, political content.
+IMPORTANT: Only include items where you have a real x.com URL. Do NOT return empty strings for URLs.
 
 Return ONLY a JSON array, no other text.
 """
@@ -80,13 +82,18 @@ class XAISource:
             if not title:
                 continue
 
+            url = post.get("url", "").strip()
+            if not url:
+                logger.debug("xAI: skipping item with empty URL: %s", title[:80])
+                continue
+
             engagement = post.get("engagement", "moderate").lower()
             score = ENGAGEMENT_SCORES.get(engagement, 20)
 
             items.append(
                 RawItem(
                     title=title,
-                    url=post.get("url", ""),
+                    url=url,
                     sources=["xai:x.com"],
                     tier="discovery",
                     score=score,

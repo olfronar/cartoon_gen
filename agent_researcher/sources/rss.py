@@ -55,7 +55,9 @@ class RSSSource:
                     if not title:
                         continue
 
-                    link = entry.get("link", "")
+                    link = entry.get("link", "").strip()
+                    if not link:
+                        continue
                     summary = strip_html(entry.get("summary", ""))[:200]
 
                     items.append(

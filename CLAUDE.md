@@ -63,7 +63,7 @@ Dependencies are managed in `pyproject.toml` (not requirements.txt).
 Always use `.venv/bin/` prefixed commands (not `source .venv/bin/activate && ...`) — the direct binary paths are pre-approved in permission settings and won't prompt for approval.
 
 ```bash
-# Run all tests (180 tests)
+# Run all tests (189 tests)
 .venv/bin/pytest tests/ -v
 
 # Run a single test file
@@ -141,7 +141,7 @@ Required for static shots: `GOOGLE_API_KEY` (Gemini image generation). Required 
 
 ## Agent Researcher Internals
 
-Pipeline: parallel source fetch → dedup/freshness filter → LLM scoring (Claude Opus with adaptive thinking) → Markdown brief + optional Notion delivery.
+Pipeline: parallel source fetch → URL validation → dedup/freshness filter → cross-day history filter → LLM scoring (Claude Opus with adaptive thinking) → Markdown brief + optional Notion delivery.
 
 ### Sources (7 total, 3 tiers)
 
@@ -157,10 +157,12 @@ Pipeline: parallel source fetch → dedup/freshness filter → LLM scoring (Clau
 
 Tier freshness cutoffs: discovery/validation = 24h, context = 48h.
 
+All sources must return items with valid URLs. Items with empty URLs are filtered out at source level and as a safety net in the runner before dedup.
+
 ### Key modules
 
 - **Source Protocol** (`sources/base.py`): synchronous `fetch() -> list[RawItem]`. Runner parallelizes via `asyncio.to_thread()`.
-- **Dedup** (`dedup.py`): URL normalization + `rapidfuzz` title similarity (threshold 85). Merges multi-source items rather than discarding.
+- **Dedup** (`dedup.py`): URL normalization + `rapidfuzz` title similarity (threshold 85). Merges multi-source items rather than discarding. Empty URLs are excluded from URL dedup to prevent false collisions. `filter_already_covered()` provides cross-day dedup by scanning previous brief JSON sidecars (7-day lookback) and dropping items that match by normalized URL or fuzzy title.
 - **Scorer** (`scorer.py`): streams to `claude-opus-4-6` with adaptive thinking, 32k max tokens. Rewrites titles for clarity, generates comedy explanations for every item. Falls back to raw score sorting if API key missing or call fails.
 - **xAI source** (`sources/xai.py`): uses `grok-4.20-beta-latest-non-reasoning` with `web_search(allowed_domains=["x.com"])` tool for live X data.
 - **Data contracts** (`shared/models.py`): `RawItem` → `ScoredItem` → `ComedyBrief` → `Logline` → `Synopsis` → `SceneScript` → `CartoonScript` → `ShotResult` → `ShotsManifest` → `ClipResult` → `VideoManifest`. All agents share these. `Synopsis.from_dict()` accepts both `development` and legacy `escalation` keys for backward compatibility.

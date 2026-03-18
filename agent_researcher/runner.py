@@ -2,13 +2,14 @@ from __future__ import annotations
 
 import asyncio
 import logging
+from pathlib import Path
 
 from shared.config import Settings, load_settings
 from shared.models import ComedyBrief, RawItem
 
 from .alerts import alert_failure, alert_success
 from .brief import generate_brief
-from .dedup import dedup_and_filter
+from .dedup import dedup_and_filter, filter_already_covered
 from .delivery import deliver_brief
 from .scorer import score_items
 from .sources import get_active_sources
@@ -56,9 +57,23 @@ async def _pipeline(settings: Settings) -> ComedyBrief:
 
     logger.info("Total raw items: %d", len(raw_items))
 
+    # Filter out items with empty URLs (safety net for all sources)
+    before_url_filter = len(raw_items)
+    raw_items = [item for item in raw_items if item.url.strip()]
+    if len(raw_items) < before_url_filter:
+        logger.warning(
+            "Dropped %d items with empty URLs",
+            before_url_filter - len(raw_items),
+        )
+
     # Dedup + freshness filter
     filtered = dedup_and_filter(raw_items)
     logger.info("After dedup/filter: %d items", len(filtered))
+
+    # Cross-day history filter
+    briefs_dir = Path("output/briefs")
+    if briefs_dir.is_dir():
+        filtered = filter_already_covered(filtered, briefs_dir)
 
     # LLM scoring
     scored = await asyncio.to_thread(score_items, filtered, settings)
