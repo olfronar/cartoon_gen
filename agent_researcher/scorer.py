@@ -16,13 +16,23 @@ SCORING_MODEL = "claude-opus-4-6"
 MAX_ITEMS_TO_SCORE = 100
 
 SCORING_PROMPT = """\
-You are a comedy writer's assistant for a tech-themed cartoon series.
+You are a comedy writer's assistant for a cartoon series that explains tech \
+news to a BROAD audience — not tech insiders. The viewer is a curious adult \
+who reads the news but doesn't know what a "benchmark" or "fine-tuning" means.
 
 Below is a list of today's trending events in AI, robotics, biotech, and technology.
 
 For each item, score it from 0–10 on THREE criteria:
-1. Comedy potential — does it have irony, hubris, absurdity, or a clear "villain"?
-2. Cultural resonance — will a tech-aware audience instantly recognize the reference?
+1. Comedy potential — does it create simultaneous contradictory emotions (humor \
+AND anxiety, admiration AND absurdity)? Look for structural contradictions: \
+stated reason vs actual constraint, public position vs private reality. Irony, \
+hubris, absurdity, or a clear "villain" count too, but the best items make you \
+laugh AND wince.
+2. Broad resonance — would a non-technical adult immediately grasp why this \
+matters or why it's absurd? Stories requiring insider knowledge (benchmark \
+drama, model architecture debates, open-source governance) score LOW. Stories \
+where the comedy lands for anyone who reads a newspaper score HIGH. Test: \
+would your non-tech friend find this interesting at dinner?
 3. Freshness — is this breaking today, or already a stale meme?
 
 Bonus: if an item appears across multiple sources, add +1 to its total.
@@ -39,10 +49,23 @@ Return as JSON array. Each element must have these exact keys:
 - "comedy_potential": float 0-10
 - "cultural_resonance": float 0-10
 - "freshness": float 0-10
-- "comedy_angle": string — REQUIRED. Format: "[Why it's funny in 1 sentence]. \
-[One-liner joke seed.]" Example: "CEO claims AI will replace all jobs while his \
-own AI can't schedule a meeting. 'Our product will automate everything except \
-working correctly.'"
+- "comedy_angle": string — REQUIRED. Three-part format: "[STRUCTURAL \
+CONTRADICTION: what's said vs what's actually happening — the gap that makes it \
+funny]. [DOUBLE HIT: the two contradictory emotions this creates — e.g., \
+admiration AND absurdity, hope AND dread]. [One-liner joke seed that names the \
+contradiction.]" Example: "A company spending $10B on AI safety ships a chatbot \
+that recommends bleach recipes — stated goal (protect humanity) vs actual \
+capability (can't protect a lunch order). Admiration for the ambition AND dread \
+at the incompetence. 'They're building God. God currently can't count to ten.'"
+- "duplicate_of": int or null — if this item covers the same event as another, \
+the index of the better version; null otherwise
+
+DUPLICATE DETECTION: Some items describe the same underlying news event from \
+different sources or angles. For each item, if it covers the SAME core event \
+as another item in the list, set "duplicate_of" to the index of the BEST \
+version (strongest comedy angle). The best version itself gets "duplicate_of": \
+null. Items about the same broad TOPIC but different specific events are NOT \
+duplicates.
 
 Be brutal with scores — most items will score low. That's the point.
 
@@ -106,8 +129,33 @@ def score_items(items: list[RawItem], settings: Settings) -> list[ScoredItem]:
         if idx is not None:
             scored_map[idx] = entry
 
+    # Resolve semantic duplicates flagged by Claude
+    duplicate_targets: set[int] = set()
+    for idx, data in scored_map.items():
+        dup_of = data.get("duplicate_of")
+        if (
+            dup_of is not None
+            and isinstance(dup_of, int)
+            and dup_of != idx
+            and dup_of in scored_map
+            and dup_of not in duplicate_targets
+        ):
+            duplicate_targets.add(idx)
+            # Merge sources into canonical item
+            if idx < len(to_score) and dup_of < len(to_score):
+                canon = to_score[dup_of]
+                merged = list(set(canon.sources + to_score[idx].sources))
+                to_score[dup_of] = replace(canon, sources=merged)
+                logger.info(
+                    "Semantic dedup: %r merged into %r",
+                    to_score[idx].title,
+                    to_score[dup_of].title,
+                )
+
     result: list[ScoredItem] = []
     for i, item in enumerate(to_score):
+        if i in duplicate_targets:
+            continue
         data = scored_map.get(i, {})
         comedy = float(data.get("comedy_potential", 0))
         resonance = float(data.get("cultural_resonance", 0))

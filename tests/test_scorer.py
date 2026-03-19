@@ -179,6 +179,99 @@ class TestScoreItemsWithMockedAPI:
         assert len(result) == 1
         assert result[0].total_score == 77.0
 
+    def test_semantic_dedup_merges_and_removes(self):
+        settings = Settings(anthropic_api_key="test-key")
+        items = [
+            make_raw_item(title="Event A", sources=["hackernews"], url="https://a.com"),
+            make_raw_item(title="Event A reworded", sources=["reddit"], url="https://b.com"),
+        ]
+
+        scored_data = [
+            {
+                "index": 0,
+                "comedy_potential": 8.0,
+                "cultural_resonance": 7.0,
+                "freshness": 9.0,
+                "comedy_angle": "angle-a",
+                "duplicate_of": None,
+            },
+            {
+                "index": 1,
+                "comedy_potential": 5.0,
+                "cultural_resonance": 4.0,
+                "freshness": 6.0,
+                "comedy_angle": "angle-b",
+                "duplicate_of": 0,
+            },
+        ]
+
+        stream_ctx = self._mock_claude_response(scored_data)
+
+        with patch("agent_researcher.scorer.anthropic") as mock_anthropic:
+            mock_client = MagicMock()
+            mock_anthropic.Anthropic.return_value = mock_client
+            mock_client.messages.stream.return_value = stream_ctx
+
+            result = score_items(items, settings)
+
+        # Only canonical item remains
+        assert len(result) == 1
+        # Sources merged from both items
+        assert set(result[0].item.sources) == {"hackernews", "reddit"}
+
+    def test_duplicate_of_invalid_index_ignored(self):
+        settings = Settings(anthropic_api_key="test-key")
+        items = [make_raw_item(title="Solo item")]
+
+        scored_data = [
+            {
+                "index": 0,
+                "comedy_potential": 5.0,
+                "cultural_resonance": 5.0,
+                "freshness": 5.0,
+                "comedy_angle": "angle",
+                "duplicate_of": 999,
+            },
+        ]
+
+        stream_ctx = self._mock_claude_response(scored_data)
+
+        with patch("agent_researcher.scorer.anthropic") as mock_anthropic:
+            mock_client = MagicMock()
+            mock_anthropic.Anthropic.return_value = mock_client
+            mock_client.messages.stream.return_value = stream_ctx
+
+            result = score_items(items, settings)
+
+        assert len(result) == 1
+
+    def test_duplicate_of_null_keeps_item(self):
+        settings = Settings(anthropic_api_key="test-key")
+        items = [make_raw_item(title="Unique item")]
+
+        scored_data = [
+            {
+                "index": 0,
+                "comedy_potential": 6.0,
+                "cultural_resonance": 6.0,
+                "freshness": 6.0,
+                "comedy_angle": "angle",
+                "duplicate_of": None,
+            },
+        ]
+
+        stream_ctx = self._mock_claude_response(scored_data)
+
+        with patch("agent_researcher.scorer.anthropic") as mock_anthropic:
+            mock_client = MagicMock()
+            mock_anthropic.Anthropic.return_value = mock_client
+            mock_client.messages.stream.return_value = stream_ctx
+
+            result = score_items(items, settings)
+
+        assert len(result) == 1
+        assert result[0].comedy_potential == 6.0
+
     def test_max_items_truncation(self):
         settings = Settings(anthropic_api_key="test-key")
         items = [make_raw_item(title=f"Item {i}", url=f"https://ex.com/{i}") for i in range(150)]
