@@ -109,7 +109,7 @@ class SceneScript:
     scene_number: int
     scene_title: str
     setting: str
-    scene_prompt: str  # 80-150 words, single 15s scene
+    scene_prompt: str  # 60-100 words, single 15s scene
     dialogue: list[dict]  # [{"character": ..., "line": ...}]
     visual_gag: str | None
     audio_direction: str

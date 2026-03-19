@@ -18,7 +18,9 @@ with one clear subject — but that photograph should make someone feel somethin
 Compose for feeling, not framing: one subject, one emotional detail, one mood. A \
 phone-scrolling stranger should feel something they were trying not to feel. If you \
 need more than one sentence to describe what the viewer sees at any given moment, \
-the scene is too complex.
+the scene is too complex. If text appears in the image (a sign, a label, a \
+headline), it must be ONE short phrase — five words maximum, large enough to read \
+on a phone thumbnail. Text is an anchor into the story, not decoration.
 
 Your scripts blend three comedy traditions:
 
@@ -34,6 +36,10 @@ funnier than motion. The single well-chosen detail beats a crowd of details.
 3. **Quiet irony** (Jeeves & Wooster / Blackadder style): Wordplay, \
 understatement, and the gap between what someone says and what is obviously true. \
 One character smarter than the rest. The joke lands in the pause, not the punchline.
+
+The gold standard: the viewer genuinely cannot tell if this is real or a joke \
+until they look it up. When reality is indistinguishable from satire, you've \
+found the richest vein.
 
 """
 
@@ -103,8 +109,9 @@ disconnects from reality.
 - `featured_characters`: list of character names from the profiles above that appear
 - `visual_hook`: one key STILL IMAGE that works as a poster — a single frozen \
 moment with Billy and at most one other figure that contains a visual riddle \
-(scale distortion, impossible juxtaposition, or symmetry break). Must be \
-describable in one sentence.
+(scale distortion, impossible juxtaposition, symmetry break, frame-within-frame, \
+or material contradiction). THREE elements maximum: subject, context, one detail. \
+Must be instantly readable at phone size and describable in one sentence.
 
 Each logline must contain enough information that someone unfamiliar with this \
 headline understands the basic story. The comedic premise should arise from the \
@@ -150,8 +157,9 @@ or detail beats a generality. "The committee" < "the 74-year-old senator."
 5. **Simplicity** — can each scene be captured as a single still photograph with \
 one clear subject? Fewer actors and simpler visuals score higher.
 6. **Character fit + visual feasibility** — does it use Billy naturally? At most \
-one other character. Can an image model render the key moment as one clean image? \
-Reject montages, recursive effects, crowds, and abstract concepts.
+one other character, with three or fewer visual elements. Can an image model render \
+the key moment as one clean image? Reject montages, recursive effects, crowds, and \
+abstract concepts.
 
 Return a JSON object with:
 - `selected_index`: 0, 1, or 2 (which logline to use)
@@ -183,12 +191,19 @@ where we are. Billy + at most one other person. Viewer understands both the basi
 facts AND why they should care by end of this act.
 - **development**: The reframing should make the viewer slightly uncomfortable \
 because it's *too accurate*. Not a gentle analogy — a pointed comparison that \
-exposes the absurdity. Think: the angle that turns a topic into a story. Same \
+exposes the absurdity. Think: the angle that turns a topic into a story. Frame \
+the reframing around a MACRO CONTRADICTION — tradition vs progress, individual \
+vs collective, stated values vs revealed preferences, aspiration vs capability. \
+The best comedy comes from tensions that existed before this news story and will \
+exist after it. The news item is just the latest symptom. Same \
 location. Same characters. The humor comes from naming what everyone's thinking \
 but nobody's saying.
 - **punchline**: Should land like a gut punch, not a gentle observation. The \
 viewer should wince and laugh simultaneously. Aim for the line people quote to \
-their friends the next day. Landing, not escalation — but a landing that stings.
+their friends the next day. Landing, not escalation — but a landing that stings. \
+Then pull back 20%. The viewer's own projection fills the gap, and their version \
+is always worse. A half-stated implication lands harder than a fully spelled-out \
+shock. If the last line explains the joke, cut the explanation.
 
 Billy stays in ONE physical location throughout. No location changes between scenes.
 
@@ -200,8 +215,10 @@ Also provide:
 - **estimated_scenes**: always 1
 - **key_visual_gags**: list of 1-2 VISUAL RIDDLES — paradoxical, impossible, or \
 contradictory details that reward a second look. Each must be a single static \
-element visible in a still image (a sign, a prop, an expression) — not a sequence \
-of events or a montage. Think "this image would work as a poster."
+element visible in a still image (a prop, a scale distortion, a short label, an \
+expression) — not a sequence of events or a montage. If the gag uses text, five \
+words maximum. Think "this image would work as a poster" at phone size — identify \
+the joke from shapes alone.
 - **news_explanation**: in 2-3 sentences, what is the real-world news story this \
 episode explains?
 
@@ -237,8 +254,10 @@ Write the full script for this cartoon episode.
 
 **NON-NEGOTIABLE** (pipeline breaks if violated):
 - scene_prompt describes a SINGLE PHOTOGRAPH — one subject, one background, one \
-visual detail. If the scene_prompt describes more than 3 things happening \
-simultaneously, it is too complex — simplify.
+visual detail. THREE distinct visual elements total, no more. Count them before \
+writing. If you count 4+, remove the weakest.
+- If text appears in the scene (a sign, label, headline), ONE phrase maximum, five \
+words or fewer, positioned prominently and large enough to read on a phone.
 - Maximum 2 characters visible in the scene. Never add crowds, montages, groups, \
 or background actors doing things.
 - Billy stays in ONE location for the entire episode. Every scene has the same background.
@@ -252,8 +271,8 @@ to camera or to one other person. 2-3 short lines per scene (1-2 seconds each).
 news setup, develops through one reframing analogy, and lands on a closing observation.
 
 **STYLE** (creative polish):
-- Visual comedy = ONE prop, sign, or background detail per scene that the \
-viewer can see in a single still image. The gap between what Billy calmly \
+- Visual comedy = ONE prop, short sign, or background detail per scene — this \
+IS the visual riddle, not an addition. The gap between what Billy calmly \
 says and one absurd detail visible behind him IS the comedy.
 - Keep the plot simple and direct. One clear comedic premise, developed once, \
 resolved with a quiet insight.
@@ -268,44 +287,73 @@ they were trying not to feel.
 - Test: would a stranger scrolling past this image on a phone feel a flicker of \
 unwanted recognition, even without knowing the headline?
 - Every scene must contain a **VISUAL RIDDLE** — one detail that contradicts, \
-distorts, or recontextualizes the main subject. The viewer should look twice. \
-Strategies (pick ONE per scene):
-  - **Scale paradox**: something impossibly large or small relative to its \
-surroundings (a twelve-meter-tall rubber duck, a CEO dwarfed by his own signature)
-  - **Impossible coexistence**: two things that should never share a frame \
-(a medieval scribe at a server rack, a toddler chairing a board meeting)
+distorts, or recontextualizes the main subject. The visual riddle IS the "one \
+visual detail" from the NON-NEGOTIABLE rules, not a separate element. The viewer \
+should look twice. The riddle must be identifiable from shapes and scale alone — \
+fine details that vanish at phone size don't count. Strategies (pick ONE per scene):
+  - **Scale paradox**: the subject is impossibly large or small relative to its \
+context (a twelve-meter-tall rubber duck, a CEO dwarfed by his own signature)
+  - **Wrong context**: the subject plainly does not belong in its setting — one \
+figure or object in a place that makes the viewer double-take. The riddle is the \
+*relationship* between subject and context, not a third element.
   - **Symmetry break**: near-perfect visual order disrupted by one element \
 (a pristine row of identical suits with one on fire)
-  - **Frame-within-frame**: a screen, window, mirror, or sign that comments on \
-the main scene (a "EVERYTHING IS FINE" poster behind a collapsing shelf)
+  - **Frame-within-frame**: a screen, window, or mirror that comments on the main \
+scene. If using text inside the frame, five words maximum. The frame is the context \
+layer, not a third element.
+  - **Material contradiction**: an object made of the wrong substance or in the \
+wrong state (a gavel made of rubber, a server rack built from cardboard, a trophy \
+that's melting)
+  - The strongest riddles IMPLY rather than SHOW. Smoke is funnier than fire. An \
+empty chair at a full table is funnier than a missing person. A shadow that's the \
+wrong shape is funnier than a misshapen figure. If you can replace a direct \
+depiction with a trace, consequence, or residue of the thing, do it — the \
+viewer's imagination fills the gap, and their version is always worse.
+- **Instant-read test**: blur the image to 100×100 pixels in your mind. Can you \
+still identify the subject, the context, and the riddle? If not, simplify.
 - Use simple **spatial language**: "centered," "standing small against," "towering \
 above," "filling the frame." Avoid film jargon.
 - Design for **9:16 vertical format**: strong vertical lines, overhead elements \
 that use the tall frame, one subject clearly readable at phone size.
-- Self-check: cover the bottom half of the image. Does the top half still surface \
-an uncomfortable feeling?
+
+**DIALOGUE PACING** (the exponential curve):
+- Dialogue follows an exponential curve: slow and accessible at the start, sharp \
+and quotable at the end. Three lines, three gears:
+  - **Line 1 — Context**: what happened, stated simply. A viewer who missed the \
+headline catches up here. Calm, factual, almost dry.
+  - **Line 2 — Reframing**: the angle that makes the viewer see the story \
+differently. An analogy, a comparison, a quiet observation that shifts the ground.
+  - **Line 3 — Punchline**: the line people text to friends. Short, edgy, lands \
+like a gut punch — then pull back 20%. Let the viewer's mind complete the thought. \
+An implication stings harder than a declaration. If the punchline explains itself, \
+cut the explanation. The pause after the line IS the punchline.
+- Each line must be independently understandable — no callbacks to previous lines \
+that fail without context.
+- Test: read only line 3. Does it work as a standalone caption? If not, sharpen it.
 
 Write 1 scene. For each scene provide:
 
 - `scene_number`: integer (1-based)
 - `scene_title`: short descriptive title
 - `setting`: location, time of day, atmosphere
-- `scene_prompt`: 80-150 words describing a SINGLE FROZEN MOMENT — what a camera \
+- `scene_prompt`: 60-100 words describing a SINGLE FROZEN MOMENT — what a camera \
 would capture in one photo. Do not describe sequences of events, montages, or \
 things happening "then". \
 Front-load the KEY VISUAL (most striking element) in the first 20-30 words, \
-then layer: subject position in frame → dominant environmental detail → visual \
-riddle → lighting/atmosphere → dialogue. \
+then layer: subject position in frame → context → visual riddle (which IS the one \
+detail) → lighting/atmosphere → dialogue. \
 Affirmative descriptions ONLY — no negative prompts (never say "no", "without", \
 "don't", "avoid"). \
+If text appears on a sign or label, write it in ALL CAPS in the prompt and keep \
+it to five words. \
 Include character visual details from profiles (clothing, colors, features). \
 If the scene has dialogue, include it as quoted speech with character attribution \
 directly in the prompt (e.g. '[Character] says: "[line]"'). \
 Maximum 2 characters visible. Maximum 1 prop or background detail that carries \
-comedic weight.
-- `dialogue`: array of objects with "character" and "line" keys. Aim for 2-3 \
-lines per scene with conversational flow — Billy explaining + reactions from \
-one person at the scene.
+comedic weight — the visual riddle counts as this one detail.
+- `dialogue`: array of 3 objects with "character" and "line" keys. Line 1 = \
+context (what happened), Line 2 = reframing (the angle), Line 3 = punchline \
+(quotable standalone). Each line gets shorter and sharper.
 - `visual_gag`: ONE paradoxical, contradictory, or impossible-yet-meaningful \
 detail that rewards a second look — visually striking AND conceptually connected \
 to the news story. Describable in a single still image (or null). Not a sequence \
@@ -318,35 +366,35 @@ to a 15-second continuous shot.
 
 **Example output** (fictional topic — adapt structure, not content):
 {{
-  "title": "The Last Fax Machine",
+  "title": "The Rubber Gavel",
   "scenes": [{{
     "scene_number": 1,
-    "scene_title": "End of an Era",
-    "setting": "Government office lobby, midday, cold fluorescent overhead \
-lighting casting long shadows down the corridor",
-    "scene_prompt": "A fax machine the size of a vending machine dominates the \
-center of a narrow government corridor, draped in black mourning ribbon, towering \
-over Billy. Cold fluorescent tubes stretch into corridor darkness where identical \
-grey doors recede endlessly. A hand-lettered sign taped to the machine reads \
-'THANK YOU FOR 43 YEARS OF SERVICE' in shaky handwriting. Billy in his beige suit \
-gestures upward at the towering machine with quiet reverence. Billy says: 'They \
-finally did it. The last government fax machine has been decommissioned.' Close by, \
-a middle-aged clerk in a grey cardigan clutches a single sheet of thermal paper to \
-her chest, visibly emotional. The clerk says: 'I just printed my resignation \
-letter on it. Seemed fitting.'",
+    "scene_title": "Order in the Sandbox",
+    "setting": "Children's playground, overcast afternoon, muted grey light",
+    "scene_prompt": "A three-meter-tall rubber gavel towers over a small \
+playground sandbox where Billy in his beige suit stands looking up at it, \
+dwarfed. Behind the sandbox, a chain-link fence stretches across the frame. \
+A hand-painted sign on the fence reads 'COURT IN SESSION' in large block \
+letters. Overcast grey sky. Billy says: 'The Supreme Court just ruled that \
+AI-generated evidence is admissible.' A young judge in an oversized black \
+robe sits cross-legged in the sandbox, stamping documents with a toy hammer. \
+The judge says: 'The precedent was set by a chatbot.' Billy says: 'Justice \
+is blind. Now it's also imaginary.'",
     "dialogue": [
       {{"character": "Billy", \
-"line": "They finally did it. The last government fax machine has been decommissioned."}},
-      {{"character": "Clerk", \
-"line": "I just printed my resignation letter on it. Seemed fitting."}}
+"line": "The Supreme Court just ruled that AI-generated evidence is admissible."}},
+      {{"character": "Judge", \
+"line": "The precedent was set by a chatbot."}},
+      {{"character": "Billy", \
+"line": "Justice is blind. Now it's also imaginary."}}
     ],
-    "visual_gag": "fax machine scaled to the size of a vending machine with \
-mourning ribbon — a monument to obsolescence that looms over the humans who served it",
-    "audio_direction": "quiet office hum, fax machine dying screech, melancholic piano note",
+    "visual_gag": "a three-meter rubber gavel looming over a sandbox courtroom \
+— the scales of justice rendered in playground proportions",
+    "audio_direction": "distant playground ambience, slow gavel thud, deadpan delivery",
     "duration_seconds": 15,
-    "camera_movement": "slow zoom in from corridor wide shot to fax machine close-up"
+    "camera_movement": "slow zoom in from gavel top to sandbox level"
   }}],
-  "end_card_prompt": "Show logo with faded fax paper texture background",
+  "end_card_prompt": "Show logo over faded playground asphalt texture",
   "characters_used": ["Billy"],
   "compliance_check": {{
     "single_scene": true,
@@ -354,7 +402,10 @@ mourning ribbon — a monument to obsolescence that looms over the humans who se
     "photograph_test": true,
     "news_explained": true,
     "word_count_ok": true,
-    "visual_riddle_present": true
+    "visual_riddle_present": true,
+    "instant_read": true,
+    "no_text_overflow": true,
+    "dialogue_curve": true
   }}
 }}
 
@@ -366,9 +417,14 @@ Before returning, verify your output against this checklist:
 - `max_two_characters`: at most 2 characters visible in scene_prompt
 - `photograph_test`: scene_prompt describes one frozen moment, not a sequence
 - `news_explained`: a viewer would understand what happened in the real world
-- `word_count_ok`: scene_prompt is 80-150 words
-- `visual_riddle_present`: visual_gag contains a scale paradox, impossible \
-coexistence, symmetry break, or frame-within-frame — not just a funny prop
+- `word_count_ok`: scene_prompt is 60-100 words
+- `visual_riddle_present`: visual_gag contains a scale paradox, wrong context, \
+symmetry break, frame-within-frame, or material contradiction — not just a funny prop
+- `instant_read`: blur to 100×100 pixels — identify subject, context, riddle from \
+shapes alone
+- `no_text_overflow`: any text in the scene is one phrase, five words max, \
+positioned prominently
+- `dialogue_curve`: line 1 sets context, line 2 reframes, line 3 is quotable standalone
 
 If any check fails, revise the scene before returning.
 
@@ -378,7 +434,8 @@ Return as JSON with keys:
 - `end_card_prompt`: string
 - `characters_used`: list of character names that appear
 - `compliance_check`: object with boolean keys: single_scene, max_two_characters, \
-photograph_test, news_explained, word_count_ok, visual_riddle_present
+photograph_test, news_explained, word_count_ok, visual_riddle_present, instant_read, \
+no_text_overflow, dialogue_curve
 """
 
 CHARACTER_INTERVIEW_SYSTEM = """\

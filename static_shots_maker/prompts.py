@@ -7,6 +7,15 @@ makes someone feel something they were trying not to feel. Less is more — ever
 word competes for attention on a phone screen. Your output will be fed directly \
 to an image generation model.
 
+You are working for a comedy show. The scene prompts you receive contain \
+deliberate comedic choices — visual riddles, scale paradoxes, material \
+contradictions, impossible juxtapositions. These are NOT mistakes to normalize. \
+They ARE the comedy. Protect the comic intent while distilling the visual. If a \
+gavel is made of rubber, keep it rubber. If a figure is twelve meters tall, keep \
+the twelve meters. The absurdity is the point. Prefer IMPLICATION over direct \
+depiction — smoke suggesting fire is funnier than showing the fire. A shadow \
+that's the wrong shape is funnier than showing the wrong thing directly.
+
 {context}
 
 ---
@@ -36,12 +45,18 @@ multiple sequential actions, choose the single most striking one and ignore the 
 groups, reduce to Billy and at most one other figure.
 - Maximum 1 visual gag or prop detail. If there are multiple competing visual \
 elements, pick the strongest one and drop the others.
+- If text appears in the scene (signs, labels), keep it to ONE phrase, five words \
+maximum, rendered large and legible. Strip any additional text.
 - Use ONLY affirmative descriptions — never say "no", "without", "don't", "avoid".
 
 **COMPOSITION** (what makes someone feel the suppressed emotion):
+- THREE DISTINCT VISUAL ELEMENTS MAXIMUM: subject, context, one detail (the \
+visual riddle). If the source prompt has more, cut the weakest until you reach three.
 - PRESERVE the visual riddle from the scene prompt — translate any paradox, \
 scale distortion, or impossible juxtaposition into concrete visual terms the \
-image model can render. This is the hook; do not flatten it into something ordinary.
+image model can render. This is the hook; do not flatten it into something ordinary. \
+However, if the riddle involves multiple competing props or long text, SIMPLIFY it: \
+keep the core paradox, condense any text to five words, express through shape/scale/placement.
 - TWO LAYERS ONLY: a subject layer and a context layer. On a phone screen, three \
 depth layers compress into visual noise. Describe what the viewer sees first \
 (subject) and what surrounds it (context). Drop "extreme foreground" and "deep \
@@ -64,11 +79,15 @@ size of a shipping container," "small enough to fit in a palm" — never just \
 (same background elements, consistent character placement, matching lighting).
 
 **FORMAT**:
-- DISTILL, do not expand. If the scene prompt is 120 words, your output should \
-be 60-90. Cut adjectives before nouns. Cut spatial instructions before the visual riddle.
+- DISTILL, do not expand. If the scene prompt is 100 words, your output should \
+be 50-75. Cut adjectives before nouns. Cut spatial instructions before the visual riddle.
+- Condense any text in the scene to five words or fewer. If a sign has a long \
+phrase, shorten it to its essence.
 - Strip all quoted speech and "[Character] says:" patterns — images cannot show dialogue.
 - Replace all motion/duration/audio references with static visual descriptions.
-- Output ONLY the image prompt text, 50-100 words. No commentary.
+- **Instant-read test**: blur to 100×100 pixels in your mind — can you identify \
+subject, context, and riddle from shapes alone? If not, simplify further.
+- Output ONLY the image prompt text, 50-75 words. No commentary.
 """
 
 END_CARD_TO_IMAGE_PROMPT = """\

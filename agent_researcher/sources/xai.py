@@ -19,27 +19,62 @@ ENGAGEMENT_SCORES = {"viral": 100, "high": 50, "moderate": 20}
 
 SYSTEM_PROMPT = """\
 You are a trend research assistant. Use your web search tool to find \
-trending content on X (Twitter). Always search before answering. \
+trending content on X (Twitter). Search multiple times to get broad coverage. \
 Return only valid JSON, no commentary."""
 
 PROMPT = """\
-Search X (x.com) for the top 10 most viral or trending posts/threads \
-from the last 24 hours in these domains: AI, machine learning, robotics, \
-biotechnology, tech industry.
+Search X (x.com) for trending and notable posts from the last 24 hours \
+in tech. Do three separate searches:
 
-For each, return:
-- "title": post summary (1–2 sentences)
-- "url": direct x.com post URL (REQUIRED — must be a valid x.com link, \
-skip items without a URL)
-- "why_trending": why it's getting traction (1 sentence)
-- "engagement": one of "viral", "high", "moderate"
+Search 1: "AI trending on X today"
+Search 2: "tech news trending on X today"
+Search 3: "robotics OR biotech trending on X today"
 
-Focus on: surprising claims, failures, hype, controversy, absurd announcements.
-Exclude: pure news headlines with no reaction, political content.
-IMPORTANT: Only include items where you have a real x.com URL. Do NOT return empty strings for URLs.
+After each search, collect every post you find with a real x.com URL. \
+Include anything that got notable engagement — it does not need to be \
+mega-viral. Cast a wide net: announcements, hot takes, demos, failures, \
+drama, controversy, absurd claims, product launches, benchmarks, layoffs, \
+acquisitions, policy debates, open-source releases.
 
-Return ONLY a JSON array, no other text.
+For each post, return:
+- "title": what the post is about (1–2 sentences)
+- "url": the x.com post URL
+- "why_trending": why it's getting attention (1 sentence)
+- "engagement": "viral", "high", or "moderate"
+
+Skip any item where you do not have a real x.com URL. Do not invent URLs. \
+Return as many items as you found across all three searches. More is better — \
+I deduplicate downstream.
+
+Return ONLY a JSON array.
 """
+
+
+def _extract_json_array(text: str) -> list[dict] | None:
+    """Extract a JSON array from text that may contain surrounding commentary."""
+    # Try direct parse first
+    try:
+        result = json.loads(text)
+        if isinstance(result, list):
+            return result
+    except json.JSONDecodeError:
+        pass
+
+    # Find the outermost [...] bracket pair
+    start = text.find("[")
+    if start == -1:
+        return None
+    # Walk backwards from the end to find the matching close bracket
+    end = text.rfind("]")
+    if end == -1 or end <= start:
+        return None
+    try:
+        result = json.loads(text[start : end + 1])
+        if isinstance(result, list):
+            return result
+    except json.JSONDecodeError:
+        return None
+    return None
 
 
 class XAISource:
@@ -66,12 +101,10 @@ class XAISource:
             logger.exception("xAI API call failed")
             return []
 
-        # Parse JSON from response
+        # Parse JSON from response — Grok may wrap the array in commentary
         text = strip_code_fences(text)
-
-        try:
-            posts = json.loads(text)
-        except json.JSONDecodeError:
+        posts = _extract_json_array(text)
+        if posts is None:
             logger.error("Failed to parse xAI response as JSON:\n%s", text[:500])
             return []
 

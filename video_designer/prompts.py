@@ -23,7 +23,12 @@ Compose a video generation prompt to animate this static scene shot.
 
 **CRITICAL** (pipeline breaks if violated):
 - Prefer subtle, unhurried motion — slow zooms, gentle pans, measured gestures — \
-over complex choreography. The static shot is already composed well; animate it gently.
+over complex choreography. The static shot is already composed well; animate it gently. \
+When motion IS added, favor the physically impossible rendered casually: an \
+object that drifts upward instead of falling, a shadow that moves independently \
+of its source, a gentle breathing motion in something that should not breathe. \
+AI video excels at showing things that could never exist, delivered with the calm \
+of things that always have.
 - Maximum 2 characters moving on screen. All other elements are static background.
 - Use ONLY affirmative descriptions — never say "no", "without", "don't", "avoid".
 
