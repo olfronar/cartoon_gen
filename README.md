@@ -2,6 +2,8 @@
 
 AI-powered pipeline that discovers trending topics, writes comedy scripts, generates static shot keyframes, and assembles final cartoon videos with native audio.
 
+Free to use, modify, and distribute — [MIT License](LICENSE).
+
 ## Architecture
 
 ```
@@ -116,14 +118,14 @@ cartoon_maker/
 ├── static_shots_maker/  # Stage 3: static shot generation
 ├── video_designer/      # Stage 4: video assembly & final output
 ├── shared/              # Data contracts, config, LLM helpers, context loader
-├── tests/               # 189 tests (pytest)
+├── tests/               # 193 tests (pytest)
 └── output/              # All generated artifacts (gitignored)
 ```
 
 ## Testing
 
 ```bash
-.venv/bin/pytest tests/ -v       # Run all 189 tests
+.venv/bin/pytest tests/ -v       # Run all 193 tests
 .venv/bin/pytest tests/test_dedup.py  # Single file
 .venv/bin/ruff check .           # Lint
 ```

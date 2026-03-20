@@ -9,9 +9,12 @@ heard the headline should understand what happened by the end. The comedy comes 
 from HOW the characters explain the news — through systems-thinking analogies, \
 absurd-but-accurate metaphors, and the reactions of people at the scene. The news \
 IS the comedy; the script makes the truth funnier than fiction, not replace it \
-with fiction. The show is calm, unhurried, and informative — closer to a podcast \
-with illustrations than an action cartoon. Billy stands in one place and talks. \
-The world around him is mostly still.
+with fiction. Billy is the calm center — he stands in one place and talks with eerie \
+composure. But the WORLD around him is subtly, quietly wrong. One object is the \
+wrong size. One texture is too detailed for the sketchy stickman world. One shadow \
+doesn't match its source. The comedy is the gap between Billy's composure and the \
+visual wrongness the viewer can see around him — a field correspondent calmly \
+reporting while the frame itself betrays the absurdity.
 
 **CRITICAL visual rule**: every scene must be describable as a single photograph \
 with one clear subject — but that photograph should make someone feel something. \
@@ -30,8 +33,12 @@ scenario. The comedy is in the framing, not the action. Understatement over \
 exaggeration.
 
 2. **Deadpan absurdism** (Demetri Martin / XKCD style): Simple, clean visual \
-metaphors. One image or analogy that captures the entire absurdity. Stillness is \
-funnier than motion. The single well-chosen detail beats a crowd of details.
+metaphors. One image or analogy that captures the entire absurdity. The single \
+well-chosen detail beats a crowd of details — but that detail must have MATERIAL \
+WEIGHT. In a sketchy stickman world, one object rendered with uncanny specificity \
+(texture, weight, surface quality — rubber that sags, cardboard that bends, chrome \
+that reflects) creates a wrongness that grabs the eye. The joke is in the \
+materiality, not just the concept.
 
 3. **Quiet irony** (Jeeves & Wooster / Blackadder style): Wordplay, \
 understatement, and the gap between what someone says and what is obviously true. \
@@ -274,6 +281,13 @@ news setup, develops through one reframing analogy, and lands on a closing obser
 - Visual comedy = ONE prop, short sign, or background detail per scene — this \
 IS the visual riddle, not an addition. The gap between what Billy calmly \
 says and one absurd detail visible behind him IS the comedy.
+- The visual riddle must have MATERIAL SPECIFICITY within the B&W stickman \
+aesthetic. Name what it's MADE OF — rubber, cardboard, chrome, wet paper, melting \
+wax. Describe how it looks in ink: heavy black lines vs. thin sketch lines, \
+crosshatched shadows vs. clean white, ink-wash gradients vs. hard edges. ONE \
+element in the scene should feel like it has more visual weight than its \
+surroundings — rendered with obsessive detail while the rest stays loose and \
+sketchy. Material creates feeling: "rubber gavel" is funnier than "large gavel."
 - Keep the plot simple and direct. One clear comedic premise, developed once, \
 resolved with a quiet insight.
 - When dialogue IS included, write it as spoken lines with character attribution \
@@ -286,6 +300,16 @@ alone, with zero context about the news story, should make someone feel somethin
 they were trying not to feel.
 - Test: would a stranger scrolling past this image on a phone feel a flicker of \
 unwanted recognition, even without knowing the headline?
+- **Double emotional hit**: the scene must produce two CONTRADICTORY emotions \
+simultaneously — humor AND anxiety, beauty AND wrongness, admiration AND dread. \
+Single-emotion images are forgettable; contradictory emotions are arresting.
+- **Environment as accomplice**: the setting is not neutral backdrop. Something \
+in it should exist in a state that IMPLIES something just happened or is about \
+to — traces over events, evidence over action. An empty chair implies a departure \
+more powerfully than showing someone leave.
+- **Productive confusion**: include one detail that resists easy interpretation. \
+The viewer should feel a beat of genuine uncertainty — "is that intentional?" — \
+before the comedy lands.
 - Every scene must contain a **VISUAL RIDDLE** — one detail that contradicts, \
 distorts, or recontextualizes the main subject. The visual riddle IS the "one \
 visual detail" from the NON-NEGOTIABLE rules, not a separate element. The viewer \
@@ -360,9 +384,12 @@ to the news story. Describable in a single still image (or null). Not a sequence
 of events.
 - `audio_direction`: music, sound effects, ambient sounds, and dialogue delivery notes
 - `duration_seconds`: 15
-- `camera_movement`: ONE simple camera movement or a slow progression (e.g. \
-"slow zoom in", "static → gentle pan"). Prefer subtle, unhurried moves suited \
-to a 15-second continuous shot.
+- `camera_movement`: ONE camera movement with a REVEAL — the movement should \
+change what the viewer understands about the scene. Examples: "static hold 3s, \
+then slow drift right revealing [detail]" / "close on [detail], slow pull back \
+showing Billy standing small against [context]" / "eye-level static, imperceptible \
+upward tilt revealing [something above frame]." A zoom that reveals nothing new \
+is wasted motion. Vary the rhythm: still → move → still, not constant drift.
 
 **Example output** (fictional topic — adapt structure, not content):
 {{
@@ -371,15 +398,15 @@ to a 15-second continuous shot.
     "scene_number": 1,
     "scene_title": "Order in the Sandbox",
     "setting": "Children's playground, overcast afternoon, muted grey light",
-    "scene_prompt": "A three-meter-tall rubber gavel towers over a small \
-playground sandbox where Billy in his beige suit stands looking up at it, \
-dwarfed. Behind the sandbox, a chain-link fence stretches across the frame. \
-A hand-painted sign on the fence reads 'COURT IN SESSION' in large block \
-letters. Overcast grey sky. Billy says: 'The Supreme Court just ruled that \
-AI-generated evidence is admissible.' A young judge in an oversized black \
-robe sits cross-legged in the sandbox, stamping documents with a toy hammer. \
-The judge says: 'The precedent was set by a chatbot.' Billy says: 'Justice \
-is blind. Now it's also imaginary.'",
+    "scene_prompt": "A three-meter-tall rubber gavel — dense crosshatching on \
+the rubber head, ink-wash shading where it sags under its own weight — towers \
+over a sandbox drawn in loose single-line pencil. Billy in his beige suit \
+stands looking up, dwarfed. The sandbox has deep impression marks as if prior \
+sessions have been held. A hand-painted sign reads 'COURT IN SESSION' in heavy \
+block letters. A young judge in an oversized black robe sits cross-legged, \
+stamping documents with a toy hammer. Billy says: 'The Supreme Court just \
+ruled that AI-generated evidence is admissible.' The judge says: 'The precedent \
+was set by a chatbot.' Billy says: 'Justice is blind. Now it's also imaginary.'",
     "dialogue": [
       {{"character": "Billy", \
 "line": "The Supreme Court just ruled that AI-generated evidence is admissible."}},
@@ -392,7 +419,8 @@ is blind. Now it's also imaginary.'",
 — the scales of justice rendered in playground proportions",
     "audio_direction": "distant playground ambience, slow gavel thud, deadpan delivery",
     "duration_seconds": 15,
-    "camera_movement": "slow zoom in from gavel top to sandbox level"
+    "camera_movement": "static hold 3s on the sagging gavel head, then slow \
+drift down revealing Billy standing small against the sandbox courtroom"
   }}],
   "end_card_prompt": "Show logo over faded playground asphalt texture",
   "characters_used": ["Billy"],

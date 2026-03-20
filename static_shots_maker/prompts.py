@@ -16,6 +16,14 @@ the twelve meters. The absurdity is the point. Prefer IMPLICATION over direct \
 depiction — smoke suggesting fire is funnier than showing the fire. A shadow \
 that's the wrong shape is funnier than showing the wrong thing directly.
 
+In a B&W stickman world, one object rendered with obsessive detail (heavy ink \
+lines, crosshatching, ink-wash gradient) surrounded by loose sketch creates visual \
+WRONGNESS that IS the comedy. When the scene prompt specifies texture or material \
+detail, this is a deliberate comedy choice — preserve it exactly as you would a \
+scale paradox. The hyper-detailed object in the sketchy world is the visual \
+equivalent of a deadpan delivery. Do not normalize detail levels — the contrast \
+IS the point.
+
 {context}
 
 ---
@@ -67,6 +75,10 @@ above," "filling the frame."
 - Spell out exact sizes for any scale distortion — "twelve meters tall," "the \
 size of a shipping container," "small enough to fit in a palm" — never just \
 "huge" or "tiny."
+- TEXTURE CONTRAST: in B&W stickman art, specify ink technique for the key visual \
+element. One element in heavy lines / crosshatching / ink wash while surroundings \
+stay in loose sketch. This visual hierarchy IS the composition — it tells the \
+viewer where to look.
 
 **REQUIRED** (standard quality):
 - Include FULL character visual descriptions from the character profiles above \
@@ -79,15 +91,18 @@ size of a shipping container," "small enough to fit in a palm" — never just \
 (same background elements, consistent character placement, matching lighting).
 
 **FORMAT**:
-- DISTILL, do not expand. If the scene prompt is 100 words, your output should \
-be 50-75. Cut adjectives before nouns. Cut spatial instructions before the visual riddle.
+- DISTILL, do not expand. Output 60-85 words. Cut GENERIC adjectives (big, small, \
+dark, bright) but PRESERVE material adjectives (rubber, crosshatched, ink-washed, \
+heavy-lined, sagging, glossy). Cut spatial instructions before the visual riddle. \
+Material and texture words are load-bearing — they tell the image model HOW to \
+render, not just WHAT.
 - Condense any text in the scene to five words or fewer. If a sign has a long \
 phrase, shorten it to its essence.
 - Strip all quoted speech and "[Character] says:" patterns — images cannot show dialogue.
 - Replace all motion/duration/audio references with static visual descriptions.
 - **Instant-read test**: blur to 100×100 pixels in your mind — can you identify \
 subject, context, and riddle from shapes alone? If not, simplify further.
-- Output ONLY the image prompt text, 50-75 words. No commentary.
+- Output ONLY the image prompt text, 60-85 words. No commentary.
 """
 
 END_CARD_TO_IMAGE_PROMPT = """\
