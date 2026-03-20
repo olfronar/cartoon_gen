@@ -1,11 +1,10 @@
 from __future__ import annotations
 
-import json
 import logging
 
 import anthropic
 
-from shared.utils import extract_text, strip_code_fences
+from shared.utils import extract_json, extract_text, strip_code_fences
 
 logger = logging.getLogger(__name__)
 
@@ -67,15 +66,4 @@ def run_interview(
 
 def _extract_profile(text: str) -> dict:
     """Extract JSON profile from text after INTERVIEW_COMPLETE marker."""
-    text = strip_code_fences(text.strip())
-    try:
-        return json.loads(text)
-    except json.JSONDecodeError as exc:
-        # Try to find JSON in the text
-        start = text.find("{")
-        end = text.rfind("}") + 1
-        if start >= 0 and end > start:
-            return json.loads(text[start:end])
-        raise ValueError(
-            f"Could not parse profile JSON from interview output:\n{text[:500]}"
-        ) from exc
+    return extract_json(strip_code_fences(text.strip()), expect=dict)

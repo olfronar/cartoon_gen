@@ -1,6 +1,5 @@
 from __future__ import annotations
 
-import json
 import logging
 from datetime import datetime, timezone
 
@@ -10,7 +9,7 @@ from xai_sdk.tools import web_search
 
 from shared.config import Settings
 from shared.models import RawItem
-from shared.utils import strip_code_fences
+from shared.utils import extract_json, strip_code_fences
 
 logger = logging.getLogger(__name__)
 
@@ -50,33 +49,6 @@ Return ONLY a JSON array.
 """
 
 
-def _extract_json_array(text: str) -> list[dict] | None:
-    """Extract a JSON array from text that may contain surrounding commentary."""
-    # Try direct parse first
-    try:
-        result = json.loads(text)
-        if isinstance(result, list):
-            return result
-    except json.JSONDecodeError:
-        pass
-
-    # Find the outermost [...] bracket pair
-    start = text.find("[")
-    if start == -1:
-        return None
-    # Walk backwards from the end to find the matching close bracket
-    end = text.rfind("]")
-    if end == -1 or end <= start:
-        return None
-    try:
-        result = json.loads(text[start : end + 1])
-        if isinstance(result, list):
-            return result
-    except json.JSONDecodeError:
-        return None
-    return None
-
-
 class XAISource:
     name = "xai"
 
@@ -103,8 +75,9 @@ class XAISource:
 
         # Parse JSON from response — Grok may wrap the array in commentary
         text = strip_code_fences(text)
-        posts = _extract_json_array(text)
-        if posts is None:
+        try:
+            posts = extract_json(text, expect=list)
+        except ValueError:
             logger.error("Failed to parse xAI response as JSON:\n%s", text[:500])
             return []
 

@@ -137,20 +137,20 @@ def score_items(items: list[RawItem], settings: Settings) -> list[ScoredItem]:
             dup_of is not None
             and isinstance(dup_of, int)
             and dup_of != idx
+            and 0 <= dup_of < len(to_score)
+            and 0 <= idx < len(to_score)
             and dup_of in scored_map
             and dup_of not in duplicate_targets
         ):
             duplicate_targets.add(idx)
-            # Merge sources into canonical item
-            if idx < len(to_score) and dup_of < len(to_score):
-                canon = to_score[dup_of]
-                merged = list(set(canon.sources + to_score[idx].sources))
-                to_score[dup_of] = replace(canon, sources=merged)
-                logger.info(
-                    "Semantic dedup: %r merged into %r",
-                    to_score[idx].title,
-                    to_score[dup_of].title,
-                )
+            canon = to_score[dup_of]
+            merged = list(set(canon.sources + to_score[idx].sources))
+            to_score[dup_of] = replace(canon, sources=merged)
+            logger.info(
+                "Semantic dedup: %r merged into %r",
+                to_score[idx].title,
+                to_score[dup_of].title,
+            )
 
     result: list[ScoredItem] = []
     for i, item in enumerate(to_score):

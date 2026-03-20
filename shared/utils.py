@@ -16,6 +16,37 @@ def strip_code_fences(text: str) -> str:
     return text
 
 
+def extract_json(text: str, *, expect: type = dict):
+    """Parse JSON from LLM text, falling back to bracket extraction.
+
+    Tries ``json.loads`` on the full text first.  On failure, locates the
+    outermost ``{…}`` (for *expect=dict*) or ``[…]`` (for *expect=list*)
+    and parses that substring.
+
+    Returns the parsed object or raises ``ValueError`` on failure.
+    """
+    text = text.strip()
+    try:
+        result = json.loads(text)
+        if isinstance(result, expect):
+            return result
+    except json.JSONDecodeError:
+        pass
+
+    open_br, close_br = ("{", "}") if expect is dict else ("[", "]")
+    start = text.find(open_br)
+    end = text.rfind(close_br)
+    if start != -1 and end > start:
+        try:
+            result = json.loads(text[start : end + 1])
+            if isinstance(result, expect):
+                return result
+        except json.JSONDecodeError:
+            pass
+
+    raise ValueError(f"Could not extract {expect.__name__} JSON from text:\n{text[:500]}")
+
+
 def parse_iso_utc(value: str) -> datetime:
     """Parse an ISO 8601 timestamp, handling 'Z' suffix. Returns UTC datetime."""
     try:
