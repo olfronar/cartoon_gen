@@ -72,6 +72,7 @@ def make_scene(**overrides) -> SceneScript:
         duration_seconds=15,
         camera_movement="slow zoom in",
         transformation="",
+        billy_emotion="",
     )
     defaults.update(overrides)
     return SceneScript(**defaults)
@@ -93,6 +94,7 @@ def make_script(**overrides) -> CartoonScript:
         scenes=[make_scene()],
         end_card_prompt="Show logo with confetti",
         characters_used=["Bot"],
+        format_type="",
     )
     defaults.update(overrides)
     return CartoonScript(**defaults)

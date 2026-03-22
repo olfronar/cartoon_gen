@@ -68,22 +68,7 @@ def expand_script(
 
     data = call_llm_json(client, prompt, model, max_tokens)
 
-    scenes = [
-        SceneScript(
-            scene_number=s["scene_number"],
-            scene_title=s["scene_title"],
-            setting=s["setting"],
-            scene_prompt=s["scene_prompt"],
-            dialogue=s.get("dialogue", []),
-            visual_gag=s.get("visual_gag"),
-            audio_direction=s.get("audio_direction", ""),
-            duration_seconds=int(s.get("duration_seconds", 5)),
-            camera_movement=s.get("camera_movement", ""),
-            transformation=s.get("transformation", ""),
-            billy_emotion=s.get("billy_emotion", ""),
-        )
-        for s in data["scenes"]
-    ]
+    scenes = [SceneScript.from_dict(s) for s in data["scenes"]]
 
     fmt = logline.format_type or data.get("format_type", "")
 
