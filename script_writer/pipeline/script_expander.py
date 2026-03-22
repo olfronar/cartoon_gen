@@ -77,6 +77,7 @@ def expand_script(
             audio_direction=s.get("audio_direction", ""),
             duration_seconds=int(s.get("duration_seconds", 5)),
             camera_movement=s.get("camera_movement", ""),
+            transformation=s.get("transformation", ""),
         )
         for s in data["scenes"]
     ]

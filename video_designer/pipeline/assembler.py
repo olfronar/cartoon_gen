@@ -1,9 +1,10 @@
 from __future__ import annotations
 
 import logging
-import subprocess
 import tempfile
 from pathlib import Path
+
+from shared.ffmpeg import probe_video, run_ffmpeg
 
 logger = logging.getLogger(__name__)
 
@@ -68,7 +69,7 @@ def _concat_clips(paths: list[Path], output_path: Path) -> None:
         lines = [f"file '{clip.resolve()}'" for clip in paths]
         concat_file.write_text("\n".join(lines), encoding="utf-8")
 
-        _run_ffmpeg(
+        run_ffmpeg(
             [
                 "ffmpeg",
                 "-y",
@@ -92,7 +93,7 @@ def _concat_with_glitch(
     glitch_duration: float,
 ) -> None:
     """Concatenate clips with glitch + silence interstitials using concat demuxer."""
-    width, height, fps = _probe_video(paths[0])
+    width, height, fps = probe_video(paths[0])
 
     with tempfile.TemporaryDirectory() as tmpdir:
         tmp = Path(tmpdir)
@@ -108,7 +109,7 @@ def _concat_with_glitch(
                 lines.append(f"file '{glitch_path.resolve()}'")
         concat_file.write_text("\n".join(lines), encoding="utf-8")
 
-        _run_ffmpeg(
+        run_ffmpeg(
             [
                 "ffmpeg",
                 "-y",
@@ -140,7 +141,7 @@ def _generate_glitch_clip(
     )
     audio_src = f"anullsrc=r=44100:cl=stereo,atrim=duration={duration}"
 
-    _run_ffmpeg(
+    run_ffmpeg(
         [
             "ffmpeg",
             "-y",
@@ -157,44 +158,3 @@ def _generate_glitch_clip(
             str(output_path),
         ]
     )
-
-
-def _probe_video(path: Path) -> tuple[int, int, float]:
-    """Probe a video file for width, height, and fps. Returns defaults on failure."""
-    try:
-        result = subprocess.run(
-            [
-                "ffprobe",
-                "-v",
-                "error",
-                "-select_streams",
-                "v:0",
-                "-show_entries",
-                "stream=width,height,r_frame_rate",
-                "-of",
-                "csv=p=0",
-                str(path),
-            ],
-            capture_output=True,
-            text=True,
-        )
-        parts = result.stdout.strip().split(",")
-        width = int(parts[0])
-        height = int(parts[1])
-        num, den = parts[2].split("/")
-        fps = int(num) / int(den)
-        return width, height, fps
-    except Exception:
-        logger.warning("Failed to probe %s, using 480p 9:16 defaults", path)
-        return 270, 480, 30.0
-
-
-def _run_ffmpeg(cmd: list[str]) -> None:
-    """Run an ffmpeg command, raising on failure."""
-    result = subprocess.run(cmd, capture_output=True, text=True)
-    if result.returncode != 0:
-        logger.error(
-            "ffmpeg failed: %s",
-            result.stderr[-500:] if result.stderr else "unknown",
-        )
-        raise RuntimeError(f"ffmpeg failed with exit code {result.returncode}")

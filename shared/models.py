@@ -115,6 +115,7 @@ class SceneScript:
     audio_direction: str
     duration_seconds: int
     camera_movement: str
+    transformation: str = ""
 
 
 @dataclass(slots=True)

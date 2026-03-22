@@ -58,6 +58,11 @@ class Settings:
     # Art Materials
     art_materials_dir: Path = field(default_factory=lambda: Path("output/art_materials"))
 
+    # Caption Maker
+    openai_api_key: str = ""
+    whisper_model: str = "whisper-1"
+    caption_font_path: Path = field(default_factory=lambda: Path("assets/fonts/Inter-Bold.ttf"))
+
     # Video Designer
     video_model: str = "grok-imagine-video"
     video_prompt_model: str = "claude-opus-4-6"
@@ -96,6 +101,9 @@ def load_settings(env_path: str = ".env") -> Settings:
         shots_max_concurrency=int(values.get("SHOTS_MAX_CONCURRENCY", "10")),
         shots_output_dir=Path(values.get("SHOTS_OUTPUT_DIR", "output/static_shots")),
         art_materials_dir=Path(values.get("ART_MATERIALS_DIR", "output/art_materials")),
+        openai_api_key=values.get("OPENAI_API_KEY", ""),
+        whisper_model=values.get("WHISPER_MODEL", "whisper-1"),
+        caption_font_path=Path(values.get("CAPTION_FONT_PATH", "assets/fonts/Inter-Bold.ttf")),
         video_model=values.get("VIDEO_MODEL", "grok-imagine-video"),
         video_prompt_model=values.get("VIDEO_PROMPT_MODEL", "claude-opus-4-6"),
         video_prompt_max_tokens=int(values.get("VIDEO_PROMPT_MAX_TOKENS", "4096")),

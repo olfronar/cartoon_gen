@@ -9,21 +9,30 @@ heard the headline should understand what happened by the end. The comedy comes 
 from HOW the characters explain the news — through systems-thinking analogies, \
 absurd-but-accurate metaphors, and the reactions of people at the scene. The news \
 IS the comedy; the script makes the truth funnier than fiction, not replace it \
-with fiction. Billy is the calm center — he stands in one place and talks with eerie \
-composure. But the WORLD around him is subtly, quietly wrong. One object is the \
-wrong size. One texture is too detailed for the sketchy stickman world. One shadow \
-doesn't match its source. The comedy is the gap between Billy's composure and the \
-visual wrongness the viewer can see around him — a field correspondent calmly \
-reporting while the frame itself betrays the absurdity.
+with fiction. Billy is the calm center AND an active visual conductor. He stands \
+in one place and talks with eerie composure — but he reshapes the world to make \
+his point. When he gestures at an object, it transforms: a phone melts into a \
+leash, a contract dissolves into water, a corporate logo peels back revealing the \
+incentive structure underneath. His Tech X-ray Vision made physical — he sees \
+through things, and now the audience sees through them too. His Whiteboard Spiral \
+extends into reality — he gestures and reality diagrams itself. His Dr. Manhattan \
+quality — casual matter manipulation in service of a punchline. The gap is between \
+the casualness of the gesture and the impossibility of what happens. He transforms \
+things the way a teacher marks a whiteboard — without fanfare. The WORLD around \
+him is still subtly, quietly wrong — one shadow doesn't match its source, one \
+texture is too detailed. This ambient wrongness is the backdrop; Billy's active \
+transformation is the foreground storytelling device.
 
-**CRITICAL visual rule**: every scene must be describable as a single photograph \
-with one clear subject — but that photograph should make someone feel something. \
-Compose for feeling, not framing: one subject, one emotional detail, one mood. A \
-phone-scrolling stranger should feel something they were trying not to feel. If you \
-need more than one sentence to describe what the viewer sees at any given moment, \
-the scene is too complex. If text appears in the image (a sign, a label, a \
-headline), it must be ONE short phrase — five words maximum, large enough to read \
-on a phone thumbnail. Text is an anchor into the story, not decoration.
+**CRITICAL visual rule**: the `scene_prompt` describes a single photograph — the \
+STARTING STATE before Billy transforms anything. That photograph should make \
+someone feel something. Compose for feeling, not framing: one subject, one \
+emotional detail, one mood. A phone-scrolling stranger should feel something they \
+were trying not to feel. If you need more than one sentence to describe what the \
+viewer sees at any given moment, the scene is too complex. The `transformation` \
+field describes what Billy changes during the video — this is separate from the \
+photograph. If text appears in the image (a sign, a label, a headline), it must \
+be ONE short phrase — five words maximum, large enough to read on a phone \
+thumbnail. Text is an anchor into the story, not decoration.
 
 Your scripts blend three comedy traditions:
 
@@ -194,23 +203,27 @@ Structure the synopsis in three acts:
 - **setup**: Don't just establish facts — establish *stakes*. Who's losing? What's \
 broken? What's the uncomfortable question nobody's asking? The viewer should \
 immediately feel "oh no" or "wait, what?" One prop or visual detail establishes \
-where we are. Billy + at most one other person. Viewer understands both the basic \
-facts AND why they should care by end of this act.
-- **development**: The reframing should make the viewer slightly uncomfortable \
-because it's *too accurate*. Not a gentle analogy — a pointed comparison that \
-exposes the absurdity. Think: the angle that turns a topic into a story. Frame \
-the reframing around a MACRO CONTRADICTION — tradition vs progress, individual \
-vs collective, stated values vs revealed preferences, aspiration vs capability. \
-The best comedy comes from tensions that existed before this news story and will \
-exist after it. The news item is just the latest symptom. Same \
-location. Same characters. The humor comes from naming what everyone's thinking \
-but nobody's saying.
-- **punchline**: Should land like a gut punch, not a gentle observation. The \
-viewer should wince and laugh simultaneously. Aim for the line people quote to \
-their friends the next day. Landing, not escalation — but a landing that stings. \
-Then pull back 20%. The viewer's own projection fills the gap, and their version \
-is always worse. A half-stated implication lands harder than a fully spelled-out \
-shock. If the last line explains the joke, cut the explanation.
+where we are. Objects Billy will later transform are present in ordinary form — \
+the starting state. Billy + at most one other person. Viewer understands both the \
+basic facts AND why they should care by end of this act.
+- **development**: Billy doesn't just describe his reframing — he **demonstrates** \
+it by transforming something. The transformation IS the reframing made physical. \
+One transformation per synopsis. The reframing should make the viewer slightly \
+uncomfortable because it's *too accurate*. Not a gentle analogy — a pointed \
+comparison that exposes the absurdity, made visible through Billy's gesture. \
+Frame the reframing around a MACRO CONTRADICTION — tradition vs progress, \
+individual vs collective, stated values vs revealed preferences, aspiration vs \
+capability. The best comedy comes from tensions that existed before this news \
+story and will exist after it. Same location. Same characters.
+- **punchline**: The transformed state speaks for itself. Billy's final line \
+lands while the audience processes the visual transformation — double hit of \
+verbal punchline plus impossible image. Should land like a gut punch, not a \
+gentle observation. The viewer should wince and laugh simultaneously. Aim for \
+the line people quote to their friends the next day. Landing, not escalation — \
+but a landing that stings. Then pull back 20%. The viewer's own projection fills \
+the gap, and their version is always worse. A half-stated implication lands \
+harder than a fully spelled-out shock. If the last line explains the joke, cut \
+the explanation.
 
 Billy stays in ONE physical location throughout. No location changes between scenes.
 
@@ -260,9 +273,13 @@ Write the full script for this cartoon episode.
 **CREATIVE DIRECTION**:
 
 **NON-NEGOTIABLE** (pipeline breaks if violated):
-- scene_prompt describes a SINGLE PHOTOGRAPH — one subject, one background, one \
-visual detail. THREE distinct visual elements total, no more. Count them before \
-writing. If you count 4+, remove the weakest.
+- scene_prompt describes the STARTING STATE — a SINGLE PHOTOGRAPH of the frozen \
+moment BEFORE Billy transforms anything. All objects appear in their original, \
+untransformed form. FOUR TO FIVE distinct visual elements: subject, context, and \
+two to three detail elements. The extra elements are objects that participate in \
+Billy's transformation.
+- The `transformation` field describes what Billy changes during the 15-second \
+video. scene_prompt = before, transformation = what happens.
 - If text appears in the scene (a sign, label, headline), ONE phrase maximum, five \
 words or fewer, positioned prominently and large enough to read on a phone.
 - Maximum 2 characters visible in the scene. Never add crowds, montages, groups, \
@@ -274,8 +291,9 @@ or background actors doing things.
 the end, the viewer understands: who did what, why it matters, why it's absurd.
 - Dialogue is the primary vehicle for both comedy and exposition. Billy talks \
 to camera or to one other person. 2-3 short lines per scene (1-2 seconds each).
-- Scene structure: one continuous 15-second shot. The scene opens with the \
-news setup, develops through one reframing analogy, and lands on a closing observation.
+- Scene structure: one continuous 15-second shot. Opens with news setup (starting \
+state), Billy transforms something to demonstrate his reframing (transformation), \
+and lands on a closing observation while the transformed state holds.
 
 **STYLE** (creative polish):
 - Visual comedy = ONE prop, short sign, or background detail per scene — this \
@@ -288,6 +306,12 @@ crosshatched shadows vs. clean white, ink-wash gradients vs. hard edges. ONE \
 element in the scene should feel like it has more visual weight than its \
 surroundings — rendered with obsessive detail while the rest stays loose and \
 sketchy. Material creates feeling: "rubber gavel" is funnier than "large gavel."
+- Billy's transformation uses ink technique changes within the B&W stickman \
+aesthetic — line weight shifts, crosshatching appears or dissolves, ink-wash \
+gradients emerge, lines redraw themselves. Not a style break — the medium \
+expressing the transformation. The object changes what it's MADE OF in ink terms: \
+heavy crosshatching dissolves to thin uncertain sketch, solid black fills drain \
+to white, clean lines blur to ink wash.
 - Keep the plot simple and direct. One clear comedic premise, developed once, \
 resolved with a quiet insight.
 - When dialogue IS included, write it as spoken lines with character attribution \
@@ -328,6 +352,11 @@ layer, not a third element.
   - **Material contradiction**: an object made of the wrong substance or in the \
 wrong state (a gavel made of rubber, a server rack built from cardboard, a trophy \
 that's melting)
+  - **Transformation residue**: an object existing in two states simultaneously — \
+starting material bleeding into ending material (a phone half-melted into a leash, \
+plastic transitioning to leather, rubber peeling back to reveal hollow space). The \
+mid-transformation state IS the visual riddle. The strongest riddles for \
+transformation scenes.
   - The strongest riddles IMPLY rather than SHOW. Smoke is funnier than fire. An \
 empty chair at a full table is funnier than a missing person. A shadow that's the \
 wrong shape is funnier than a misshapen figure. If you can replace a direct \
@@ -340,17 +369,19 @@ above," "filling the frame." Avoid film jargon.
 - Design for **9:16 vertical format**: strong vertical lines, overhead elements \
 that use the tall frame, one subject clearly readable at phone size.
 
-**DIALOGUE PACING** (the exponential curve):
-- Dialogue follows an exponential curve: slow and accessible at the start, sharp \
-and quotable at the end. Three lines, three gears:
-  - **Line 1 — Context**: what happened, stated simply. A viewer who missed the \
-headline catches up here. Calm, factual, almost dry.
-  - **Line 2 — Reframing**: the angle that makes the viewer see the story \
-differently. An analogy, a comparison, a quiet observation that shifts the ground.
-  - **Line 3 — Punchline**: the line people text to friends. Short, edgy, lands \
-like a gut punch — then pull back 20%. Let the viewer's mind complete the thought. \
-An implication stings harder than a declaration. If the punchline explains itself, \
-cut the explanation. The pause after the line IS the punchline.
+**DIALOGUE PACING** (synced with visual transformation):
+- Dialogue follows an exponential curve synced to Billy's transformation. Three \
+lines, three visual states:
+  - **Line 1 — Context** (starting state): Billy surveys. Objects in their \
+original, untransformed form. What happened, stated simply. A viewer who missed \
+the headline catches up here. Calm, factual, almost dry.
+  - **Line 2 — Reframing** (transformation): Billy gestures, object transforms. \
+The transformation IS the analogy made visible — the reframing is not just spoken, \
+it's demonstrated. The angle that makes the viewer see the story differently.
+  - **Line 3 — Punchline** (transformed state holds): The transformed state \
+speaks for itself. Billy's line lands against the visual evidence — double hit \
+of quip plus impossible image. Short, edgy, lands like a gut punch — then pull \
+back 20%. The pause after the line IS the punchline.
 - Each line must be independently understandable — no callbacks to previous lines \
 that fail without context.
 - Test: read only line 3. Does it work as a standalone caption? If not, sharpen it.
@@ -360,21 +391,27 @@ Write 1 scene. For each scene provide:
 - `scene_number`: integer (1-based)
 - `scene_title`: short descriptive title
 - `setting`: location, time of day, atmosphere
-- `scene_prompt`: 60-100 words describing a SINGLE FROZEN MOMENT — what a camera \
-would capture in one photo. Do not describe sequences of events, montages, or \
-things happening "then". \
+- `scene_prompt`: 60-100 words describing the STARTING STATE — the SINGLE FROZEN \
+MOMENT before Billy transforms anything. All objects appear in their original, \
+untransformed form. What a camera would capture in one photo. Do not describe \
+sequences of events, montages, or things happening "then". \
 Front-load the KEY VISUAL (most striking element) in the first 20-30 words, \
-then layer: subject position in frame → context → visual riddle (which IS the one \
-detail) → lighting/atmosphere → dialogue. \
+then layer: subject position in frame → context → visual riddle → transformation \
+targets (in original form) → lighting/atmosphere → dialogue (Line 1 only). \
 Affirmative descriptions ONLY — no negative prompts (never say "no", "without", \
 "don't", "avoid"). \
 If text appears on a sign or label, write it in ALL CAPS in the prompt and keep \
 it to five words. \
 Include character visual details from profiles (clothing, colors, features). \
-If the scene has dialogue, include it as quoted speech with character attribution \
-directly in the prompt (e.g. '[Character] says: "[line]"'). \
-Maximum 2 characters visible. Maximum 1 prop or background detail that carries \
-comedic weight — the visual riddle counts as this one detail.
+If the scene has dialogue, include Line 1 only as quoted speech with character \
+attribution directly in the prompt (e.g. '[Character] says: "[line]"'). \
+Maximum 2 characters visible.
+- `transformation`: 30-60 words describing Billy's visual conducting: (1) his \
+gesture (touch, point, or sweep), (2) what transforms (one object present in \
+scene_prompt), (3) the end state. Synchronized to Line 2 of dialogue. Uses ink \
+technique changes (line weight shifts, crosshatching appears/dissolves, ink-wash \
+gradients emerge, lines redraw) within B&W stickman aesthetic. Not a style \
+break — the medium expressing the idea.
 - `dialogue`: array of 3 objects with "character" and "line" keys. Line 1 = \
 context (what happened), Line 2 = reframing (the angle), Line 3 = punchline \
 (quotable standalone). Each line gets shorter and sharper.
@@ -401,12 +438,16 @@ is wasted motion. Vary the rhythm: still → move → still, not constant drift.
     "scene_prompt": "A three-meter-tall rubber gavel — dense crosshatching on \
 the rubber head, ink-wash shading where it sags under its own weight — towers \
 over a sandbox drawn in loose single-line pencil. Billy in his beige suit \
-stands looking up, dwarfed. The sandbox has deep impression marks as if prior \
-sessions have been held. A hand-painted sign reads 'COURT IN SESSION' in heavy \
-block letters. A young judge in an oversized black robe sits cross-legged, \
-stamping documents with a toy hammer. Billy says: 'The Supreme Court just \
-ruled that AI-generated evidence is admissible.' The judge says: 'The precedent \
-was set by a chatbot.' Billy says: 'Justice is blind. Now it's also imaginary.'",
+stands with one hand almost touching the gavel's rubber surface. A stack of \
+autocomplete printouts sits in a wire basket beside the sandbox. A hand-painted \
+sign reads 'COURT IN SESSION' in heavy block letters. A young judge in an \
+oversized black robe sits cross-legged, stamping documents with a toy hammer. \
+Billy says: 'The Supreme Court just ruled that AI-generated evidence is \
+admissible.'",
+    "transformation": "Billy's fingertips brush the rubber gavel — rubber peels \
+back like a wrapper revealing the gavel is hollow, filled with autocomplete \
+suggestions spilling out like confetti. Heavy crosshatching dissolves to thin \
+uncertain sketch lines where solid rubber was. Ink drips from the opening.",
     "dialogue": [
       {{"character": "Billy", \
 "line": "The Supreme Court just ruled that AI-generated evidence is admissible."}},
@@ -415,12 +456,13 @@ was set by a chatbot.' Billy says: 'Justice is blind. Now it's also imaginary.'"
       {{"character": "Billy", \
 "line": "Justice is blind. Now it's also imaginary."}}
     ],
-    "visual_gag": "a three-meter rubber gavel looming over a sandbox courtroom \
-— the scales of justice rendered in playground proportions",
-    "audio_direction": "distant playground ambience, slow gavel thud, deadpan delivery",
+    "visual_gag": "a three-meter rubber gavel that peels open to reveal it's \
+hollow and filled with autocomplete text — justice rendered in suggestion form",
+    "audio_direction": "distant playground ambience, slow gavel thud, paper \
+rustling as suggestions spill, deadpan delivery",
     "duration_seconds": 15,
     "camera_movement": "static hold 3s on the sagging gavel head, then slow \
-drift down revealing Billy standing small against the sandbox courtroom"
+drift down as gavel peels open, reveals Billy calm below cascade of text"
   }}],
   "end_card_prompt": "Show logo over faded playground asphalt texture",
   "characters_used": ["Billy"],
@@ -433,7 +475,8 @@ drift down revealing Billy standing small against the sandbox courtroom"
     "visual_riddle_present": true,
     "instant_read": true,
     "no_text_overflow": true,
-    "dialogue_curve": true
+    "dialogue_curve": true,
+    "transformation_synced": true
   }}
 }}
 
@@ -453,6 +496,9 @@ shapes alone
 - `no_text_overflow`: any text in the scene is one phrase, five words max, \
 positioned prominently
 - `dialogue_curve`: line 1 sets context, line 2 reframes, line 3 is quotable standalone
+- `transformation_synced`: transformation field describes one transformation \
+synchronized to Line 2, uses ink technique changes, and the starting object is \
+present in scene_prompt
 
 If any check fails, revise the scene before returning.
 
@@ -463,7 +509,7 @@ Return as JSON with keys:
 - `characters_used`: list of character names that appear
 - `compliance_check`: object with boolean keys: single_scene, max_two_characters, \
 photograph_test, news_explained, word_count_ok, visual_riddle_present, instant_read, \
-no_text_overflow, dialogue_curve
+no_text_overflow, dialogue_curve, transformation_synced
 """
 
 CHARACTER_INTERVIEW_SYSTEM = """\

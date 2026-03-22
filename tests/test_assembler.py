@@ -50,7 +50,7 @@ class TestAssembleFinalVideo:
 
 
 class TestGlitchClip:
-    @patch("video_designer.pipeline.assembler._run_ffmpeg")
+    @patch("video_designer.pipeline.assembler.run_ffmpeg")
     def test_uses_silence_not_beep(self, mock_ffmpeg, tmp_path):
         """Glitch clip uses anullsrc (silence) instead of 200Hz sine beep."""
         output = tmp_path / "glitch.mp4"

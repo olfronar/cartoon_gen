@@ -15,6 +15,7 @@ dependencies = [
     "apscheduler>=3.10,<4",
     "notion-client>=2.0,<3",
     "google-genai>=1.0,<2",
+    "openai>=1.0,<2",
 ]
 
 [project.optional-dependencies]
@@ -38,4 +39,4 @@ line-length = 100
 select = ["E", "F", "I", "W", "UP", "B", "SIM"]
 
 [tool.ruff.lint.isort]
-known-first-party = ["shared", "agent_researcher", "script_writer", "static_shots_maker", "video_designer"]
+known-first-party = ["shared", "agent_researcher", "script_writer", "static_shots_maker", "video_designer", "caption_maker"]

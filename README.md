@@ -1,6 +1,6 @@
 # Cartoon Maker
 
-AI-powered pipeline that discovers trending topics, writes comedy scripts, generates static shot keyframes, and assembles final cartoon videos with native audio.
+AI-powered pipeline that discovers trending topics, writes comedy scripts, generates static shot keyframes, assembles final cartoon videos with native audio, and adds whisper-based captions.
 
 Free to use, modify, and distribute — [MIT License](LICENSE).
 
@@ -17,6 +17,9 @@ trending news ──▶ Agent Researcher ──▶ daily brief (.md + .json)
                                             │
                                             ▼
                   Video Designer ──▶ 15s clips ──▶ final video
+                                            │
+                                            ▼
+                  Caption Maker ──▶ captioned video with subtitles
 ```
 
 Each agent is a self-contained module. Agents communicate through JSON sidecars — the output of one feeds into the next. Cross-agent utilities (data contracts, config, shared helpers) live in `shared/`.
@@ -54,6 +57,7 @@ PYTHONPATH=. python -m agent_researcher           # 1. Discover & score trends
 PYTHONPATH=. python -m script_writer              # 2. Write comedy scripts
 PYTHONPATH=. python -m static_shots_maker         # 3. Generate keyframe images
 PYTHONPATH=. python -m video_designer             # 4. Produce final video
+PYTHONPATH=. python -m caption_maker              # 5. Add captions
 
 # Each agent auto-detects the latest output from the previous stage.
 # To target a specific date, pass --date YYYY-MM-DD to any agent.
@@ -109,6 +113,15 @@ Composes video prompts from scene details + character profiles via Claude, gener
 - `output/videos/<YYYY-MM-DD>_<N>/script_video.mp4` — per-script assembly
 - `output/videos/final_<YYYY-MM-DD>.mp4` — all scripts concatenated
 
+## Caption Maker
+
+Transcribes spoken audio from generated videos via the OpenAI Whisper API, generates ASS subtitles with cumulative word reveal (words appear one by one as spoken), and burns styled captions into videos via ffmpeg. Clean minimal white style — Inter Bold, black outline, drop shadow, bottom 20%.
+
+**Output**:
+- `output/videos/<YYYY-MM-DD>_<N>/script_video_captioned.mp4` — captioned per-script video
+- `output/videos/final_<YYYY-MM-DD>_captioned.mp4` — all scripts captioned and concatenated
+- Original uncaptioned files are untouched
+
 ## Project Structure
 
 ```
@@ -117,15 +130,16 @@ cartoon_maker/
 ├── script_writer/       # Stage 2: script creation pipeline + setup tools
 ├── static_shots_maker/  # Stage 3: static shot generation
 ├── video_designer/      # Stage 4: video assembly & final output
+├── caption_maker/       # Stage 5: whisper-based video captions
 ├── shared/              # Data contracts, config, LLM helpers, context loader
-├── tests/               # 193 tests (pytest)
+├── tests/               # 217 tests (pytest)
 └── output/              # All generated artifacts (gitignored)
 ```
 
 ## Testing
 
 ```bash
-.venv/bin/pytest tests/ -v       # Run all 193 tests
+.venv/bin/pytest tests/ -v       # Run all 217 tests
 .venv/bin/pytest tests/test_dedup.py  # Single file
 .venv/bin/ruff check .           # Lint
 ```
@@ -141,4 +155,5 @@ See `.env.example` for the full list.
 | `ANTHROPIC_API_KEY` | All agents | Scorer falls back to raw score sorting |
 | `GOOGLE_API_KEY` | Static shots, art materials | None (pipeline fails) |
 | `XAI_API_KEY` | Video generation, X/Twitter source | Video fails; X source skipped |
+| `OPENAI_API_KEY` | Captions | Caption pipeline fails |
 | Source credentials | Individual sources | Source skipped gracefully |

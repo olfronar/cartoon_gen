@@ -47,6 +47,10 @@ def render_script_markdown(script: CartoonScript) -> str:
         lines.append(f"**Scene prompt**: {scene.scene_prompt}")
         lines.append("")
 
+        if scene.transformation:
+            lines.append(f"**Transformation**: {scene.transformation}")
+            lines.append("")
+
         if scene.dialogue:
             lines.append("**Dialogue**:")
             for d in scene.dialogue:

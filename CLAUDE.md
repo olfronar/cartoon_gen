@@ -4,7 +4,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Project Overview
 
-Cartoon Maker is an AI-powered pipeline that automatically discovers trending topics from social media, writes comedy scripts, generates static shots, and produces final cartoon videos. The pipeline is composed of four independent agents that run sequentially.
+Cartoon Maker is an AI-powered pipeline that automatically discovers trending topics from social media, writes comedy scripts, generates static shots, produces final cartoon videos, and adds whisper-based captions. The pipeline is composed of five independent agents that run sequentially.
 
 ## Architecture
 
@@ -17,6 +17,7 @@ cartoon_maker/
 ├── script_writer/       # Stage 2: Script creation pipeline     [IMPLEMENTED]
 ├── static_shots_maker/  # Stage 3: Static shot generation       [IMPLEMENTED]
 ├── video_designer/      # Stage 4: Video assembly & final output [IMPLEMENTED]
+├── caption_maker/       # Stage 5: Whisper-based video captions  [IMPLEMENTED]
 ```
 
 ### Agent Pipeline (sequential flow)
@@ -28,6 +29,8 @@ cartoon_maker/
 3. **static_shots_maker** — Reads script JSONs, uses Claude to rewrite video prompts into image-optimized prompts, generates 9:16 PNGs via Gemini, outputs shots + manifest per script.
 
 4. **video_designer** — Reads static shots + script JSONs, uses Claude to compose video prompts, generates 15s clips via xAI grok-imagine-video (with native audio), assembles with glitch transitions into final cartoon videos.
+
+5. **caption_maker** — Transcribes spoken audio from generated videos via OpenAI Whisper API, generates ASS subtitles with cumulative word reveal, and burns styled captions into videos via ffmpeg. Requires `OPENAI_API_KEY`.
 
 ### Design Principles
 
@@ -63,7 +66,7 @@ Dependencies are managed in `pyproject.toml` (not requirements.txt).
 Always use `.venv/bin/` prefixed commands (not `source .venv/bin/activate && ...`) — the direct binary paths are pre-approved in permission settings and won't prompt for approval.
 
 ```bash
-# Run all tests (189 tests)
+# Run all tests (217 tests)
 .venv/bin/pytest tests/ -v
 
 # Run a single test file
@@ -115,6 +118,12 @@ PYTHONPATH=. python -m video_designer
 
 # Video Designer — generate videos from specific date
 PYTHONPATH=. python -m video_designer --date 2026-03-15
+
+# Caption Maker — add captions to latest videos
+PYTHONPATH=. python -m caption_maker
+
+# Caption Maker — add captions for specific date
+PYTHONPATH=. python -m caption_maker --date 2026-03-15
 ```
 
 ### Config
@@ -123,7 +132,7 @@ Environment variables loaded from `.env` (see `.env.example` for template). Miss
 
 Required: `ANTHROPIC_API_KEY` (without it, scorer falls back to raw score sorting — no comedy angles).
 
-Required for static shots: `GOOGLE_API_KEY` (Gemini image generation). Required for video: `XAI_API_KEY` (xAI grok-imagine-video). Optional: `ANTHROPIC_API_KEY` enables Claude prompt rewriting (falls back to regex stripping for shots, original prompts for video).
+Required for static shots: `GOOGLE_API_KEY` (Gemini image generation). Required for video: `XAI_API_KEY` (xAI grok-imagine-video). Optional: `ANTHROPIC_API_KEY` enables Claude prompt rewriting (falls back to regex stripping for shots, original prompts for video). Required for captions: `OPENAI_API_KEY` (OpenAI Whisper API). Optional: `WHISPER_MODEL` (default: `whisper-1`).
 
 ## Code Conventions
 
@@ -165,7 +174,8 @@ All sources must return items with valid URLs. Items with empty URLs are filtere
 - **Dedup** (`dedup.py`): URL normalization + `rapidfuzz` title similarity (threshold 85). Merges multi-source items rather than discarding. Empty URLs are excluded from URL dedup to prevent false collisions. `filter_already_covered()` provides cross-day dedup by scanning previous brief JSON sidecars (7-day lookback) and dropping items that match by normalized URL or fuzzy title.
 - **Scorer** (`scorer.py`): streams to `claude-opus-4-6` with adaptive thinking, 32k max tokens. Rewrites titles for clarity, generates comedy explanations for every item. Falls back to raw score sorting if API key missing or call fails. `comedy_angle` uses enriched three-part format: structural contradiction (what's said vs what's happening), double emotional hit (two contradictory emotions), and one-liner joke seed. This propagates to all downstream script prompts. Scoring uses `broad resonance` (replaces `cultural_resonance`) to favor stories accessible to non-technical audiences. Semantic dedup via `duplicate_of` field: Claude flags items covering the same event, Python code merges sources into the canonical item and drops duplicates before ranking.
 - **xAI source** (`sources/xai.py`): uses `grok-4.20-beta-latest-non-reasoning` with `web_search(allowed_domains=["x.com"])` tool for live X data.
-- **Data contracts** (`shared/models.py`): `RawItem` → `ScoredItem` → `ComedyBrief` → `Logline` → `Synopsis` → `SceneScript` → `CartoonScript` → `ShotResult` → `ShotsManifest` → `ClipResult` → `VideoManifest`. All agents share these. `Synopsis.from_dict()` accepts both `development` and legacy `escalation` keys for backward compatibility.
+- **Data contracts** (`shared/models.py`): `RawItem` → `ScoredItem` → `ComedyBrief` → `Logline` → `Synopsis` → `SceneScript` (10 fields, includes `transformation: str = ""`) → `CartoonScript` → `ShotResult` → `ShotsManifest` → `ClipResult` → `VideoManifest`. All agents share these. `Synopsis.from_dict()` accepts both `development` and legacy `escalation` keys for backward compatibility. `SceneScript.transformation` defaults to `""` for backward compatibility with old JSON.
+- **Shared ffmpeg** (`shared/ffmpeg.py`): `run_ffmpeg()`, `probe_video()`. Extracted from video_designer assembler for reuse by caption_maker.
 - **Shared utilities** (`shared/utils.py`): `strip_code_fences()`, `parse_iso_utc()`, `strip_html()`, `extract_text()`, `extract_json()`, `call_llm_json()`, `call_llm_text()`. `extract_json(text, expect=dict|list)` handles LLM responses with surrounding commentary by trying direct parse then bracket extraction.
 - **Context loader** (`shared/context_loader.py`): `load_characters()`, `load_art_style()`, `load_art_materials()`, `build_context_block()`, `build_reference_image_list()`. Used by script_writer, static_shots_maker, and video_designer.
 - **Delivery** (`delivery/`): local `.md` file (always) + Notion page (if `NOTION_API_KEY` configured).
@@ -185,7 +195,7 @@ Pipeline: brief JSON ingestion → parallel logline generation + selection (all 
 - **Logline selector** (`pipeline/logline_selector.py`): Selects best 1 of 3 per item. Prioritizes news clarity, then comedy punch and point of view over simplicity. Falls back to first logline on error.
 - **Script expander** (`pipeline/script_expander.py`): Two-step: synopsis → full script. All 5 items run in parallel via `asyncio.gather()`.
 - **Renderer** (`pipeline/renderer.py`): `CartoonScript` → `.md` (human-readable) + `.json` (machine-readable for static_shots_maker).
-- **Prompts** (`prompts.py`): All prompt templates. Shared humor preamble establishes the field-correspondent show format with "Billy calm / world quietly wrong" visual contrast (Billy is the still center; the world around him is subtly, visually wrong — wrong size, wrong texture, wrong shadow). CRITICAL visual rule (single photograph per scene), three comedy traditions (dry observation, deadpan absurdism, quiet irony), and a productive-ambiguity gold standard (reality indistinguishable from satire). Deadpan absurdism emphasizes material weight — one object with uncanny specificity (texture, weight, surface quality) in a sketchy world. Downstream prompts (script expansion, image, video) use tiered rules: NON-NEGOTIABLE/CRITICAL → REQUIRED → STYLE/FORMAT. Script expansion includes a `compliance_check` validation checklist and a concrete JSON example with material/texture demonstration. `comedy_angle`, `snippet`, and `news_explanation` are passed through to the script expansion stage so the LLM never loses the factual news context. Synopsis development uses macro-contradiction framing (tradition vs progress, stated values vs revealed preferences). Punchlines follow a restraint principle: write the gut punch, then pull back 20% — implication over declaration. Visual riddles include an indexical strategy (imply rather than show — smoke over fire, traces over direct depiction) and must have material specificity (name the material, describe ink rendering technique). STYLE section adds material specificity for visual riddles. VISUAL PHILOSOPHY adds double-emotional-hit (two contradictory emotions), environment-as-accomplice (setting implies rather than shows), and productive-confusion (one detail that resists easy interpretation). Camera movements require a REVEAL (the movement changes understanding) with rhythmic variation (still → move → still).
+- **Prompts** (`prompts.py`): All prompt templates. Shared humor preamble establishes the field-correspondent show format with Billy as active visual conductor who reshapes reality through gestures (Tech X-ray Vision made physical, Whiteboard Spiral extended into reality, Dr. Manhattan casual matter manipulation). Billy stands in one place but transforms objects to make his point — the gap is between the casualness of the gesture and the impossibility of what happens. Ambient world wrongness (wrong shadow, wrong texture) is the backdrop; Billy's transformation is the foreground. CRITICAL visual rule: `scene_prompt` = starting state (single photograph before Billy transforms), `transformation` = what Billy changes. Three comedy traditions (dry observation, deadpan absurdism, quiet irony), productive-ambiguity gold standard. Downstream prompts use tiered rules: NON-NEGOTIABLE/CRITICAL → REQUIRED → STYLE/FORMAT. Script expansion: 4-5 visual elements (extra elements are transformation targets), `transformation` field (30-60 words: gesture + what changes + end state, synced to Line 2), dialogue-synced transformation beats (Line 1 = survey/starting state, Line 2 = gesture/transformation, Line 3 = punchline/transformed state holds). Includes `compliance_check` with `transformation_synced` validator. `comedy_angle`, `snippet`, and `news_explanation` passed through. Synopsis development: setup establishes starting state with objects to transform, development = Billy demonstrates reframing by transforming (not just describing), punchline = transformed state speaks for itself. Macro-contradiction framing preserved. Visual riddles include transformation residue strategy (object in two states simultaneously). STYLE section: ink technique changes within B&W stickman aesthetic (line weight shifts, crosshatching appears/dissolves, ink-wash gradients). Camera movements require a REVEAL with rhythmic variation.
 - **Runner** (`pipeline/runner.py`): Async orchestrator for the full pipeline.
 
 ### Setup tool
@@ -198,7 +208,7 @@ Pipeline: brief JSON ingestion → parallel logline generation + selection (all 
 ### Output
 
 - `output/scripts/<YYYY-MM-DD>_<N>.md` + `.json` — one pair per top pick (N = 1-5).
-- Scene prompts: 60-100 words describing a single frozen moment (photograph-style) composed for emotional impact — simple spatial language ("centered," "standing small against," "towering above," "filling the frame"). Affirmative only, front-loaded key visuals, with dialogue quoted inline for native audio generation. THREE visual elements maximum (subject, context, one detail). Each scene must surface a suppressed feeling and contain a VISUAL RIDDLE (scale paradox, wrong context, symmetry break, frame-within-frame, or material contradiction) — not just a funny prop. If text appears (sign/label), one phrase maximum, five words or fewer. Duration fixed at 15 seconds. 1 scene per script. Maximum 2 characters per scene, 1 visual gag/prop. Billy stays in one location throughout. Dialogue follows an exponential curve: line 1 = context, line 2 = reframing, line 3 = quotable punchline (3 lines per scene).
+- Scene prompts: 60-100 words describing the STARTING STATE — the frozen moment before Billy transforms anything (photograph-style) composed for emotional impact. Affirmative only, front-loaded key visuals, Line 1 dialogue quoted inline. 4-5 visual elements (subject, context, 2-3 detail elements including transformation targets in original form). `transformation` field (30-60 words) describes Billy's gesture, what transforms, and end state — synced to Line 2. Each scene must surface a suppressed feeling and contain a VISUAL RIDDLE. Duration fixed at 15 seconds. 1 scene per script. Maximum 2 characters per scene. Billy stays in one location throughout. Dialogue synced with transformation: line 1 = context/starting state, line 2 = reframing/transformation, line 3 = punchline/transformed state holds.
 
 ## Static Shots Maker Internals
 
@@ -209,7 +219,7 @@ Pipeline: script JSON ingestion → sequential prompt rewriting + image generati
 - **Script reader** (`pipeline/script_reader.py`): Reads `output/scripts/<date>_<N>.json` sidecars. Auto-detects latest date if none specified. Uses `CartoonScript.from_dict()`.
 - **Prompt generator** (`pipeline/prompt_generator.py`): Claude rewrites video-oriented scene prompts into static image prompts (strips motion/audio/duration, picks peak visual moment, weaves in character details + art style). Falls back to regex stripping if Claude unavailable.
 - **Image generator** (`pipeline/image_generator.py`): Gemini `gemini-3.1-flash-image-preview` generates 9:16 PNGs. Accepts optional `reference_images` (art materials + previous scene) for visual consistency.
-- **Prompts** (`prompts.py`): `SCENE_TO_IMAGE_PROMPT` and `END_CARD_TO_IMAGE_PROMPT` templates. Rules tiered as CRITICAL/COMPOSITION/REQUIRED/FORMAT. Editorial illustrator role focused on emotional distillation for phone screens. Includes comedy-awareness context: rewriter is told comedic elements (rubber gavels, impossible scales, material contradictions) are deliberate and must not be normalized. Texture preservation rule: hyper-detailed object in sketchy world is deliberate comedy (like a scale paradox) — do not normalize detail levels. Prefers implication over direct depiction (smoke over fire, wrong shadow over wrong thing). CRITICAL section enforces text constraint (one phrase, five words max). COMPOSITION section enforces three-element maximum, preserves visual riddles (simplifying if complex), uses two-layer depth (subject + context), simple framing language, exact scale language, and TEXTURE CONTRAST (specify ink technique — heavy lines/crosshatching/ink wash for key element, loose sketch for surroundings). FORMAT: 60-85 word output range (expanded from 50-75 for texture language). Cuts generic adjectives (big, dark) but preserves material adjectives (rubber, crosshatched, ink-washed, sagging). Strips dialogue. References art materials and previous scene for consistency.
+- **Prompts** (`prompts.py`): `SCENE_TO_IMAGE_PROMPT` and `END_CARD_TO_IMAGE_PROMPT` templates. Rules tiered as CRITICAL/COMPOSITION/REQUIRED/FORMAT. Editorial illustrator role focused on emotional distillation for phone screens. Includes comedy-awareness context and starting-state directive: scene prompt = pre-transformation state, render objects in original untransformed form. Texture preservation rule: hyper-detailed object in sketchy world is deliberate comedy. CRITICAL section enforces text constraint (one phrase, five words max). COMPOSITION section enforces 4-5 elements (subject, context, 2-3 detail elements — extra objects are transformation targets in original form, not to be cut even if seemingly redundant as they are load-bearing for video stage). Two-layer depth, simple framing language, exact scale language, TEXTURE CONTRAST. FORMAT: 70-100 word output range. Cuts generic adjectives but preserves material adjectives. Strips dialogue. References art materials and previous scene for consistency.
 - **Runner** (`pipeline/runner.py`): Async orchestrator. Level 1 parallel across scripts, scenes sequential within each script (visual continuity chain). Loads art materials as reference images.
 
 ### Output
@@ -226,8 +236,8 @@ Pipeline: manifest + script ingestion → parallel video prompt composition (Cla
 - **Manifest reader** (`pipeline/manifest_reader.py`): Reads `output/static_shots/<date>_<N>/manifest.json` + pairs with `output/scripts/<date>_<N>.json`. Auto-detects latest date. Skips scripts with no successful shots.
 - **Prompt generator** (`pipeline/prompt_generator.py`): Claude composes video-generation prompts from scene details + character profiles + art style + formatted dialogue. Falls back to original scene_prompt if Claude unavailable.
 - **Video generator** (`pipeline/video_generator.py`): xAI grok-imagine-video (`grok-imagine-video`) image-to-video with native audio generation. Uses static shot as source image via base64 data URI. SDK handles polling internally.
-- **Assembler** (`pipeline/assembler.py`): ffmpeg concatenation with re-encoding (`libx264 + aac`) for audio normalization. Glitch transitions (0.5s) with silence between scripts.
-- **Prompts** (`prompts.py`): `SCENE_TO_VIDEO_PROMPT` and `END_CARD_TO_VIDEO_PROMPT` templates. Rules tiered as CRITICAL/REQUIRED/FORMAT. Include audio/dialogue direction for native audio generation. CRITICAL section: Billy is the still point (1 motion max); the WORLD moves impossibly (objects drift upward, shadows move independently, ink lines crawl, things breathe that shouldn't). Motion has rhythm: stillness → one unexpected motion → stillness. Not constant drift — punctuated moments. REQUIRED section: motion hierarchy over 15s — Billy: 1 motion max, other character: 2-3 natural motions, environment: 2-3 impossible/uncanny motions rendered as natural parts of the world.
+- **Assembler** (`pipeline/assembler.py`): ffmpeg concatenation with re-encoding (`libx264 + aac`) for audio normalization. Glitch transitions (0.5s) with silence between scripts. Uses `run_ffmpeg()` and `probe_video()` from `shared/ffmpeg.py`.
+- **Prompts** (`prompts.py`): `SCENE_TO_VIDEO_PROMPT` and `END_CARD_TO_VIDEO_PROMPT` templates. Rules tiered as CRITICAL/REQUIRED/FORMAT. Include audio/dialogue direction and `{transformation}` input. CRITICAL section: Billy is the calm center with ONE deliberate transformation gesture (touch, point, sweep) — under his hand, objects change material, lines redraw, ink technique transforms. Transformation timing synced to dialogue: seconds 1-5 (Line 1) = static hold/starting state, seconds 5-10 (Line 2) = gesture/transformation unfolds, seconds 10-15 (Line 3) = transformed state holds/punchline. Falls back to ambient impossible motion if no transformation provided. REQUIRED section: motion hierarchy — Billy's transformation gesture IS his primary motion (1 deliberate gesture + 1 optional subtle motion), other character: 2-3 natural motions, environment: 2-3 uncanny motions complementing the transformation.
 - **Runner** (`pipeline/runner.py`): Async orchestrator. Level 1 parallel across scripts, Level 2 parallel across scenes. Uses `xai_sdk.AsyncClient` (requires `XAI_API_KEY`).
 
 ### Output
@@ -235,3 +245,23 @@ Pipeline: manifest + script ingestion → parallel video prompt composition (Cla
 - `output/videos/<YYYY-MM-DD>_<N>/scene_<M>.mp4` + `end_card.mp4` + `script_video.mp4` + `video_manifest.json` per script.
 - `output/videos/final_<YYYY-MM-DD>.mp4` — all scripts concatenated with glitch transitions + silence.
 - Video clips include native audio (dialogue, sound effects, ambient) generated by grok-imagine-video.
+
+## Caption Maker Internals
+
+Pipeline: find script_video.mp4 files → transcribe via OpenAI Whisper API (word-level timestamps) → generate drawtext filter chain (cumulative word reveal) → burn subtitles via ffmpeg drawtext → reassemble final captioned video. No LLM calls.
+
+### Pipeline stages
+
+- **Video finder** (`pipeline/video_finder.py`): Globs for `script_video.mp4` files by date in `output/videos/`. Auto-detects latest date if none specified.
+- **Transcriber** (`pipeline/transcriber.py`): Uses OpenAI Whisper API (`whisper-1`) with word-level timestamps via `verbose_json` response format. Requires `OPENAI_API_KEY`. Internal dataclasses (`WordTiming`, `Segment`, `Transcription`) — not in `shared/models.py` as they don't participate in the inter-agent data contract.
+- **Filter generator** (`pipeline/filter_generator.py`): Generates ffmpeg `drawtext` filter chain for cumulative word reveal — each word appears one by one as spoken via timed `enable='between(t,...)'` expressions. Font size scales proportionally with video height. Clean minimal white style (Inter Bold, 3px black outline, drop shadow, bottom 20%). Writes filter to `captions_filter.txt` for debugging.
+- **Subtitle burner** (`pipeline/subtitle_burner.py`): Burns subtitles into video via ffmpeg `-filter_script:v` with the drawtext filter chain. Uses `run_ffmpeg()` from `shared/ffmpeg.py`.
+- **Runner** (`pipeline/runner.py`): Async orchestrator. Parallel across scripts via `asyncio.gather()`. Skips silent/instrumental videos gracefully. Reuses `assemble_final_video` from `video_designer.pipeline.assembler` for final assembly.
+
+### Output
+
+- `output/videos/<YYYY-MM-DD>_<N>/captions_filter.txt` — intermediate drawtext filter script (kept for debugging).
+- `output/videos/<YYYY-MM-DD>_<N>/script_video_captioned.mp4` — captioned per-script video.
+- `output/videos/final_<YYYY-MM-DD>_captioned.mp4` — all captioned scripts assembled with glitch transitions.
+- Original uncaptioned files are untouched (non-destructive).
+

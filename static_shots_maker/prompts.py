@@ -24,6 +24,11 @@ scale paradox. The hyper-detailed object in the sketchy world is the visual \
 equivalent of a deadpan delivery. Do not normalize detail levels — the contrast \
 IS the point.
 
+The scene prompt describes a STARTING STATE — the frozen moment before Billy \
+transforms anything. All objects appear in their original, untransformed form. \
+Render this pre-transformation state. Do not depict transformations or objects \
+mid-change.
+
 {context}
 
 ---
@@ -58,8 +63,10 @@ maximum, rendered large and legible. Strip any additional text.
 - Use ONLY affirmative descriptions — never say "no", "without", "don't", "avoid".
 
 **COMPOSITION** (what makes someone feel the suppressed emotion):
-- THREE DISTINCT VISUAL ELEMENTS MAXIMUM: subject, context, one detail (the \
-visual riddle). If the source prompt has more, cut the weakest until you reach three.
+- FOUR TO FIVE DISTINCT VISUAL ELEMENTS: subject, context, and two to three \
+detail elements. The extra objects are transformation targets — they appear in \
+their original, untransformed state. Do not cut these objects even if they seem \
+redundant; they are load-bearing for the video stage.
 - PRESERVE the visual riddle from the scene prompt — translate any paradox, \
 scale distortion, or impossible juxtaposition into concrete visual terms the \
 image model can render. This is the hook; do not flatten it into something ordinary. \
@@ -91,7 +98,7 @@ viewer where to look.
 (same background elements, consistent character placement, matching lighting).
 
 **FORMAT**:
-- DISTILL, do not expand. Output 60-85 words. Cut GENERIC adjectives (big, small, \
+- DISTILL, do not expand. Output 70-100 words. Cut GENERIC adjectives (big, small, \
 dark, bright) but PRESERVE material adjectives (rubber, crosshatched, ink-washed, \
 heavy-lined, sagging, glossy). Cut spatial instructions before the visual riddle. \
 Material and texture words are load-bearing — they tell the image model HOW to \

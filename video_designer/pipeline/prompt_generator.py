@@ -42,6 +42,7 @@ def generate_video_prompt(
         audio_direction=scene.audio_direction,
         duration_seconds=scene.duration_seconds,
         dialogue_formatted=_format_dialogue(scene.dialogue),
+        transformation=scene.transformation or "None",
     )
     try:
         return call_llm_text(client, prompt, model, max_tokens).strip()

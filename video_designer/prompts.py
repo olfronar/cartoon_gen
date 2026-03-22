@@ -20,17 +20,23 @@ Compose a video generation prompt to animate this static scene shot.
 **Audio direction**: {audio_direction}
 **Duration**: {duration_seconds} seconds
 **Dialogue**: {dialogue_formatted}
+**Transformation**: {transformation}
 
 **CRITICAL** (pipeline breaks if violated):
-- Billy barely moves (one gesture maximum over 15 seconds) — he is the still \
-point. The WORLD moves in ways that shouldn't happen: an object drifts upward \
-instead of falling, a shadow moves independently of its source, ink lines crawl \
-and redraw themselves, something breathes that shouldn't breathe. The impossible \
-is rendered casually — not as VFX but as if this is simply how the world works. \
-Motion has RHYTHM: a beat of stillness, then one small unexpected motion, then \
-stillness again. Not constant drift — punctuated moments that make the viewer \
-look twice. The static shot is the anchor; the animation reveals what the \
-photograph could not show.
+- Billy is the calm center AND has ONE deliberate transformation gesture — touch, \
+point, or sweep. Under his hand, objects change: material shifts, lines redraw, \
+ink technique transforms. Rendered casually, as if this is how explanation works \
+when Billy does it. The WORLD also moves impossibly around the transformation — \
+shadows shift independently, ink lines crawl, things breathe that shouldn't. \
+These ambient motions complement the transformation, not compete with it.
+- Transformation timing synced to dialogue:
+  - Seconds 1-5 (Line 1): Static hold. Objects in starting state. Billy surveys.
+  - Seconds 5-10 (Line 2): Billy gestures. Transformation unfolds. Ink techniques shift.
+  - Seconds 10-15 (Line 3): Transformed state holds. Punchline lands. Beat of stillness.
+- If no transformation is provided (field is empty or "None"), fall back to \
+original behavior: Billy barely moves, the WORLD moves in ways that shouldn't \
+happen. Motion has RHYTHM: stillness, then one unexpected motion, then stillness \
+again. Not constant drift — punctuated moments.
 - Maximum 2 characters moving on screen. All other elements are static background.
 - Use ONLY affirmative descriptions — never say "no", "without", "don't", "avoid".
 
@@ -41,11 +47,12 @@ photograph could not show.
 - Include AUDIO direction — sound effects, ambient sounds, and mood music.
 - Enforce the art style from the style guide above.
 - Maintain 9:16 vertical composition throughout.
-- Motion hierarchy over 15 seconds — Billy: 1 motion maximum (a head turn OR a \
-gesture). Other character: 2-3 natural motions. Environment: 2-3 impossible or \
-uncanny motions (ink lines subtly redraw, a shadow drifts without its source, an \
-object rotates against gravity, a background element breathes or pulses). These \
-are not effects — they are rendered as natural parts of the world.
+- Motion hierarchy over 15 seconds — Billy: his transformation gesture IS his \
+primary motion (1 deliberate gesture + 1 optional subtle motion). Other character: \
+2-3 natural motions. Environment: 2-3 uncanny motions that complement the \
+transformation (shadows shifting around the changed object, ink redrawing itself, \
+background elements breathing or pulsing in response). These are not effects — \
+they are rendered as natural parts of the world.
 
 **FORMAT**:
 - Front-load the key motion in the first 20-30 words.

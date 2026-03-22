@@ -71,6 +71,7 @@ def make_scene(**overrides) -> SceneScript:
         audio_direction="upbeat music",
         duration_seconds=15,
         camera_movement="slow zoom in",
+        transformation="",
     )
     defaults.update(overrides)
     return SceneScript(**defaults)
