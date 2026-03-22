@@ -32,6 +32,7 @@ def generate_synopsis(
         title=item.item.title,
         comedy_angle=item.comedy_angle,
         snippet=item.item.snippet,
+        format_type=logline.format_type or "demonstration",
     )
 
     data = call_llm_json(client, prompt, model, max_tokens)
@@ -62,6 +63,7 @@ def expand_script(
         comedy_angle=item.comedy_angle,
         snippet=item.item.snippet,
         news_explanation=synopsis.news_explanation,
+        format_type=logline.format_type or "demonstration",
     )
 
     data = call_llm_json(client, prompt, model, max_tokens)
@@ -78,9 +80,12 @@ def expand_script(
             duration_seconds=int(s.get("duration_seconds", 5)),
             camera_movement=s.get("camera_movement", ""),
             transformation=s.get("transformation", ""),
+            billy_emotion=s.get("billy_emotion", ""),
         )
         for s in data["scenes"]
     ]
+
+    fmt = logline.format_type or data.get("format_type", "")
 
     return CartoonScript(
         title=data["title"],
@@ -91,4 +96,5 @@ def expand_script(
         scenes=scenes,
         end_card_prompt=data.get("end_card_prompt", ""),
         characters_used=data.get("characters_used", []),
+        format_type=fmt,
     )

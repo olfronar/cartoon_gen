@@ -41,6 +41,7 @@ def generate_scene_prompt(
         scene_prompt=scene.scene_prompt,
         visual_gag=scene.visual_gag or "None",
         camera_movement=scene.camera_movement,
+        format_type=script.format_type or "standard",
     )
     try:
         return call_llm_text(client, prompt, model, max_tokens).strip()

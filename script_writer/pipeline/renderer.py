@@ -20,6 +20,8 @@ def render_script_markdown(script: CartoonScript) -> str:
     lines.append(f"- **Source URL**: {script.source_item.item.url}")
     lines.append(f"- **Comedy angle**: {script.source_item.comedy_angle}")
     lines.append(f"- **Logline**: {script.logline}")
+    if script.format_type:
+        lines.append(f"- **Format**: {script.format_type}")
 
     # Synopsis
     lines.append(
@@ -42,6 +44,8 @@ def render_script_markdown(script: CartoonScript) -> str:
         lines.append(f"### Scene {scene.scene_number}: {scene.scene_title}")
         lines.append("")
         lines.append(f"**Setting**: {scene.setting}")
+        if scene.billy_emotion:
+            lines.append(f"**Billy's emotion**: {scene.billy_emotion}")
         lines.append(f"**Camera**: {scene.camera_movement}")
         lines.append("")
         lines.append(f"**Scene prompt**: {scene.scene_prompt}")

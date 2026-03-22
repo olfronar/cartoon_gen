@@ -42,6 +42,7 @@ static image generation prompt that a viewer would stop scrolling to examine.
 **Original scene prompt**: {scene_prompt}
 **Visual gag**: {visual_gag}
 **Camera framing**: {camera_movement}
+**Format type**: {format_type}
 
 Reference images serve as STYLE REFERENCES — match their rendering style, \
 proportions, and color treatment exactly, but compose a new scene as described.
@@ -63,10 +64,14 @@ maximum, rendered large and legible. Strip any additional text.
 - Use ONLY affirmative descriptions — never say "no", "without", "don't", "avoid".
 
 **COMPOSITION** (what makes someone feel the suppressed emotion):
+- COMPOSITION HIERARCHY — what's the FIRST thing the viewer sees? Second? Third? \
+Design for the eye's path.
 - FOUR TO FIVE DISTINCT VISUAL ELEMENTS: subject, context, and two to three \
 detail elements. The extra objects are transformation targets — they appear in \
 their original, untransformed state. Do not cut these objects even if they seem \
 redundant; they are load-bearing for the video stage.
+- OBJECT SPECIFICITY: preserve exact object names from scene_prompt. 'iPhone 16 \
+Pro' stays 'iPhone 16 Pro', not 'smartphone'.
 - PRESERVE the visual riddle from the scene prompt — translate any paradox, \
 scale distortion, or impossible juxtaposition into concrete visual terms the \
 image model can render. This is the hook; do not flatten it into something ordinary. \
@@ -79,13 +84,17 @@ background" — use "close" and "behind" instead.
 - LIGHTING: one sentence maximum, in terms compatible with the art style above.
 - Use simple framing language: "centered," "standing small against," "towering \
 above," "filling the frame."
+- SCALE RELATIONSHIPS: preserve size comparisons exactly — 'three meters tall' \
+stays 'three meters tall'.
 - Spell out exact sizes for any scale distortion — "twelve meters tall," "the \
 size of a shipping container," "small enough to fit in a palm" — never just \
 "huge" or "tiny."
-- TEXTURE CONTRAST: in B&W stickman art, specify ink technique for the key visual \
-element. One element in heavy lines / crosshatching / ink wash while surroundings \
-stay in loose sketch. This visual hierarchy IS the composition — it tells the \
-viewer where to look.
+- THE WRONGNESS: make sure the absurd/impossible element is visually prominent, \
+not subtle. If it's the comedy, it must read at phone size.
+- FORMAT AWARENESS: for visual_punchline and cold_reveal formats, the image must \
+carry the ENTIRE joke with zero dialogue support — extra visual clarity needed.
+- VISUAL HIERARCHY: one element rendered with more detail/weight than its \
+surroundings. This tells the viewer where to look.
 
 **REQUIRED** (standard quality):
 - Include FULL character visual descriptions from the character profiles above \

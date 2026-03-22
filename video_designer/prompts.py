@@ -21,22 +21,25 @@ Compose a video generation prompt to animate this static scene shot.
 **Duration**: {duration_seconds} seconds
 **Dialogue**: {dialogue_formatted}
 **Transformation**: {transformation}
+**Format type**: {format_type}
+**Billy's emotion**: {billy_emotion}
 
 **CRITICAL** (pipeline breaks if violated):
-- Billy is the calm center AND has ONE deliberate transformation gesture — touch, \
-point, or sweep. Under his hand, objects change: material shifts, lines redraw, \
-ink technique transforms. Rendered casually, as if this is how explanation works \
-when Billy does it. The WORLD also moves impossibly around the transformation — \
+- **Format-aware motion direction** (adapt to format type):
+  - **visual_punchline**: Environment moves, Billy is still. Wrongness grows \
+visibly over 15 seconds. No transformation gesture needed. The accumulation IS the comedy.
+  - **exchange**: Character body language drives motion. Dialogue timing is primary. Characters \
+react physically — posture shifts, gestures, head turns. Billy's emotion ({billy_emotion}) is \
+visible in his body language.
+  - **cold_reveal**: Camera movement IS the story. Slow reveal that changes what the viewer \
+understands. Hold the confusion, then let the camera answer.
+  - **demonstration**: One deliberate gesture from Billy. Object transforms. Hold the \
+transformed state. The gesture is casual, the result is impossible.
+- Timing follows the format, not a rigid split. Let the joke's rhythm dictate \
+when things move. A 3-second hold before a reveal can be funnier than constant motion.
+- The WORLD also moves impossibly around the action — \
 shadows shift independently, ink lines crawl, things breathe that shouldn't. \
-These ambient motions complement the transformation, not compete with it.
-- Transformation timing synced to dialogue:
-  - Seconds 1-5 (Line 1): Static hold. Objects in starting state. Billy surveys.
-  - Seconds 5-10 (Line 2): Billy gestures. Transformation unfolds. Ink techniques shift.
-  - Seconds 10-15 (Line 3): Transformed state holds. Punchline lands. Beat of stillness.
-- If no transformation is provided (field is empty or "None"), fall back to \
-original behavior: Billy barely moves, the WORLD moves in ways that shouldn't \
-happen. Motion has RHYTHM: stillness, then one unexpected motion, then stillness \
-again. Not constant drift — punctuated moments.
+These ambient motions complement the primary motion, not compete with it.
 - Maximum 2 characters moving on screen. All other elements are static background.
 - Use ONLY affirmative descriptions — never say "no", "without", "don't", "avoid".
 
@@ -47,12 +50,13 @@ again. Not constant drift — punctuated moments.
 - Include AUDIO direction — sound effects, ambient sounds, and mood music.
 - Enforce the art style from the style guide above.
 - Maintain 9:16 vertical composition throughout.
-- Motion hierarchy over 15 seconds — Billy: his transformation gesture IS his \
-primary motion (1 deliberate gesture + 1 optional subtle motion). Other character: \
-2-3 natural motions. Environment: 2-3 uncanny motions that complement the \
-transformation (shadows shifting around the changed object, ink redrawing itself, \
-background elements breathing or pulsing in response). These are not effects — \
-they are rendered as natural parts of the world.
+- Billy's body language matches his emotion ({billy_emotion}) — not always "barely moves." \
+A frustrated Billy shifts weight. An amused Billy tilts his head. An alarmed Billy takes \
+a half-step back.
+- Other character: 2-3 natural motions. Environment: 2-3 uncanny motions that complement \
+the scene (shadows shifting, ink redrawing itself, background elements breathing or \
+pulsing in response). These are not effects — they are rendered as natural parts of \
+the world.
 
 **FORMAT**:
 - Front-load the key motion in the first 20-30 words.

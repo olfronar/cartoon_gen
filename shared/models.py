@@ -80,6 +80,7 @@ class Logline:
     featured_characters: list[str]
     visual_hook: str
     news_essence: str = ""
+    format_type: str = ""  # "visual_punchline" | "exchange" | "cold_reveal" | "demonstration"
 
 
 @dataclass(slots=True)
@@ -116,6 +117,24 @@ class SceneScript:
     duration_seconds: int
     camera_movement: str
     transformation: str = ""
+    billy_emotion: str = ""  # e.g. "deadpan", "frustrated", "amused", "alarmed"
+
+
+def _deserialize_scene(data: dict) -> SceneScript:
+    """Deserialize a SceneScript dict, handling missing optional fields."""
+    return SceneScript(
+        scene_number=data["scene_number"],
+        scene_title=data["scene_title"],
+        setting=data["setting"],
+        scene_prompt=data["scene_prompt"],
+        dialogue=data.get("dialogue", []),
+        visual_gag=data.get("visual_gag"),
+        audio_direction=data.get("audio_direction", ""),
+        duration_seconds=int(data.get("duration_seconds", 15)),
+        camera_movement=data.get("camera_movement", ""),
+        transformation=data.get("transformation", ""),
+        billy_emotion=data.get("billy_emotion", ""),
+    )
 
 
 @dataclass(slots=True)
@@ -128,6 +147,7 @@ class CartoonScript:
     scenes: list[SceneScript]
     end_card_prompt: str
     characters_used: list[str]
+    format_type: str = ""  # "visual_punchline" | "exchange" | "cold_reveal" | "demonstration"
 
     def to_dict(self) -> dict:
         """Serialize to a JSON-compatible dict."""
@@ -145,9 +165,10 @@ class CartoonScript:
             source_item=_deserialize_scored_item(data["source_item"]),
             logline=data["logline"],
             synopsis=Synopsis.from_dict(data["synopsis"]),
-            scenes=[SceneScript(**s) for s in data["scenes"]],
+            scenes=[_deserialize_scene(s) for s in data["scenes"]],
             end_card_prompt=data["end_card_prompt"],
             characters_used=data["characters_used"],
+            format_type=data.get("format_type", ""),
         )
 
 

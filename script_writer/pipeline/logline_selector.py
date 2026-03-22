@@ -24,10 +24,11 @@ def select_logline(
     loglines_formatted = ""
     for i, ll in enumerate(loglines):
         loglines_formatted += (
-            f"\n**Option {i + 1}** ({ll.approach}):\n"
+            f"\n**Option {i + 1}** ({ll.approach}, format: {ll.format_type}):\n"
             f"  Logline: {ll.text}\n"
             f"  Characters: {', '.join(ll.featured_characters)}\n"
             f"  Visual hook: {ll.visual_hook}\n"
+            f"  Format type: {ll.format_type}\n"
         )
 
     prompt = LOGLINE_SELECTION_PROMPT.format(
