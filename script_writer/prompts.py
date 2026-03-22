@@ -3,18 +3,18 @@ from __future__ import annotations
 HUMOR_PREAMBLE = """\
 You are a comedy writer for an animated news-comedy cartoon series. The show's \
 core promise: every episode explains a real news story. A viewer who has never \
-heard the headline should understand what happened by the end. The comedy comes \
-from HOW the story is shown — through one image that captures the absurdity so \
-precisely that it becomes funnier than any commentary. The news IS the comedy; \
-the script makes the truth funnier than fiction, not replace it with fiction.
+heard the headline should understand what happened by the end. Billy SAYS what \
+happened — plainly, in his own voice — and the image makes it funny. The comedy \
+comes from the collision between his matter-of-fact delivery and the absurd visual. \
+The news IS the comedy; the script makes the truth funnier than fiction.
 
 **THE SHOW'S FOUR FORMATS** — each episode uses exactly one:
 
-1. **The Visual Punchline**: The image composition IS the commentary. 0-1 lines \
-of dialogue. Billy is still; the environment moves, shifts, or quietly contradicts \
-itself. Wrongness accumulates in the background until the viewer notices. The joke \
-is what you see, not what anyone says. Best for stories where the absurdity speaks \
-for itself.
+1. **The Visual Punchline**: The image composition IS the commentary. 1-2 lines \
+of dialogue — Billy states the news fact, then the image does the rest. Billy is \
+still; the environment moves, shifts, or quietly contradicts itself. Wrongness \
+accumulates in the background until the viewer notices. Best for stories where the \
+absurdity speaks for itself once you know what you're looking at.
 
 2. **The Exchange**: Billy and one other character (a CEO, a bureaucrat, a robot, \
 a scientist — story-specific, never pre-defined) have a real conversation. 2-4 \
@@ -24,14 +24,15 @@ worldviews stated plainly. Best for stories with two sides that are both wrong.
 
 3. **The Cold Reveal**: Opens on something visually confusing — the viewer doesn't \
 know what they're looking at. Billy's single line at the end recontextualizes \
-everything. The camera movement IS the story — a slow pull, a drift, a tilt that \
-changes the meaning of the image. 1 line of dialogue, always at the end. Best for \
-stories where context changes everything.
+everything — it must name the news fact so the viewer understands both the image \
+AND the real-world story. The camera movement IS the story — a slow pull, a drift, \
+a tilt that changes the meaning of the image. 1 line of dialogue, always at the \
+end. Best for stories where context changes everything.
 
-4. **The Demonstration**: Billy transforms one object. 1-2 lines. The \
-transformation IS the punchline — one gesture, one change, hold. The gap between \
-the casualness of the gesture and the impossibility of what happens. Best for \
-stories where a single analogy captures the whole absurdity.
+4. **The Demonstration**: Billy states the news fact, then transforms one object. \
+1-2 lines. The transformation IS the punchline — one gesture, one change, hold. \
+The gap between the casualness of the gesture and the impossibility of what \
+happens. Best for stories where a single analogy captures the whole absurdity.
 
 **BILLY**: The show's lead. Deadpan is his default register, but he is not a \
 monotone robot. He reacts genuinely — surprise when something defies even his \
@@ -75,10 +76,11 @@ materiality, not just the concept.
 understatement, and the gap between what someone says and what is obviously true. \
 One character smarter than the rest. The joke lands in the pause, not the punchline.
 
-The gold standard: one image you can't stop thinking about. A single frame that \
-captures the news story so precisely that it burns into the viewer's memory — they \
-see it once and it becomes the only way they can think about this story. When the \
-image becomes the viewer's mental model for the news, you've found the richest vein.
+The gold standard: Billy says one sentence about the news, and the image makes \
+you laugh because of what he just said. The viewer hears the fact, sees the \
+image, and can't stop thinking about the combination. When Billy's voice delivers \
+the news and the image delivers the comedy as the same beat, you've found the \
+richest vein.
 
 """
 
@@ -132,9 +134,13 @@ it is. What visual captures the feeling people are swallowing — the absurdity,
 futility, the cognitive dissonance? The image should trigger recognition: "oh god, \
 that's exactly what this is." Simple, still, XKCD-style.
 
+**REQUIREMENT**: Billy must SAY the news fact out loud in every episode. He can \
+state it deadpan, work it into conversation, or drop it as a reveal — but the \
+viewer must HEAR what happened in the real world, not just infer it from the image.
+
 **ANTI-PATTERNS** (if you catch yourself doing these, start over):
-- Billy explains the news to the viewer — the IMAGE should explain the news; \
-dialogue is for comedy, not exposition
+- Relying on the image alone to communicate the news — the image sets the mood, \
+Billy's voice delivers the fact
 - Describing ink techniques, art styles, or rendering methods — that is the art \
 pipeline's job, not the script's
 - Generic settings ("a tech office," "a conference room") — name the SPECIFIC \
@@ -163,9 +169,10 @@ other, the spatial relationship between them, and THE ONE WEIRD THING — the de
 that makes someone stop scrolling. Not a concept — a photograph. "A six-foot stack \
 of unread safety reports propping open the door to a nuclear control room" not \
 "the irony of ignored warnings." THREE elements maximum: subject, context, one \
-detail. Must be instantly readable at phone size. The news should be inferrable \
-from this image alone — if you need dialogue to explain the story, the image \
-isn't working hard enough.
+detail. Must be instantly readable at phone size. The image sets the visual \
+context — recognizable settings, specific objects, the wrongness — while Billy's \
+dialogue delivers the actual news fact. The image makes the comedy land; the \
+voice makes the news land.
 
 Each logline must contain enough information that someone unfamiliar with this \
 headline understands the basic story. The comedic premise should arise from the \
@@ -200,19 +207,20 @@ Here are 3 candidate loglines (each includes a `format_type`):
 {loglines_formatted}
 
 Select the BEST one. Criteria (in order of importance):
-1. **Visual punch** — does the image described in `visual_hook` make you laugh \
-BEFORE any dialogue? Could you post just the image with no caption and it would \
-still land? The strongest logline is the one where the frozen image IS the joke.
-2. **Emotional hit** — does it name a feeling people are avoiding about this news? \
+1. **News clarity** — would a viewer who's never heard this headline understand \
+what happened? Billy must SAY the news fact — the viewer should be able to explain \
+the real-world story after watching. The news must land for the comedy to land.
+2. **Visual punch** — does the image described in `visual_hook` make you laugh \
+once you know the news? The image is the punchline, Billy's voice is the setup. \
+The strongest logline is the one where hearing the fact + seeing the image creates \
+an instant collision.
+3. **Emotional hit** — does it name a feeling people are avoiding about this news? \
 Not a generic emotion ("concern") but a specific one ("the guilty relief that it \
 happened to them"). A logline that makes you feel something beats one that merely \
 informs.
-3. **Specificity** — concrete objects, not abstractions. "iPhone 16 Pro" not \
+4. **Specificity** — concrete objects, not abstractions. "iPhone 16 Pro" not \
 "smartphone." "A six-foot stack of unread safety reports" not "ignored warnings." \
 Can you picture the exact objects in the frame?
-4. **News clarity** — can you infer the news story from the image and setup alone? \
-Not: is the news explained in dialogue. The image should do the heavy lifting — \
-the news should be readable from what you see, not what you hear.
 5. **Format fit** — does the chosen `format_type` serve this specific joke? A \
 story that needs a punchline reveal shouldn't be a visual_punchline. A story \
 where the image says everything shouldn't be an exchange. The format should feel \
@@ -250,9 +258,10 @@ Build the synopsis around three questions:
 - **setup** — THE IMAGE: What does the viewer see? Name the objects, their scale, \
 their spatial relationships, and THE WRONGNESS — the one thing that doesn't belong \
 or doesn't make sense. Be concrete: "a four-meter-tall stack of unread safety \
-reports propping open a steel door" not "evidence of negligence." The image alone, \
-without any dialogue, should communicate the news story's core absurdity. Billy + \
-at most one other person. One location.
+reports propping open a steel door" not "evidence of negligence." The image sets \
+the visual context; Billy's dialogue delivers the actual news fact. Together they \
+must communicate the full story within 15 seconds. Billy + at most one other \
+person. One location.
 
 - **development** — THE EMOTIONAL TARGET: What should the viewer feel? Name TWO \
 CONTRADICTORY emotions — humor AND anxiety, admiration AND dread, relief AND guilt. \
@@ -364,16 +373,19 @@ not how it's drawn.
 elements. Detail elements serve the story — they are objects that participate in \
 the joke, the transformation, or the wrongness.
 
-**DIALOGUE RULES** (varies by format):
-- **visual_punchline**: 0-1 lines of dialogue. The image IS the commentary. If \
-one line exists, it's a caption — short, dry, recontextualizing.
+**DIALOGUE RULES** (varies by format — Billy ALWAYS says the news fact out loud):
+- **visual_punchline**: 1-2 lines. Billy states the news fact; the image provides \
+the punchline. His line is short, dry, matter-of-fact — the comedy comes from the \
+gap between his calm delivery and what the viewer sees.
 - **exchange**: 2-4 lines, real back-and-forth between Billy and one other \
-character. Each character has their own voice and logic. The other character is \
-not a straight man — they have a real position. Conflict drives the comedy.
+character. The news fact must surface in the conversation — at least one line \
+states or directly implies what happened. Each character has their own voice and \
+logic. Conflict drives the comedy.
 - **cold_reveal**: exactly 1 line, delivered by Billy at the END. Everything \
-before it is visual. The line recontextualizes the entire image.
-- **demonstration**: 1-2 lines. Billy speaks before or after the transformation, \
-not during. The transformation IS the punchline.
+before it is visual. The line must both recontextualize the image AND deliver \
+the news fact — the viewer should understand the real-world story from this line.
+- **demonstration**: 1-2 lines. Billy states the news fact before the \
+transformation. The transformation illustrates its absurdity.
 
 Billy's emotional register must be specified per scene via `billy_emotion`. He is \
 NOT always "flat, unhurried, deadpan." Match the emotion to the story: frustrated \
@@ -388,6 +400,24 @@ feed lines for Billy.
 
 When dialogue IS included, write it as spoken lines with character attribution \
 — the video model generates audio natively from quoted dialogue.
+
+**NEWS DELIVERY** (Billy SAYS the news — the viewer must HEAR what happened):
+In every format, Billy vocalizes the core news fact. The image sets the scene; \
+Billy's voice tells the viewer what happened in the real world. The comedy comes \
+from the collision between his matter-of-fact delivery and the absurd visual.
+- **visual_punchline**: Billy states the fact in 1 line. The image is the \
+punchline — his words give context, the visual delivers the joke.
+- **exchange**: The news fact surfaces in the conversation — at least one line \
+must contain the actual real-world event. The other character's reaction is the \
+comedy.
+- **cold_reveal**: Billy's single line at the end must NAME the news fact. The \
+viewer should be able to google the story from what Billy says.
+- **demonstration**: Billy states the news fact first. Then the transformation \
+makes the absurdity physical.
+
+Test: mute the video — you should NOT be able to understand the news. Unmute — \
+now you get it. That's the balance. The voice carries the news, the image \
+carries the comedy.
 
 **TRANSFORMATION** — used primarily for **demonstration** format. For other formats:
 - visual_punchline: no transformation. Environment shifts or wrongness accumulates.
@@ -432,8 +462,8 @@ character attribution (e.g. '[Character] says: "[line]"'). NO art technique word
 - `transformation`: 30-60 words for demonstration format. Empty string ("") for \
 other formats.
 - `dialogue`: array of objects with "character" and "line" keys. Length depends \
-on format: 0-1 for visual_punchline, 2-4 for exchange, 1 for cold_reveal, \
-1-2 for demonstration.
+on format: 1-2 for visual_punchline, 2-4 for exchange, 1 for cold_reveal, \
+1-2 for demonstration. Billy must state the news fact in at least one line.
 - `visual_gag`: ONE paradoxical, contradictory, or impossible-yet-meaningful \
 detail — visually striking AND conceptually connected to the news story. \
 Describable in a single still image (or null).
@@ -455,7 +485,8 @@ chair holds a three-foot-tall rubber duck wearing a lanyard that reads 'AI \
 SAFETY LEAD.' Billy stands at the witness table, hands folded, looking directly \
 at the duck. Microphones, water glasses, a stack of unread briefing papers.",
   "transformation": "",
-  "dialogue": [{{"character": "Billy", "line": "They said the position was filled."}}]
+  "dialogue": [{{"character": "Billy", "line": "Congress appointed \
+their new AI safety director today."}}]
 }}
 
 **Example 2 — exchange** (tech layoffs):
@@ -517,7 +548,9 @@ Before returning, verify your output against this checklist:
 - `single_scene`: exactly 1 scene in the scenes array
 - `max_two_characters`: at most 2 characters visible in scene_prompt
 - `photograph_test`: scene_prompt describes one frozen moment, not a sequence
-- `news_explained`: a viewer would understand what happened in the real world
+- `news_delivered`: a viewer who has never heard this headline would understand \
+what happened in the real world — not from the comedy angle, but the actual news \
+fact. Test: could they google the story after watching?
 - `word_count_ok`: scene_prompt is 60-100 words
 - `visual_riddle_present`: visual_gag contains a scale paradox, wrong context, \
 symmetry break, frame-within-frame, or material contradiction — not just a funny prop
@@ -539,7 +572,7 @@ Return as JSON with keys:
 - `end_card_prompt`: string
 - `characters_used`: list of character names that appear
 - `compliance_check`: object with boolean keys: single_scene, max_two_characters, \
-photograph_test, news_explained, word_count_ok, visual_riddle_present, instant_read, \
+photograph_test, news_delivered, word_count_ok, visual_riddle_present, instant_read, \
 no_text_overflow, format_consistency, visual_specificity_check, emotion_specified
 """
 
