@@ -16,7 +16,7 @@ def generate_loglines(
     model: str = "claude-opus-4-6",
     max_tokens: int = 64000,
 ) -> list[Logline]:
-    """Generate 3 loglines (absurdist, satirical, surreal) for a single news item."""
+    """Generate 3 loglines (quiet part, betrayal, image) for a single news item."""
     prompt = LOGLINE_GENERATION_PROMPT.format(
         preamble=HUMOR_PREAMBLE,
         context=context_block,

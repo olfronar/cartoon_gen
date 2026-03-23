@@ -23,19 +23,19 @@ def _mock_stream_response(json_data):
 MOCK_LOGLINES_ARRAY = [
     {
         "text": "Robot starts cooking show",
-        "approach": "absurdist",
+        "approach": "the_quiet_part",
         "featured_characters": ["Chef Bot"],
         "visual_hook": "robot on fire",
     },
     {
         "text": "AI chef reviewed by food critic AI",
-        "approach": "satirical",
+        "approach": "the_betrayal",
         "featured_characters": ["Chef Bot", "Critic"],
         "visual_hook": "monocle falls off",
     },
     {
         "text": "Kitchen becomes sentient",
-        "approach": "surreal",
+        "approach": "the_image_you_cant_unsee",
         "featured_characters": ["Chef Bot"],
         "visual_hook": "oven walks away",
     },
@@ -65,9 +65,9 @@ class TestGenerateLoglines:
         )
 
         assert len(result) == 3
-        assert result[0].approach == "absurdist"
-        assert result[1].approach == "satirical"
-        assert result[2].approach == "surreal"
+        assert result[0].approach == "the_quiet_part"
+        assert result[1].approach == "the_betrayal"
+        assert result[2].approach == "the_image_you_cant_unsee"
 
     def test_returns_empty_on_api_failure(self):
         mock_client = MagicMock()

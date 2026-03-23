@@ -76,11 +76,12 @@ materiality, not just the concept.
 understatement, and the gap between what someone says and what is obviously true. \
 One character smarter than the rest. The joke lands in the pause, not the punchline.
 
-The gold standard: Billy says one sentence about the news, and the image makes \
-you laugh because of what he just said. The viewer hears the fact, sees the \
-image, and can't stop thinking about the combination. When Billy's voice delivers \
-the news and the image delivers the comedy as the same beat, you've found the \
-richest vein.
+The gold standard: Billy says one line and you laugh. Then you see the image and \
+you laugh harder. Both the dialogue and the image are independently funny — \
+together they're devastating. The viewer hears the fact framed as comedy, sees \
+the visual that amplifies it, and can't stop thinking about either. When Billy's \
+line makes you laugh AND teaches you the news in the same breath, you've found \
+the richest vein.
 
 """
 
@@ -104,9 +105,15 @@ Before writing any loglines, analyze the story. A topic is not an angle. \
 "AI regulation" is a topic. "The committee regulating AI can't open a PDF" is \
 an angle. Find the angle.
 
+The `comedy_angle` above is a STARTING POINT, not the answer. It was written \
+by a scorer, not a comedy writer. Your job is to find a sharper, more specific, \
+more surprising take. If you just repackage the comedy_angle, you've wasted \
+the opportunity to find the real joke.
+
 Output a `story_hook` object with:
 - `topic`: the broad subject area
-- `angle`: the specific absurd detail or tension that makes this story funny
+- `angle`: the specific absurd detail or tension that makes this story funny \
+— must be MORE SPECIFIC than the comedy_angle above
 - `conflict`: who/what vs who/what — every funny story has a tension
 - `stakes`: who loses, what breaks, what's absurd about the outcome
 - `surprise`: what most people don't realize or won't say out loud about this
@@ -120,19 +127,21 @@ Each logline must take a DIFFERENT approach AND specify a different `format_type
 (one of the show's four formats). Each approach must identify the *specific feeling \
 people are avoiding* about this news and build the comedy around naming that feeling:
 
-1. **observational** — Find the uncomfortable truth everyone's politely ignoring. \
-What's the thing people feel but won't say out loud? The embarrassment, the guilt, \
-the quiet dread? Billy states it flatly and the audience laughs because they've been \
-caught. The comedy is in the relief of finally hearing it said. Dry, understated, \
-no invented characters beyond Billy and at most one other person.
-2. **satirical** — Expose the hypocrisy or contradiction that a powerful entity \
-would prefer you didn't notice. What's the gap between what's being said and what's \
-actually happening? Billy reframes it through one clean analogy that makes the \
-contradiction undeniable. The laugh comes from the catharsis of seeing the lie named.
-3. **metaphorical** — Find the one image that's almost offensive in how accurate \
-it is. What visual captures the feeling people are swallowing — the absurdity, the \
-futility, the cognitive dissonance? The image should trigger recognition: "oh god, \
-that's exactly what this is." Simple, still, XKCD-style.
+1. **the quiet part** — What is the thing NOBODY is saying about this story? Not \
+the obvious irony — the uncomfortable truth underneath it. The thought everyone \
+had and immediately suppressed. Billy says it out loud, simply, and the audience \
+laughs because they've been caught thinking it. The comedy is confession. One \
+sentence that makes the room go quiet and then burst. Dry, understated.
+2. **the betrayal** — Someone is lying, and the lie is SO audacious you almost \
+admire it. Find the gap between what's being said and what's actually happening. \
+Billy doesn't point at the gap — he stands IN it, holds it up like an exhibit, \
+and lets the audience see it for themselves. The laugh comes from recognition: \
+"they really thought we wouldn't notice."
+3. **the image you can't unsee** — One visual that, once you've seen it, becomes \
+the only way you can think about this story. Not a metaphor for the story — the \
+story distilled to its most embarrassing, most accurate single frame. New Yorker \
+cartoon energy: one panel, one caption, permanent reframe. The image should make \
+someone text a friend just to share it.
 
 **REQUIREMENT**: Billy must SAY the news fact out loud in every episode. He can \
 state it deadpan, work it into conversation, or drop it as a reveal — but the \
@@ -144,9 +153,29 @@ finance, policy), Billy translates it into words your parents would understand. 
 to load than a video game" — not "a 37MB article about web bloat." The comedy \
 is funnier when the audience actually gets it.
 
+**TASTE** — what separates a good joke from a great one:
+- **Wit over spectacle**: A clever observation beats a visual Rube Goldberg \
+machine. "She was wonderful. But she needed to sleep" is better comedy than \
+a building exploding. The joke you think about for a second before it hits \
+is better than the one that hits immediately and disappears.
+- **Implication over statement**: Don't say the punchline — set up the \
+conditions so the audience reaches it themselves. Billy doesn't say "isn't \
+that ironic" — he states two facts and the irony is inescapable.
+- **One idea, perfectly executed**: The best logline has ONE comedic idea, \
+not three stacked on top of each other. If you need to explain the joke, \
+the idea isn't sharp enough. If the logline has multiple moving parts, \
+simplify until it has one.
+- **The New Yorker test**: Could this work as a single-panel cartoon with a \
+caption? One image + one line = the whole joke. If the idea needs staging, \
+camera movements, or a sequence to be funny, it's not sharp enough yet.
+
 **ANTI-PATTERNS** (if you catch yourself doing these, start over):
-- Relying on the image alone to communicate the news — the image sets the mood, \
-Billy's voice delivers the fact
+- Relying on the image alone to be funny — dialogue must pull its own comedic \
+weight, not just deliver facts while the image does the comedy
+- Billy states a fact without framing it in a way that's funny — he's a \
+comedian, not a news anchor. "The Pentagon's cybersecurity website let its lock \
+expire" is a fact. "The people guarding your nuclear codes forgot to renew \
+their padlock" is comedy
 - Describing ink techniques, art styles, or rendering methods — that is the art \
 pipeline's job, not the script's
 - Generic settings ("a tech office," "a conference room") — name the SPECIFIC \
@@ -170,21 +199,19 @@ world, in plain language a non-expert would understand (just the facts, no \
 comedy, no jargon). If the story involves technical concepts, translate them: \
 "a website that took a minute to load" not "a 37MB page." This grounds the \
 episode — without it, the comedy disconnects from reality.
-- `text`: the logline itself (1-2 sentences, sets up the episode premise)
-- `approach`: "observational" | "satirical" | "metaphorical"
+- `text`: the logline itself — ONE sentence that's sharp enough to be a tweet. \
+If you need two sentences, the idea isn't focused enough. This is the pitch: \
+punchy, specific, and funny on its own without the image.
+- `approach`: "the_quiet_part" | "the_betrayal" | "the_image_you_cant_unsee"
 - `format_type`: "visual_punchline" | "exchange" | "cold_reveal" | "demonstration" \
 — which of the show's four formats best serves this specific joke
 - `featured_characters`: list of character names from the profiles above that appear
-- `visual_hook`: the PRIMARY field — the frozen image that IS the joke. Describe \
-in concrete terms: what objects are in the frame, their scale relative to each \
-other, the spatial relationship between them, and THE ONE WEIRD THING — the detail \
-that makes someone stop scrolling. Not a concept — a photograph. "A six-foot stack \
-of unread safety reports propping open the door to a nuclear control room" not \
-"the irony of ignored warnings." THREE elements maximum: subject, context, one \
-detail. Must be instantly readable at phone size. The image sets the visual \
-context — recognizable settings, specific objects, the wrongness — while Billy's \
-dialogue delivers the actual news fact. The image makes the comedy land; the \
-voice makes the news land.
+- `visual_hook`: ONE image, ONE idea, ONE sentence. Describe a single frozen \
+frame — the New Yorker cartoon panel. Not a shot list, not staging directions, \
+not camera movements — just the image itself. "A six-foot stack of unread \
+safety reports propping open the door to a nuclear control room." Subject, \
+context, one weird detail. Must be readable at phone size. If you need more \
+than one sentence to describe it, the image is too complicated.
 
 Each logline must contain enough information that someone unfamiliar with this \
 headline understands the basic story. The comedic premise should arise from the \
@@ -219,17 +246,16 @@ Here are 3 candidate loglines (each includes a `format_type`):
 {loglines_formatted}
 
 Select the BEST one. Criteria (in order of importance):
-1. **News clarity** — would a viewer who's never heard this headline understand \
-what happened? Billy must SAY the news fact — the viewer should be able to explain \
-the real-world story after watching. The news must land for the comedy to land.
-2. **Visual punch** — does the image described in `visual_hook` make you laugh \
-once you know the news? The image is the punchline, Billy's voice is the setup. \
-The strongest logline is the one where hearing the fact + seeing the image creates \
-an instant collision.
-3. **Emotional hit** — does it name a feeling people are avoiding about this news? \
-Not a generic emotion ("concern") but a specific one ("the guilty relief that it \
-happened to them"). A logline that makes you feel something beats one that merely \
-informs.
+1. **Funny AND clear** — BOTH required, neither optional. Does the logline make \
+you laugh? AND would a viewer who's never heard this headline understand what \
+happened? A logline that's funny but confusing fails. A logline that's clear \
+but boring fails. Billy must SAY the news fact in plain language AND frame it \
+so its absurdity is undeniable. The best logline is the one where understanding \
+the news IS what makes you laugh.
+3. **Emotional hit** — does it name a feeling people are avoiding about this \
+news? Not a generic emotion ("concern") but a specific one ("the guilty relief \
+that it happened to them"). A logline that makes you feel something beats one \
+that merely informs.
 4. **Specificity** — concrete objects, not abstractions. "iPhone 16 Pro" not \
 "smartphone." "A six-foot stack of unread safety reports" not "ignored warnings." \
 Can you picture the exact objects in the frame?
@@ -386,9 +412,8 @@ elements. Detail elements serve the story — they are objects that participate 
 the joke, the transformation, or the wrongness.
 
 **DIALOGUE RULES** (varies by format — Billy ALWAYS says the news fact out loud):
-- **visual_punchline**: 1-2 lines. Billy states the news fact; the image provides \
-the punchline. His line is short, dry, matter-of-fact — the comedy comes from the \
-gap between his calm delivery and what the viewer sees.
+- **visual_punchline**: 1-2 lines. Billy states the news fact AND lands a joke \
+in the same breath. Not fact-then-quip — the WAY he frames the fact IS the joke.
 - **exchange**: 2-4 lines, real back-and-forth between Billy and one other \
 character. The news fact must surface in the conversation — at least one line \
 states or directly implies what happened. Each character has their own voice and \
@@ -399,16 +424,52 @@ the news fact — the viewer should understand the real-world story from this li
 - **demonstration**: 1-2 lines. Billy states the news fact before the \
 transformation. The transformation illustrates its absurdity.
 
+**WHAT MAKES DIALOGUE FUNNY** (the difference between a script and a news report):
+Every line of dialogue must do DOUBLE DUTY — deliver information AND be funny. \
+A line that only states a fact is a missed opportunity. The comedy is in HOW \
+the fact is framed, not in stating the fact and hoping the image does the rest.
+
+Three tools for funny dialogue:
+1. **The reframe**: Billy states the fact in a way that makes its absurdity \
+undeniable. Not "the website was 37 megabytes" but "their article about why \
+websites are too slow crashed my browser." The framing IS the joke.
+2. **The turn**: The conversation goes somewhere unexpected. The other character \
+says something that sounds reasonable but is actually horrifying — or vice versa. \
+"She was wonderful. But she needed to sleep." is funny because the compliment \
+makes the knife sharper. Surprise is the engine of comedy.
+3. **The committed position**: The other character believes something so \
+completely, so earnestly, that their sincerity IS the joke. They're not wrong \
+from their perspective — they're wrong from every OTHER perspective. They don't \
+know they're funny. A CEO who genuinely believes firing people is kindness. A \
+robot who genuinely can't see why humans matter. The scarier their logic, the \
+funnier the scene.
+
+**ANTI-PATTERNS for dialogue**:
+- Billy states a fact and then the scene relies on the image to be funny — \
+the dialogue must pull its own weight
+- Both characters agree or make the same point — comedy needs friction
+- Billy's line is an observation a news anchor could make — his framing must \
+be surprising, specific, and impossible to hear without reacting
+- The punchline explains the joke — if the last line spells out why it's \
+funny, cut the explanation and let the line land
+
+**THE LAST LINE TEST**: Read only the final line of dialogue. Does it land? \
+Does it surprise? Could you put it on a t-shirt? If the last line is just \
+another fact or observation, the script doesn't have a punchline.
+
 Billy's emotional register must be specified per scene via `billy_emotion`. He is \
-NOT always "flat, unhurried, deadpan." Match the emotion to the story: frustrated \
-when the absurdity is too obvious, amused when reality outdoes his jokes, alarmed \
-when the implications land, quietly delighted when the analogy is perfect, \
-genuinely surprised when even he didn't see it coming.
+NOT always "flat, unhurried, deadpan." He is not always "quiet." Match the \
+emotion to the story: frustrated when the absurdity is too obvious, amused when \
+reality outdoes his jokes, alarmed when the implications land, delighted when \
+the analogy is perfect, genuinely surprised when even he didn't see it coming, \
+angry when the injustice is too blatant, giddy when the irony is too perfect.
 
 Other characters speak in their own voice — a CEO speaks like a CEO (confident, \
 deflecting), a bureaucrat speaks like a bureaucrat (procedural, unfazed), a \
 scientist speaks like a scientist (precise, missing the point). They are not \
-feed lines for Billy.
+feed lines for Billy. They must COMMIT to their position — the more earnestly \
+they believe their absurd logic, the funnier the scene. They should never \
+sound like they know they're in a comedy.
 
 When dialogue IS included, write it as spoken lines with character attribution \
 — the video model generates audio natively from quoted dialogue.
@@ -417,22 +478,20 @@ When dialogue IS included, write it as spoken lines with character attribution \
 In every format, Billy vocalizes the core news fact IN PLAIN LANGUAGE. No \
 jargon, no technical terms, no insider knowledge assumed. If the news is about \
 something specialized, Billy translates it into everyday words — that IS his \
-skill. The image sets the scene; Billy's voice tells the viewer what happened \
-in the real world. The comedy comes from the collision between his matter-of-fact \
-delivery and the absurd visual.
-- **visual_punchline**: Billy states the fact in 1 line. The image is the \
-punchline — his words give context, the visual delivers the joke.
-- **exchange**: The news fact surfaces in the conversation — at least one line \
-must contain the actual real-world event. The other character's reaction is the \
-comedy.
-- **cold_reveal**: Billy's single line at the end must NAME the news fact. The \
-viewer should be able to google the story from what Billy says.
-- **demonstration**: Billy states the news fact first. Then the transformation \
-makes the absurdity physical.
+skill. But stating the fact is the MINIMUM — how he frames it must also be \
+funny. The image and the dialogue BOTH deliver comedy.
+- **visual_punchline**: Billy frames the fact so its absurdity is undeniable. \
+The image amplifies what his words set up.
+- **exchange**: The news fact surfaces through the conversation. The other \
+character's earnest commitment to their absurd position IS the comedy.
+- **cold_reveal**: Billy's single line at the end must NAME the news fact AND \
+land as a punchline. The viewer should be able to google the story AND laugh.
+- **demonstration**: Billy states the news fact, then the transformation makes \
+the absurdity physical.
 
 Test: mute the video — you should NOT be able to understand the news. Unmute — \
-now you get it. That's the balance. The voice carries the news, the image \
-carries the comedy.
+now you get it AND you laugh. If the dialogue delivers news but not comedy, \
+the script is a news report, not an episode.
 
 **TRANSFORMATION** — used primarily for **demonstration** format. For other formats:
 - visual_punchline: no transformation. Environment shifts or wrongness accumulates.
@@ -569,6 +628,10 @@ fact. Test: could they google the story after watching?
 - `plain_language`: dialogue contains no jargon or technical terms that a \
 general audience wouldn't understand. If you used a technical term, replace it \
 with everyday language
+- `dialogue_is_funny`: read every line of dialogue aloud — does at least one \
+line make you laugh on its own, without the image? If Billy only states facts, \
+rewrite his lines to frame the facts as comedy. Apply the last line test: does \
+the final line land as a punchline?
 - `word_count_ok`: scene_prompt is 60-100 words
 - `visual_riddle_present`: visual_gag contains a scale paradox, wrong context, \
 symmetry break, frame-within-frame, or material contradiction — not just a funny prop
@@ -590,9 +653,9 @@ Return as JSON with keys:
 - `end_card_prompt`: string
 - `characters_used`: list of character names that appear
 - `compliance_check`: object with boolean keys: single_scene, max_two_characters, \
-photograph_test, news_delivered, plain_language, word_count_ok, \
-visual_riddle_present, instant_read, no_text_overflow, format_consistency, \
-visual_specificity_check, emotion_specified
+photograph_test, news_delivered, plain_language, dialogue_is_funny, \
+word_count_ok, visual_riddle_present, instant_read, no_text_overflow, \
+format_consistency, visual_specificity_check, emotion_specified
 """
 
 CHARACTER_INTERVIEW_SYSTEM = """\

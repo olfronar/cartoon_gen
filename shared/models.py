@@ -76,7 +76,7 @@ def _deserialize_scored_items(entries: list[dict]) -> list[ScoredItem]:
 @dataclass(slots=True)
 class Logline:
     text: str
-    approach: str  # "observational" | "satirical" | "metaphorical"
+    approach: str  # "the_quiet_part" | "the_betrayal" | "the_image_you_cant_unsee"
     featured_characters: list[str]
     visual_hook: str
     news_essence: str = ""

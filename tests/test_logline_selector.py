@@ -21,9 +21,16 @@ def _mock_stream_response(json_data):
 
 
 LOGLINES = [
-    Logline(text="Option A", approach="absurdist", featured_characters=["A"], visual_hook="ha"),
-    Logline(text="Option B", approach="satirical", featured_characters=["B"], visual_hook="hb"),
-    Logline(text="Option C", approach="surreal", featured_characters=["C"], visual_hook="hc"),
+    Logline(
+        text="Option A", approach="the_quiet_part", featured_characters=["A"], visual_hook="ha"
+    ),
+    Logline(text="Option B", approach="the_betrayal", featured_characters=["B"], visual_hook="hb"),
+    Logline(
+        text="Option C",
+        approach="the_image_you_cant_unsee",
+        featured_characters=["C"],
+        visual_hook="hc",
+    ),
 ]
 
 

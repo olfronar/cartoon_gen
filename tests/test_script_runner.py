@@ -37,9 +37,19 @@ def settings(tmp_path):
 
 
 MOCK_LOGLINES = [
-    {"text": "L1", "approach": "absurdist", "featured_characters": ["Bot"], "visual_hook": "v1"},
-    {"text": "L2", "approach": "satirical", "featured_characters": ["Bot"], "visual_hook": "v2"},
-    {"text": "L3", "approach": "surreal", "featured_characters": ["Bot"], "visual_hook": "v3"},
+    {
+        "text": "L1",
+        "approach": "the_quiet_part",
+        "featured_characters": ["Bot"],
+        "visual_hook": "v1",
+    },
+    {"text": "L2", "approach": "the_betrayal", "featured_characters": ["Bot"], "visual_hook": "v2"},
+    {
+        "text": "L3",
+        "approach": "the_image_you_cant_unsee",
+        "featured_characters": ["Bot"],
+        "visual_hook": "v3",
+    },
 ]
 
 MOCK_SELECTION = {"selected_index": 0, "reasoning": "Best"}
