@@ -136,7 +136,13 @@ that's exactly what this is." Simple, still, XKCD-style.
 
 **REQUIREMENT**: Billy must SAY the news fact out loud in every episode. He can \
 state it deadpan, work it into conversation, or drop it as a reveal — but the \
-viewer must HEAR what happened in the real world, not just infer it from the image.
+viewer must HEAR what happened in the real world, not just infer it from the \
+image. He must say it in PLAIN LANGUAGE — no jargon, no technical terms, no \
+assumed knowledge. If the news involves something specialized (tech, science, \
+finance, policy), Billy translates it into words your parents would understand. \
+"A website about how websites are too slow was itself so slow it took longer \
+to load than a video game" — not "a 37MB article about web bloat." The comedy \
+is funnier when the audience actually gets it.
 
 **ANTI-PATTERNS** (if you catch yourself doing these, start over):
 - Relying on the image alone to communicate the news — the image sets the mood, \
@@ -150,14 +156,20 @@ specific detail (information dump)
 - Describing "a thing that happened" without stakes or conflict (no-stakes pitch)
 - Hedging or being balanced — take a position on why the news is absurd
 - Being so inside-baseball that a normal person wouldn't get it
+- Using jargon or technical terms without translating them — "megabytes," \
+"API," "open source," "RSS," "inference costs" mean nothing to most viewers. \
+Say what it MEANS: "the website was so heavy it took a minute to load," not \
+"the website was 37 megabytes"
 
 **THE DINNER TABLE TEST**: Each logline should work as a one-sentence pitch at a \
 dinner party that makes someone snort-laugh and say "wait, really?"
 
 For each logline, include:
-- `news_essence`: 1-2 sentences capturing what actually happened in the real world \
-(just the facts, no comedy). This grounds the episode — without it, the comedy \
-disconnects from reality.
+- `news_essence`: 1-2 sentences capturing what actually happened in the real \
+world, in plain language a non-expert would understand (just the facts, no \
+comedy, no jargon). If the story involves technical concepts, translate them: \
+"a website that took a minute to load" not "a 37MB page." This grounds the \
+episode — without it, the comedy disconnects from reality.
 - `text`: the logline itself (1-2 sentences, sets up the episode premise)
 - `approach`: "observational" | "satirical" | "metaphorical"
 - `format_type`: "visual_punchline" | "exchange" | "cold_reveal" | "demonstration" \
@@ -402,9 +414,12 @@ When dialogue IS included, write it as spoken lines with character attribution \
 — the video model generates audio natively from quoted dialogue.
 
 **NEWS DELIVERY** (Billy SAYS the news — the viewer must HEAR what happened):
-In every format, Billy vocalizes the core news fact. The image sets the scene; \
-Billy's voice tells the viewer what happened in the real world. The comedy comes \
-from the collision between his matter-of-fact delivery and the absurd visual.
+In every format, Billy vocalizes the core news fact IN PLAIN LANGUAGE. No \
+jargon, no technical terms, no insider knowledge assumed. If the news is about \
+something specialized, Billy translates it into everyday words — that IS his \
+skill. The image sets the scene; Billy's voice tells the viewer what happened \
+in the real world. The comedy comes from the collision between his matter-of-fact \
+delivery and the absurd visual.
 - **visual_punchline**: Billy states the fact in 1 line. The image is the \
 punchline — his words give context, the visual delivers the joke.
 - **exchange**: The news fact surfaces in the conversation — at least one line \
@@ -551,6 +566,9 @@ Before returning, verify your output against this checklist:
 - `news_delivered`: a viewer who has never heard this headline would understand \
 what happened in the real world — not from the comedy angle, but the actual news \
 fact. Test: could they google the story after watching?
+- `plain_language`: dialogue contains no jargon or technical terms that a \
+general audience wouldn't understand. If you used a technical term, replace it \
+with everyday language
 - `word_count_ok`: scene_prompt is 60-100 words
 - `visual_riddle_present`: visual_gag contains a scale paradox, wrong context, \
 symmetry break, frame-within-frame, or material contradiction — not just a funny prop
@@ -572,8 +590,9 @@ Return as JSON with keys:
 - `end_card_prompt`: string
 - `characters_used`: list of character names that appear
 - `compliance_check`: object with boolean keys: single_scene, max_two_characters, \
-photograph_test, news_delivered, word_count_ok, visual_riddle_present, instant_read, \
-no_text_overflow, format_consistency, visual_specificity_check, emotion_specified
+photograph_test, news_delivered, plain_language, word_count_ok, \
+visual_riddle_present, instant_read, no_text_overflow, format_consistency, \
+visual_specificity_check, emotion_specified
 """
 
 CHARACTER_INTERVIEW_SYSTEM = """\
