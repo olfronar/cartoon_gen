@@ -17,12 +17,18 @@ def generate_loglines(
     max_tokens: int = 64000,
 ) -> list[Logline]:
     """Generate 3 loglines (quiet part, betrayal, image) for a single news item."""
+    comedy_angle = item.comedy_angle or (
+        "[Not provided — you must discover the comedy angle yourself. "
+        "Read the title and snippet, find the structural contradiction, "
+        "the irony, or the absurdity. What is the uncomfortable truth "
+        "nobody is saying? What makes this story funny to a non-expert?]"
+    )
     prompt = LOGLINE_GENERATION_PROMPT.format(
         preamble=HUMOR_PREAMBLE,
         context=context_block,
         title=item.item.title,
         url=item.item.url,
-        comedy_angle=item.comedy_angle,
+        comedy_angle=comedy_angle,
         snippet=item.item.snippet,
     )
 

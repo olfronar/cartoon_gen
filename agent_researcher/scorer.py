@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import json
 import logging
+import time
 from dataclasses import replace
 
 import anthropic
@@ -14,6 +15,8 @@ logger = logging.getLogger(__name__)
 
 SCORING_MODEL = "claude-opus-4-6"
 MAX_ITEMS_TO_SCORE = 100
+MAX_RETRIES = 3
+RETRY_BACKOFF_BASE = 5  # seconds
 
 SCORING_PROMPT = """\
 You are a comedy writer's assistant for a cartoon series that explains tech \
@@ -73,6 +76,53 @@ Items:
 """
 
 
+def _call_scorer_with_retry(client, items_json: str) -> list[dict] | None:
+    """Call Claude scorer with retries. Returns parsed JSON array or None on failure."""
+    last_error = None
+    for attempt in range(1, MAX_RETRIES + 1):
+        try:
+            with client.messages.stream(
+                model=SCORING_MODEL,
+                max_tokens=32768,
+                thinking={"type": "adaptive"},
+                temperature=1,  # required when thinking is enabled
+                messages=[{"role": "user", "content": SCORING_PROMPT + items_json}],
+            ) as stream:
+                response = stream.get_final_message()
+        except Exception as exc:
+            last_error = exc
+            logger.warning("Scorer API call failed (attempt %d/%d): %s", attempt, MAX_RETRIES, exc)
+            if attempt < MAX_RETRIES:
+                backoff = RETRY_BACKOFF_BASE * (2 ** (attempt - 1))
+                logger.info("Retrying in %ds...", backoff)
+                time.sleep(backoff)
+            continue
+
+        text = strip_code_fences(extract_text(response))
+
+        try:
+            scored_data = json.loads(text)
+            if isinstance(scored_data, list):
+                return scored_data
+            logger.warning("Scorer returned non-array JSON (attempt %d/%d)", attempt, MAX_RETRIES)
+        except json.JSONDecodeError as exc:
+            last_error = exc
+            logger.warning(
+                "Failed to parse scorer JSON (attempt %d/%d):\n%s",
+                attempt,
+                MAX_RETRIES,
+                text[:500],
+            )
+
+        if attempt < MAX_RETRIES:
+            backoff = RETRY_BACKOFF_BASE * (2 ** (attempt - 1))
+            logger.info("Retrying in %ds...", backoff)
+            time.sleep(backoff)
+
+    logger.error("Scorer failed after %d attempts. Last error: %s", MAX_RETRIES, last_error)
+    return None
+
+
 def _prepare_items_json(items: list[RawItem]) -> str:
     serializable = []
     for i, item in enumerate(items):
@@ -92,6 +142,7 @@ def _prepare_items_json(items: list[RawItem]) -> str:
 def score_items(items: list[RawItem], settings: Settings) -> list[ScoredItem]:
     if not settings.anthropic_api_key:
         logger.warning("No ANTHROPIC_API_KEY — returning items with default scores")
+        print("⚠ WARNING: No ANTHROPIC_API_KEY — using fallback scoring (no comedy angles)")
         return _fallback_scoring(items)
 
     # Cap items to avoid huge prompts
@@ -100,26 +151,12 @@ def score_items(items: list[RawItem], settings: Settings) -> list[ScoredItem]:
 
     client = anthropic.Anthropic(api_key=settings.anthropic_api_key)
 
-    try:
-        with client.messages.stream(
-            model=SCORING_MODEL,
-            max_tokens=32768,
-            thinking={"type": "adaptive"},
-            temperature=1,  # required when thinking is enabled
-            messages=[{"role": "user", "content": SCORING_PROMPT + items_json}],
-        ) as stream:
-            response = stream.get_final_message()
-    except Exception:
-        logger.exception("Claude API call failed")
-        return _fallback_scoring(items)
-
-    # Extract text content and strip markdown code fences
-    text = strip_code_fences(extract_text(response))
-
-    try:
-        scored_data = json.loads(text)
-    except json.JSONDecodeError:
-        logger.error("Failed to parse scorer JSON response:\n%s", text[:500])
+    scored_data = _call_scorer_with_retry(client, items_json)
+    if scored_data is None:
+        print(
+            "⚠ WARNING: LLM scoring failed after retries"
+            " — using fallback scoring (no comedy angles)"
+        )
         return _fallback_scoring(items)
 
     # Map scored data back to items

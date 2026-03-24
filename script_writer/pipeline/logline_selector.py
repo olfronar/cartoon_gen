@@ -35,7 +35,7 @@ def select_logline(
         preamble=HUMOR_PREAMBLE,
         context=context_block,
         title=item.item.title,
-        comedy_angle=item.comedy_angle,
+        comedy_angle=item.comedy_angle or "[Not provided]",
         loglines_formatted=loglines_formatted,
     )
 

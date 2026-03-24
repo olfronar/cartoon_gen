@@ -22,8 +22,14 @@ logger = logging.getLogger(__name__)
 async def run(
     settings: Settings | None = None,
     target_date: date | None = None,
+    pick_indices: list[int] | None = None,
 ) -> list[CartoonScript]:
-    """Run the full script writer pipeline."""
+    """Run the full script writer pipeline.
+
+    Args:
+        pick_indices: 0-based indices into the combined brief (top_picks + also_notable).
+            If provided, only these items are processed instead of the default top-5.
+    """
     settings = settings or load_settings()
 
     if not settings.anthropic_api_key:
@@ -36,8 +42,12 @@ async def run(
     brief = read_brief(brief_date=target_date, briefs_dir=settings.output_dir)
     logger.info("Processing brief for %s with %d top picks", brief.date, len(brief.top_picks))
 
-    if not brief.top_picks:
-        logger.warning("No top picks in brief — nothing to write")
+    # Select items: --pick overrides default top-5
+    all_items = brief.top_picks + brief.also_notable
+    items = _resolve_picks(all_items, pick_indices) if pick_indices is not None else brief.top_picks
+
+    if not items:
+        logger.warning("No items to process — nothing to write")
         return []
 
     # Load context
@@ -56,7 +66,7 @@ async def run(
     # Stages 1+2: Generate loglines and select best, per item in parallel
     print("Generating and selecting loglines...")
     selected = await _generate_and_select_parallel(
-        items=brief.top_picks,
+        items=items,
         context_block=context_block,
         client=client,
         model=model,
@@ -67,7 +77,7 @@ async def run(
     print("Expanding scripts (parallel)...")
     scripts = await _expand_all_parallel(
         selected=selected,
-        items=brief.top_picks,
+        items=items,
         script_date=brief.date,
         context_block=context_block,
         client=client,
@@ -83,6 +93,22 @@ async def run(
 
     print(f"\nDone! {len(scripts)} scripts written to {settings.scripts_output_dir}")
     return scripts
+
+
+def _resolve_picks(all_items: list[ScoredItem], indices: list[int]) -> list[ScoredItem]:
+    """Resolve 0-based indices into actual items, with bounds checking."""
+    items = []
+    for idx in indices:
+        if idx < 0 or idx >= len(all_items):
+            print(
+                f"  WARNING: Item #{idx + 1} out of range"
+                f" (brief has {len(all_items)} items), skipping"
+            )
+            continue
+        item = all_items[idx]
+        print(f"  Picked #{idx + 1}: {item.item.title}")
+        items.append(item)
+    return items
 
 
 async def _generate_and_select_parallel(

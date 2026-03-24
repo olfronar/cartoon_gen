@@ -16,6 +16,8 @@ from .sources import get_active_sources
 
 logger = logging.getLogger(__name__)
 
+MAX_ITEMS_PER_SOURCE = 50
+
 
 async def run(settings: Settings | None = None) -> ComedyBrief:
     settings = settings or load_settings()
@@ -47,12 +49,20 @@ async def _pipeline(settings: Settings) -> ComedyBrief:
         return_exceptions=True,
     )
 
-    # Flatten, logging any exceptions
+    # Flatten, logging any exceptions; cap each source at MAX_ITEMS_PER_SOURCE
     raw_items: list[RawItem] = []
     for source, result in zip(sources, results, strict=True):
         if isinstance(result, BaseException):
             logger.warning("Source %s failed: %s", source.name, result)
         else:
+            if len(result) > MAX_ITEMS_PER_SOURCE:
+                logger.info(
+                    "Source %s returned %d items, capping to %d",
+                    source.name,
+                    len(result),
+                    MAX_ITEMS_PER_SOURCE,
+                )
+                result = result[:MAX_ITEMS_PER_SOURCE]
             raw_items.extend(result)
 
     logger.info("Total raw items: %d", len(raw_items))

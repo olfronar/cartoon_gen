@@ -30,7 +30,7 @@ def generate_synopsis(
         context=context_block,
         logline=logline.text,
         title=item.item.title,
-        comedy_angle=item.comedy_angle,
+        comedy_angle=item.comedy_angle or "[Not provided — derive from the logline]",
         snippet=item.item.snippet,
         format_type=logline.format_type or "demonstration",
     )
@@ -60,7 +60,7 @@ def expand_script(
         development=synopsis.development,
         punchline=synopsis.punchline,
         visual_gags=", ".join(synopsis.key_visual_gags),
-        comedy_angle=item.comedy_angle,
+        comedy_angle=item.comedy_angle or "[Not provided — derive from the logline]",
         snippet=item.item.snippet,
         news_explanation=synopsis.news_explanation,
         format_type=logline.format_type or "demonstration",
