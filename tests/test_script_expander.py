@@ -54,7 +54,7 @@ MOCK_SCRIPT = {
 
 LOGLINE = Logline(
     text="Robot opens restaurant",
-    approach="absurdist",
+    approach="the_quiet_part",
     featured_characters=["Bot"],
     visual_hook="robot cooking",
 )

@@ -11,23 +11,21 @@ from static_shots_maker.pipeline.image_generator import generate_image
 logger = logging.getLogger(__name__)
 
 CHARACTER_SHEET_PROMPT = """\
-2D hand-drawn illustration in the style of Scavengers Reign animated series. \
-9:16 vertical portrait format. Painterly, muted earthy tones — desaturated \
-greens, warm ochres, dusty purples. Organic linework that varies in weight \
-naturally, never mechanical. NOT photorealistic — this must look like a frame \
-from a 2D animated show.
+2D hand-drawn illustration. 9:16 vertical portrait format. \
+NOT photorealistic, NOT 3D, NOT CGI — this must look like a frame from a \
+2D animated show.
 
-{characters_block}
-
-Full art style reference:
+**Art style** (follow exactly):
 {art_style_block}
+
+**Characters**:
+{characters_block}
 
 Draw each character full-body, facing the viewer, in a neutral standing pose. \
 Simple muted background wash, no text or labels. Consistent 2D hand-drawn \
 proportions across all characters. Characters should have clean silhouettes \
 with understated expressions — minimal facial detail, the comedy lives in \
-posture. Render in the painterly, illustrative style described above — NOT \
-photorealistic, NOT 3D, NOT CGI.
+posture. Match the art style above exactly.
 """
 
 

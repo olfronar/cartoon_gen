@@ -43,11 +43,11 @@ class TestLogline:
     def test_creation(self):
         ll = Logline(
             text="A robot learns to cook",
-            approach="absurdist",
+            approach="the_quiet_part",
             featured_characters=["Chef Bot"],
             visual_hook="robot on fire",
         )
-        assert ll.approach == "absurdist"
+        assert ll.approach == "the_quiet_part"
         assert len(ll.featured_characters) == 1
 
 

@@ -38,7 +38,7 @@ transformed state. The gesture is casual, the result is impossible.
 - Timing follows the format, not a rigid split. Let the joke's rhythm dictate \
 when things move. A 3-second hold before a reveal can be funnier than constant motion.
 - The WORLD also moves impossibly around the action — \
-shadows shift independently, ink lines crawl, things breathe that shouldn't. \
+shadows shift independently, textures ripple, things breathe that shouldn't. \
 These ambient motions complement the primary motion, not compete with it.
 - Maximum 2 characters moving on screen. All other elements are static background.
 - Use ONLY affirmative descriptions — never say "no", "without", "don't", "avoid".
@@ -54,9 +54,9 @@ These ambient motions complement the primary motion, not compete with it.
 A frustrated Billy shifts weight. An amused Billy tilts his head. An alarmed Billy takes \
 a half-step back.
 - Other character: 2-3 natural motions. Environment: 2-3 uncanny motions that complement \
-the scene (shadows shifting, ink redrawing itself, background elements breathing or \
-pulsing in response). These are not effects — they are rendered as natural parts of \
-the world.
+the scene (shadows shifting, textures subtly rippling, background elements breathing \
+or pulsing in response). These are not effects — they are rendered as natural parts \
+of the world.
 
 **FORMAT**:
 - Front-load the key motion in the first 20-30 words.

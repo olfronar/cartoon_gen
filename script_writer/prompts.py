@@ -252,18 +252,18 @@ happened? A logline that's funny but confusing fails. A logline that's clear \
 but boring fails. Billy must SAY the news fact in plain language AND frame it \
 so its absurdity is undeniable. The best logline is the one where understanding \
 the news IS what makes you laugh.
-3. **Emotional hit** — does it name a feeling people are avoiding about this \
+2. **Emotional hit** — does it name a feeling people are avoiding about this \
 news? Not a generic emotion ("concern") but a specific one ("the guilty relief \
 that it happened to them"). A logline that makes you feel something beats one \
 that merely informs.
-4. **Specificity** — concrete objects, not abstractions. "iPhone 16 Pro" not \
+3. **Specificity** — concrete objects, not abstractions. "iPhone 16 Pro" not \
 "smartphone." "A six-foot stack of unread safety reports" not "ignored warnings." \
 Can you picture the exact objects in the frame?
-5. **Format fit** — does the chosen `format_type` serve this specific joke? A \
+4. **Format fit** — does the chosen `format_type` serve this specific joke? A \
 story that needs a punchline reveal shouldn't be a visual_punchline. A story \
 where the image says everything shouldn't be an exchange. The format should feel \
 inevitable, not arbitrary.
-6. **Character fit + visual feasibility** — does it use Billy naturally? At most \
+5. **Character fit + visual feasibility** — does it use Billy naturally? At most \
 one other character, with three or fewer visual elements. Can an image model render \
 the key moment as one clean image? Reject montages, recursive effects, crowds, and \
 abstract concepts.
