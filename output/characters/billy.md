@@ -24,9 +24,7 @@ Sees through technology to its core essence — incentive structures, behavioral
 - **people_at_the_scene**: Witnesses, officials, bystanders, panicking tech executives, confused scientists — whoever happens to be at the epicenter when Billy arrives. They can never keep up with him. Billy is the lone constant — the eternal outsider who drifts from scene to scene, never fully belonging to any tribe.
 
 ## Visual Appearance
-Stickman-cartoonish style (xkcd) with slightly bluish skin on the head and body providing contrast against the entirely black-and-white world. Features Dr. Manhattan's atom symbol on his forehead.
-
-Minimalist blue-tinted stickman figure with Dr. Manhattan's atom symbol on forehead. Stands out starkly against the black-and-white world. Often perfectly still while everything around him is animated chaos. Simple, clean lines but radiates an unmistakable otherworldly presence.
+Lean, understated figure with a subtle blue-gray skin tint that sets him apart from the warm, earthy palette of the world around him. Dr. Manhattan's atom symbol glows faintly on his forehead — the one sci-fi element in an otherwise grounded design. Simple, clean character silhouette against richly detailed environments. Wears a plain beige suit, slightly rumpled, as if he dressed once and forgot about it. Often perfectly still while the world moves around him. His face is minimal — understated expressions, the comedy lives in posture and stillness, not mugging. He reads as slightly alien: too calm, too present, occupying the space differently than everyone else.
 
 ## In Absurd Situations
 Predicts the chaos before it happens, calmly repositions himself to safety, and proceeds to narrate the unfolding catastrophe to camera — explaining exactly why it was structurally inevitable while carnage erupts behind him.

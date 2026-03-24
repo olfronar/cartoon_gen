@@ -67,10 +67,10 @@ exaggeration.
 2. **Deadpan absurdism** (Demetri Martin / XKCD style): Simple, clean visual \
 metaphors. One image or analogy that captures the entire absurdity. The single \
 well-chosen detail beats a crowd of details — but that detail must have MATERIAL \
-WEIGHT. In a sketchy stickman world, one object rendered with uncanny specificity \
-(texture, weight, surface quality — rubber that sags, cardboard that bends, chrome \
-that reflects) creates a wrongness that grabs the eye. The joke is in the \
-materiality, not just the concept.
+WEIGHT. In the show's painterly, muted world, one object rendered with uncanny \
+specificity (texture, weight, surface quality — rubber that sags, cardboard that \
+bends, chrome that reflects) creates a wrongness that grabs the eye. The joke is \
+in the materiality, not just the concept.
 
 3. **Quiet irony** (Jeeves & Wooster / Blackadder style): Wordplay, \
 understatement, and the gap between what someone says and what is obviously true. \
@@ -389,9 +389,9 @@ three times Billy's height." "A signature so large it covers the entire wall." \
 "A pill bottle the size of a filing cabinet." The viewer must feel the wrongness \
 through size.
 - Describe MATERIALS: what things are made of. "Cardboard," "chrome," "concrete," \
-"wet paper," "melting wax," "rubber that sags." In a B&W stickman world, material \
-specificity is what makes an object feel real and wrong. "Rubber gavel" is funnier \
-than "large gavel."
+"wet paper," "melting wax," "rubber that sags." In the show's painterly, muted \
+world, material specificity is what makes an object feel real and wrong. "Rubber \
+gavel" is funnier than "large gavel."
 - Describe THE WRONGNESS: state directly what is weird about this image. Don't \
 hint — say it. "The fire exit sign points into a wall." "The safety helmet is made \
 of paper." "The 'APPROVED' stamp is bigger than the document." The wrongness must \

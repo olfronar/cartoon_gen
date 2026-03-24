@@ -16,13 +16,14 @@ the twelve meters. The absurdity is the point. Prefer IMPLICATION over direct \
 depiction — smoke suggesting fire is funnier than showing the fire. A shadow \
 that's the wrong shape is funnier than showing the wrong thing directly.
 
-In a B&W stickman world, one object rendered with obsessive detail (heavy ink \
-lines, crosshatching, ink-wash gradient) surrounded by loose sketch creates visual \
-WRONGNESS that IS the comedy. When the scene prompt specifies texture or material \
-detail, this is a deliberate comedy choice — preserve it exactly as you would a \
-scale paradox. The hyper-detailed object in the sketchy world is the visual \
-equivalent of a deadpan delivery. Do not normalize detail levels — the contrast \
-IS the point.
+In the show's painterly, muted world (Scavengers Reign-inspired), one object \
+rendered with obsessive tactile detail (specific textures, material weight, \
+surface quality) surrounded by softer, more impressionistic environment creates \
+visual WRONGNESS that IS the comedy. When the scene prompt specifies texture or \
+material detail, this is a deliberate comedy choice — preserve it exactly as you \
+would a scale paradox. The hyper-detailed focal object against the atmospheric \
+world is the visual equivalent of a deadpan delivery. Do not normalize detail \
+levels — the contrast IS the point.
 
 The scene prompt describes a STARTING STATE — the frozen moment before Billy \
 transforms anything. All objects appear in their original, untransformed form. \
@@ -108,10 +109,10 @@ surroundings. This tells the viewer where to look.
 
 **FORMAT**:
 - DISTILL, do not expand. Output 70-100 words. Cut GENERIC adjectives (big, small, \
-dark, bright) but PRESERVE material adjectives (rubber, crosshatched, ink-washed, \
-heavy-lined, sagging, glossy). Cut spatial instructions before the visual riddle. \
-Material and texture words are load-bearing — they tell the image model HOW to \
-render, not just WHAT.
+dark, bright) but PRESERVE material adjectives (rubber, fibrous, weathered, \
+mossy, scuffed, sagging, glossy, chitinous, membranous). Cut spatial instructions \
+before the visual riddle. Material and texture words are load-bearing — they tell \
+the image model HOW to render, not just WHAT.
 - Condense any text in the scene to five words or fewer. If a sign has a long \
 phrase, shorten it to its essence.
 - Strip all quoted speech and "[Character] says:" patterns — images cannot show dialogue.

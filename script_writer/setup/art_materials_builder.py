@@ -11,16 +11,23 @@ from static_shots_maker.pipeline.image_generator import generate_image
 logger = logging.getLogger(__name__)
 
 CHARACTER_SHEET_PROMPT = """\
-All characters standing together on a plain white background, \
-9:16 vertical portrait format.
+2D hand-drawn illustration in the style of Scavengers Reign animated series. \
+9:16 vertical portrait format. Painterly, muted earthy tones — desaturated \
+greens, warm ochres, dusty purples. Organic linework that varies in weight \
+naturally, never mechanical. NOT photorealistic — this must look like a frame \
+from a 2D animated show.
 
 {characters_block}
 
-Art style: {art_style_summary}
+Full art style reference:
+{art_style_block}
 
 Draw each character full-body, facing the viewer, in a neutral standing pose. \
-Plain white background with no text, labels, or annotations. \
-Consistent proportions and art style across all characters.
+Simple muted background wash, no text or labels. Consistent 2D hand-drawn \
+proportions across all characters. Characters should have clean silhouettes \
+with understated expressions — minimal facial detail, the comedy lives in \
+posture. Render in the painterly, illustrative style described above — NOT \
+photorealistic, NOT 3D, NOT CGI.
 """
 
 
@@ -56,10 +63,9 @@ def create_art_materials(
     characters_block = "\n\n".join(
         f"**{name}**:\n{profile}" for name, profile in characters.items()
     )
-    art_style_first_line = art_style.strip().split("\n")[0].strip("# ")
     char_prompt = CHARACTER_SHEET_PROMPT.format(
         characters_block=characters_block,
-        art_style_summary=art_style_first_line,
+        art_style_block=art_style,
     )
     char_path = art_materials_dir / f"{ART_MATERIAL_NAMES[0]}.png"
     print("Generating canonical character sheet...")
