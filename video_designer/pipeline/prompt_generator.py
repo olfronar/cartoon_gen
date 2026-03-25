@@ -52,7 +52,7 @@ def generate_video_prompt(
         format_type=script.format_type or "demonstration",
         billy_emotion=scene.billy_emotion or "deadpan",
     )
-    images = [image_path] if image_path and image_path.exists() else None
+    images = [image_path] if image_path else None
     try:
         return call_llm_text(client, prompt, model, max_tokens, images=images).strip()
     except Exception:

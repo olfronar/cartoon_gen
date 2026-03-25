@@ -57,8 +57,8 @@ class TestGenerateImage:
 
         ref1 = tmp_path / "ref1.png"
         ref2 = tmp_path / "ref2.png"
-        ref1.write_bytes(b"ref image 1")
-        ref2.write_bytes(b"ref image 2")
+        ref1.write_bytes(b"\x89PNG\r\n\x1a\nref1")
+        ref2.write_bytes(b"\x89PNG\r\n\x1a\nref2")
 
         result = generate_image(
             "a robot", output_path, client, MODEL, reference_images=[ref1, ref2]

@@ -67,7 +67,7 @@ def extract_text(response) -> str:
     return "".join(block.text for block in response.content if block.type == "text")
 
 
-def _detect_image_media_type(data: bytes) -> str:
+def detect_image_media_type(data: bytes) -> str:
     """Detect image media type from file magic bytes."""
     if data[:8] == b"\x89PNG\r\n\x1a\n":
         return "image/png"
@@ -77,7 +77,7 @@ def _detect_image_media_type(data: bytes) -> str:
         return "image/gif"
     if data[:4] == b"RIFF" and data[8:12] == b"WEBP":
         return "image/webp"
-    return "image/png"  # fallback
+    raise ValueError(f"Unrecognized image format (first 12 bytes: {data[:12]!r})")
 
 
 def _call_llm(
@@ -97,7 +97,7 @@ def _call_llm(
         content: list[dict] | str = []
         for img_path in images:
             raw = img_path.read_bytes()
-            media_type = _detect_image_media_type(raw)
+            media_type = detect_image_media_type(raw)
             b64 = base64.b64encode(raw).decode("ascii")
             content.append(
                 {

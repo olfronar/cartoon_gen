@@ -140,6 +140,7 @@ Required for static shots: `GOOGLE_API_KEY` (Gemini image generation). Required 
 ## Code Conventions
 
 - Cross-module utilities (parsing, formatting, HTTP helpers) go in `shared/utils.py` — never duplicate logic across agent modules
+- Image media type: use `detect_image_media_type()` from `shared/utils.py` — detects format from file magic bytes. Never hardcode `image/png` or other MIME types based on file extension
 - LLM JSON responses may be wrapped in code fences: use `strip_code_fences()` from `shared/utils.py`
 - ISO timestamps with `Z` suffix: use `parse_iso_utc()` from `shared/utils.py`
 - Constants, lookup dicts, and compiled regexes belong at module level, not inside functions

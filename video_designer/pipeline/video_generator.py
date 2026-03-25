@@ -6,6 +6,8 @@ import logging
 import urllib.request
 from pathlib import Path
 
+from shared.utils import detect_image_media_type
+
 logger = logging.getLogger(__name__)
 
 _DOWNLOAD_TIMEOUT = 120  # seconds
@@ -48,8 +50,9 @@ async def generate_video(
         RuntimeError: If video generation fails or is blocked by moderation.
     """
     image_bytes = await asyncio.to_thread(image_path.read_bytes)
+    media_type = detect_image_media_type(image_bytes)
     b64 = base64.b64encode(image_bytes).decode("ascii")
-    data_uri = f"data:image/png;base64,{b64}"
+    data_uri = f"data:{media_type};base64,{b64}"
 
     response = await client.video.generate(
         prompt=prompt,

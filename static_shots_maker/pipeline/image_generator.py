@@ -5,6 +5,8 @@ from pathlib import Path
 
 from google.genai import types
 
+from shared.utils import detect_image_media_type
+
 logger = logging.getLogger(__name__)
 
 
@@ -37,7 +39,8 @@ def generate_image(
     if reference_images:
         for img_path in reference_images:
             img_bytes = img_path.read_bytes()
-            parts.append(types.Part.from_bytes(data=img_bytes, mime_type="image/png"))
+            mime = detect_image_media_type(img_bytes)
+            parts.append(types.Part.from_bytes(data=img_bytes, mime_type=mime))
     parts.append(types.Part.from_text(text=prompt))
 
     contents = [
