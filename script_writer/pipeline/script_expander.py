@@ -56,6 +56,7 @@ def expand_script(
         context=context_block,
         title=item.item.title,
         logline=logline.text,
+        world_seed=synopsis.world_seed or "[Not provided — invent a lived-in place]",
         setup=synopsis.setup,
         development=synopsis.development,
         punchline=synopsis.punchline,

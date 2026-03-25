@@ -89,44 +89,44 @@ Test object factories (`make_raw_item`, `make_scored_item`, `make_script`, etc.)
 ### Running Agents
 
 ```bash
-# Agent Researcher — one-shot run (from project root)
-PYTHONPATH=. python -m agent_researcher
+# Agent Researcher — one-shot run
+uv run python -m agent_researcher
 
 # Agent Researcher — scheduled daily run (default 07:30)
-PYTHONPATH=. python -m agent_researcher --scheduled
+uv run python -m agent_researcher --scheduled
 
 # Script Writer — character & art style setup (interactive, run once)
-PYTHONPATH=. python -m script_writer.setup
+uv run python -m script_writer.setup
 
 # Script Writer — generate art materials (run after characters + art style exist)
-PYTHONPATH=. python -m script_writer.setup art-materials
+uv run python -m script_writer.setup art-materials
 
 # Script Writer — generate scripts from latest brief
-PYTHONPATH=. python -m script_writer
+uv run python -m script_writer
 
 # Script Writer — generate scripts from specific date
-PYTHONPATH=. python -m script_writer --date 2026-03-14
+uv run python -m script_writer --date 2026-03-14
 
 # Script Writer — generate scripts for specific news items from brief (1-based numbers)
-PYTHONPATH=. python -m script_writer --pick 1,3,7
+uv run python -m script_writer --pick 1,3,7
 
 # Static Shots Maker — generate shots from latest scripts
-PYTHONPATH=. python -m static_shots_maker
+uv run python -m static_shots_maker
 
 # Static Shots Maker — generate shots from specific date
-PYTHONPATH=. python -m static_shots_maker --date 2026-03-15
+uv run python -m static_shots_maker --date 2026-03-15
 
 # Video Designer — generate videos from latest static shots
-PYTHONPATH=. python -m video_designer
+uv run python -m video_designer
 
 # Video Designer — generate videos from specific date
-PYTHONPATH=. python -m video_designer --date 2026-03-15
+uv run python -m video_designer --date 2026-03-15
 
 # Caption Maker — add captions to latest videos
-PYTHONPATH=. python -m caption_maker
+uv run python -m caption_maker
 
 # Caption Maker — add captions for specific date
-PYTHONPATH=. python -m caption_maker --date 2026-03-15
+uv run python -m caption_maker --date 2026-03-15
 ```
 
 ### Config
@@ -146,7 +146,7 @@ Required for static shots: `GOOGLE_API_KEY` (Gemini image generation). Required 
 - Each piece of logic has one owner module — if a second copy appears, extract to `shared/`
 - Error handling and resource setup (fallback logic, directory creation) belong in the module that owns the operation — callers should not duplicate these concerns
 - Avoid pre-checking file/resource existence before operating (TOCTOU anti-pattern) — call the operation directly and handle the error
-- LLM calls: use `call_llm_json(client, prompt, model, max_tokens)` from `shared/utils.py` — handles streaming, text extraction, code fence stripping, and JSON parsing. Use `call_llm_text()` for raw text responses. Create a single `anthropic.Anthropic` client per pipeline run and pass it through.
+- LLM calls: use `call_llm_json(client, prompt, model, max_tokens)` from `shared/utils.py` — handles streaming, text extraction, code fence stripping, and JSON parsing. Use `call_llm_text()` for raw text responses. Both support optional `images` kwarg (`list[Path]`) for multimodal inputs. Create a single `anthropic.Anthropic` client per pipeline run and pass it through.
 - LLM response text extraction: use `extract_text(response)` from `shared/utils.py` for non-JSON responses
 - Context loading: use `shared/context_loader.py` for loading characters + art style (shared by script_writer and static_shots_maker)
 - Dataclass serialization: use `asdict()` with post-processing for non-serializable fields (dates, Paths). Never hand-build the dict — fields added later would be silently dropped. Add a `from_dict()` classmethod for any dataclass that is serialized to JSON — consumers should not hand-parse
@@ -177,7 +177,7 @@ All sources must return items with valid URLs. Items with empty URLs are filtere
 - **Dedup** (`dedup.py`): URL normalization + `rapidfuzz` title similarity (threshold 85). Merges multi-source items rather than discarding. Empty URLs are excluded from URL dedup to prevent false collisions. `filter_already_covered()` provides cross-day dedup by scanning previous brief JSON sidecars (7-day lookback) and dropping items that match by normalized URL or fuzzy title.
 - **Scorer** (`scorer.py`): streams to `claude-opus-4-6` with adaptive thinking, 32k max tokens. Retries up to 3 times with exponential backoff (5s, 10s, 20s) on API or JSON parse failures. Rewrites titles for clarity, generates comedy explanations for every item. Falls back to raw score sorting (with visible warning) if all retries exhausted or API key missing. `comedy_angle` uses enriched three-part format: structural contradiction (what's said vs what's happening), double emotional hit (two contradictory emotions), and one-liner joke seed. This propagates to all downstream script prompts. Scoring uses `broad resonance` (replaces `cultural_resonance`) to favor stories accessible to non-technical audiences. Semantic dedup via `duplicate_of` field: Claude flags items covering the same event, Python code merges sources into the canonical item and drops duplicates before ranking.
 - **xAI source** (`sources/xai.py`): uses `grok-4.20-beta-latest-non-reasoning` with `web_search(allowed_domains=["x.com"])` tool for live X data.
-- **Data contracts** (`shared/models.py`): `RawItem` → `ScoredItem` → `ComedyBrief` → `Logline` (includes `format_type`) → `Synopsis` → `SceneScript` (11 fields, includes `transformation: str = ""`, `billy_emotion: str = ""`) → `CartoonScript` (includes `format_type`) → `ShotResult` → `ShotsManifest` → `ClipResult` → `VideoManifest`. All agents share these. `Synopsis.from_dict()` accepts both `development` and legacy `escalation` keys for backward compatibility. `SceneScript.from_dict()` handles missing optional fields with backward compat defaults. `Logline.format_type` and `CartoonScript.format_type` default to `""` for backward compatibility.
+- **Data contracts** (`shared/models.py`): `RawItem` → `ScoredItem` → `ComedyBrief` → `Logline` (includes `format_type`) → `Synopsis` (includes `world_seed: str = ""` for place history/sensory detail) → `SceneScript` (11 fields, includes `transformation: str = ""`, `billy_emotion: str = ""`) → `CartoonScript` (includes `format_type`) → `ShotResult` → `ShotsManifest` → `ClipResult` → `VideoManifest`. All agents share these. `Synopsis.from_dict()` accepts both `development` and legacy `escalation` keys for backward compatibility. `SceneScript.from_dict()` handles missing optional fields with backward compat defaults. `Logline.format_type` and `CartoonScript.format_type` default to `""` for backward compatibility.
 - **Shared ffmpeg** (`shared/ffmpeg.py`): `run_ffmpeg()`, `probe_video()`. Extracted from video_designer assembler for reuse by caption_maker.
 - **Shared utilities** (`shared/utils.py`): `strip_code_fences()`, `parse_iso_utc()`, `strip_html()`, `extract_text()`, `extract_json()`, `call_llm_json()`, `call_llm_text()`. `extract_json(text, expect=dict|list)` handles LLM responses with surrounding commentary by trying direct parse then bracket extraction.
 - **Context loader** (`shared/context_loader.py`): `load_characters()`, `load_art_style()`, `load_art_materials()`, `build_context_block()`, `build_reference_image_list()`. Used by script_writer, static_shots_maker, and video_designer.
@@ -196,7 +196,7 @@ Pipeline: brief JSON ingestion → parallel logline generation + selection (all 
 - **Context loader** (`shared/context_loader.py`): Loads `output/characters/*.md` and `output/art_style.md` into a shared prompt context block.
 - **Logline generator** (`pipeline/logline_generator.py`): Structured "angle sharpening" (`story_hook` analysis, including `avoided_feeling`) before generating 3 loglines per news item. Three approaches produce different comedic rhythms: (1) the_quiet_part — the uncomfortable truth nobody is saying, confession comedy; (2) the_betrayal — the audacious lie exposed, recognition comedy; (3) the_image_you_cant_unsee — one visual that permanently reframes the story, New Yorker cartoon energy. Comedy_angle from scorer is treated as a starting point, not the answer — loglines must find a sharper take. TASTE section enforces: wit over spectacle, implication over statement, one idea perfectly executed, New Yorker single-panel test. `text` field must be ONE sentence sharp enough to be a tweet. `visual_hook` is one image, one idea, one sentence — not a shot list. Each logline specifies a `format_type` (visual_punchline / exchange / cold_reveal / demonstration). Uses Claude Opus with adaptive thinking. Response format: `{"story_hook": {...}, "loglines": [...]}` — parser extracts `loglines` array with `format_type`, `story_hook` exists only to improve quality.
 - **Logline selector** (`pipeline/logline_selector.py`): Selects best 1 of 3 per item. Prioritizes funny AND clear (both required), then emotional hit, emotional hit, specificity, format fit, and visual feasibility. Displays `format_type` in formatted output. Falls back to first logline on error.
-- **Script expander** (`pipeline/script_expander.py`): Two-step: synopsis → full script. All 5 items run in parallel via `asyncio.gather()`.
+- **Script expander** (`pipeline/script_expander.py`): Two-step: synopsis (with `world_seed` for place/atmosphere) → full script. All 5 items run in parallel via `asyncio.gather()`. `world_seed` threads from synopsis into script expansion prompt for richer settings.
 - **Renderer** (`pipeline/renderer.py`): `CartoonScript` → `.md` (human-readable) + `.json` (machine-readable for static_shots_maker).
 - **Prompts** (`prompts.py`): All prompt templates. Core rules: (1) Billy SAYS the news fact in PLAIN LANGUAGE — no jargon, no assumed knowledge; (2) dialogue must be FUNNY, not just factual — every line does double duty (information + comedy). WHAT MAKES DIALOGUE FUNNY section teaches three tools: the reframe (framing the fact so its absurdity is undeniable), the turn (conversation goes somewhere unexpected), the committed position (other character earnestly believes something absurd). Anti-patterns: dialogue that only states facts, both characters agreeing, Billy sounding like a news anchor, last line explaining the joke, using jargon. Last line test: does the final line land as a punchline? Could you put it on a t-shirt? Logline selection #1 criterion: "Funny AND clear — both required, neither optional." Gold standard: Billy says one line and you laugh, then you see the image and laugh harder — both independently funny, together devastating. Shared humor preamble establishes 4 episode formats: (1) Visual Punchline — 1-2 lines, Billy frames fact as comedy, image amplifies; (2) Exchange — 2-4 lines, other character commits earnestly to absurd position; (3) Cold Reveal — 1 line at end names the news fact AND lands as punchline; (4) Demonstration — Billy states fact, transformation illustrates absurdity. Billy's emotional range: NOT always "quiet" — frustrated, amused, alarmed, delighted, angry, giddy, genuinely surprised. Other characters must COMMIT to their position — the more earnestly they believe, the funnier. They should never sound like they know they're in a comedy. Three comedy traditions (dry observation, deadpan absurdism, quiet irony) preserved. Material specificity preserved (in painterly muted world, not B&W stickman). CRITICAL visual rule: `scene_prompt` = starting state photograph, NO art technique words. Scene prompt rules: OBJECTS, SCALE, MATERIALS, WRONGNESS, BILLY'S STATE. `news_essence` must be plain language. NEWS DELIVERY: dialogue AND image both deliver comedy. Mute test: can't understand news on mute, unmute delivers news AND laughs. Compliance_check includes `dialogue_is_funny`, `news_delivered`, `plain_language`, `format_consistency`, `visual_specificity_check`, `emotion_specified`. 4 format-specific examples. `comedy_angle`, `snippet`, `news_explanation`, `format_type` passed through.
 - **Runner** (`pipeline/runner.py`): Async orchestrator for the full pipeline. Supports `--pick` flag to select specific items by 1-based brief number (top_picks + also_notable). When `comedy_angle` is empty (scorer fallback), downstream prompts instruct the LLM to discover the comedy angle from scratch.
@@ -237,7 +237,7 @@ Pipeline: manifest + script ingestion → parallel video prompt composition (Cla
 ### Pipeline stages
 
 - **Manifest reader** (`pipeline/manifest_reader.py`): Reads `output/static_shots/<date>_<N>/manifest.json` + pairs with `output/scripts/<date>_<N>.json`. Auto-detects latest date. Skips scripts with no successful shots.
-- **Prompt generator** (`pipeline/prompt_generator.py`): Claude composes video-generation prompts from scene details + character profiles + art style + formatted dialogue. Falls back to original scene_prompt if Claude unavailable.
+- **Prompt generator** (`pipeline/prompt_generator.py`): Claude composes video-generation prompts from scene details + character profiles + art style + formatted dialogue. Sends the static shot image alongside the text prompt (multimodal) so Claude can reference the actual rendered frame. Falls back to original scene_prompt if Claude unavailable.
 - **Video generator** (`pipeline/video_generator.py`): xAI grok-imagine-video (`grok-imagine-video`) image-to-video with native audio generation. Uses static shot as source image via base64 data URI. SDK handles polling internally.
 - **Assembler** (`pipeline/assembler.py`): ffmpeg concatenation with re-encoding (`libx264 + aac`) for audio normalization. Glitch transitions (0.5s) with silence between scripts. Uses `run_ffmpeg()` and `probe_video()` from `shared/ffmpeg.py`.
 - **Prompts** (`prompts.py`): `SCENE_TO_VIDEO_PROMPT` and `END_CARD_TO_VIDEO_PROMPT` templates. Rules tiered as CRITICAL/REQUIRED/FORMAT. Include audio/dialogue direction, `{transformation}`, `{format_type}`, and `{billy_emotion}` inputs. CRITICAL section: format-aware motion direction — `visual_punchline` (environment moves, Billy still, accumulation is comedy), `exchange` (character body language drives motion, dialogue timing primary), `cold_reveal` (camera movement IS the story, slow reveal), `demonstration` (one deliberate gesture, casual gesture / impossible result). Timing follows the format's rhythm, not a rigid 5-5-5 split. Ambient world wrongness complements primary motion. REQUIRED section: Billy's body language matches his emotion (not always "barely moves"), other character: 2-3 natural motions, environment: 2-3 uncanny motions complementing the scene.

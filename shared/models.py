@@ -91,6 +91,7 @@ class Synopsis:
     estimated_scenes: int
     key_visual_gags: list[str]
     news_explanation: str = ""
+    world_seed: str = ""  # Place history + sensory detail for setting richness
 
     @classmethod
     def from_dict(cls, data: dict) -> Synopsis:
@@ -102,6 +103,7 @@ class Synopsis:
             estimated_scenes=int(data.get("estimated_scenes", 1)),
             key_visual_gags=data.get("key_visual_gags", []),
             news_explanation=data.get("news_explanation", ""),
+            world_seed=data.get("world_seed", ""),
         )
 
 

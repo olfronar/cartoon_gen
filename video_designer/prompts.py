@@ -9,7 +9,11 @@ video AI model that generates both video AND audio natively.
 
 ---
 
-Compose a video generation prompt to animate this static scene shot.
+Compose a video generation prompt to animate this static scene shot. \
+If an image is attached, that is the ACTUAL RENDERED STATIC SHOT — use it as your \
+visual ground truth. Reference what you SEE in the image (composition, colors, \
+lighting, character positions, object placement) rather than relying solely on the \
+text descriptions below. The video should start from exactly this frame.
 
 **Episode title**: {title}
 **Scene {scene_number}**: {scene_title}

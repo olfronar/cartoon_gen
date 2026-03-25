@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import logging
+from pathlib import Path
 
 from shared.models import CartoonScript, SceneScript
 from shared.utils import call_llm_text
@@ -28,8 +29,13 @@ def generate_video_prompt(
     client,
     model: str,
     max_tokens: int,
+    image_path: Path | None = None,
 ) -> str:
-    """Compose a video generation prompt for a scene."""
+    """Compose a video generation prompt for a scene.
+
+    When *image_path* is provided, the static shot is sent alongside the
+    text prompt so Claude can reference the actual rendered frame.
+    """
     prompt = SCENE_TO_VIDEO_PROMPT.format(
         context=context_block,
         title=script.title,
@@ -46,8 +52,9 @@ def generate_video_prompt(
         format_type=script.format_type or "demonstration",
         billy_emotion=scene.billy_emotion or "deadpan",
     )
+    images = [image_path] if image_path and image_path.exists() else None
     try:
-        return call_llm_text(client, prompt, model, max_tokens).strip()
+        return call_llm_text(client, prompt, model, max_tokens, images=images).strip()
     except Exception:
         logger.exception(
             "Claude video prompt failed for scene %d, using original scene_prompt",

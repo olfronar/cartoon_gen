@@ -135,13 +135,14 @@ async def _process_script(
                 script_index=entry.index,
                 output_path=output_dir / f"scene_{scene.scene_number}.mp4",
                 image_path=image_path,
-                prompt_fn=lambda s=scene: generate_video_prompt(
+                prompt_fn=lambda s=scene, ip=image_path: generate_video_prompt(
                     s,
                     entry.script,
                     context_block,
                     anthropic_client,
                     settings.video_prompt_model,
                     settings.video_prompt_max_tokens,
+                    image_path=ip,
                 ),
                 xai_client=xai_client,
                 semaphore=semaphore,

@@ -291,6 +291,28 @@ Write a synopsis for this cartoon episode:
 **News snippet**: {snippet}
 **Format type**: {format_type}
 
+**STEP 0 — THE PLACE** (think before you compose)
+
+Before writing setup/development/punchline, answer ONE question: \
+**What was this place doing five minutes before Billy arrived?**
+
+Write a `world_seed` (2-3 sentences) that establishes:
+- The SPECIFIC PLACE this news happened — not "a tech office" but "the \
+third-floor break room of Niantic's San Francisco office, where someone \
+left a half-eaten Kind bar on the counter three days ago." Ground it in \
+the real news location when possible.
+- ONE SENSORY DETAIL that has nothing to do with the joke — the hum of \
+HVAC, a water stain on the ceiling tile, a vending machine's compressor \
+cycling on. This is the texture of a real place, not a stage set.
+- A TRACE of what happened before — a still-warm coffee ring, a chair \
+pushed back in a hurry, a sticky note with a phone number, a coat left \
+on a hook. The setting implies a story that was already in progress.
+
+The world_seed is NOT the joke — it's the world the joke happens IN. It \
+makes the viewer feel like they stumbled into a real place at exactly the \
+wrong moment. Think Scavengers Reign: the environment was there before \
+the characters, and it will be there after they leave.
+
 Build the synopsis around three questions:
 
 - **setup** — THE IMAGE: What does the viewer see? Name the objects, their scale, \
@@ -349,7 +371,7 @@ the joke from shapes alone.
 - **news_explanation**: in 2-3 sentences, what is the real-world news story this \
 episode explains?
 
-Return as JSON with keys: setup, development, \
+Return as JSON with keys: world_seed, setup, development, \
 punchline, estimated_scenes, key_visual_gags, news_explanation, \
 news_explanation_check.
 - `news_explanation_check`: boolean — true if your news_explanation would let \
@@ -372,6 +394,7 @@ Write the full script for this cartoon episode.
 **News explanation**: {news_explanation}
 **Format type**: {format_type}
 **Synopsis**:
+- World seed: {world_seed}
 - Setup: {setup}
 - Development: {development}
 - Punchline: {punchline}
@@ -510,6 +533,13 @@ they were trying not to feel.
 anxiety, beauty AND wrongness, admiration AND dread.
 - **Environment as accomplice**: the setting implies something just happened or is \
 about to. Traces over events, evidence over action.
+- **Atmosphere as comedy**: In the show's Scavengers Reign-inspired world, the \
+air itself has presence — haze, dust motes, heat shimmer, dappled light. Use the \
+`setting` field to establish this atmosphere. The scene_prompt stays focused on \
+objects and composition; the setting carries the sensory world. A server room's \
+cooling fans hum. A courtroom's oak panels absorb sound. A sidewalk radiates \
+afternoon heat. One atmospheric detail in the setting grounds the comedy in a \
+physical world — the joke lands harder because the place feels real.
 - Every scene must contain a **VISUAL RIDDLE** — one detail that contradicts, \
 distorts, or recontextualizes the main subject. Strategies (pick ONE): scale \
 paradox, wrong context, symmetry break, frame-within-frame, material contradiction. \
@@ -524,7 +554,13 @@ Write 1 scene. For each scene provide:
 
 - `scene_number`: integer (1-based)
 - `scene_title`: short descriptive title
-- `setting`: location, time of day, atmosphere
+- `setting`: 2-3 sentences. The PLACE, not the stage. Name the specific location, \
+time of day, and dominant light source. Then add: (1) one ambient sensory detail \
+(a sound, a temperature, a smell rendered as a visible effect — steam, condensation, \
+dust motes), (2) one trace of prior activity (something that was happening here \
+before Billy arrived — a still-warm coffee ring, a chair pushed back, a door left \
+ajar). The setting should feel like a place that exists when the camera isn't \
+looking. Draw from the world_seed in the synopsis.
 - `billy_emotion`: Billy's emotional state in this scene (e.g. "deadpan," \
 "quietly frustrated," "amused despite himself," "genuinely alarmed," \
 "suppressing delight")

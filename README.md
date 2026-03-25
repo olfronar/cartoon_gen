@@ -49,23 +49,24 @@ pre-commit install      # runs ruff + pytest on every commit
 
 ```bash
 # One-time: set up characters and art style (interactive)
-PYTHONPATH=. python -m script_writer.setup
-PYTHONPATH=. python -m script_writer.setup art-materials
+uv run python -m script_writer.setup
+uv run python -m script_writer.setup art-materials
 
 # Daily pipeline (run in order):
-PYTHONPATH=. python -m agent_researcher           # 1. Discover & score trends
-PYTHONPATH=. python -m script_writer              # 2. Write comedy scripts
-PYTHONPATH=. python -m static_shots_maker         # 3. Generate keyframe images
-PYTHONPATH=. python -m video_designer             # 4. Produce final video
-PYTHONPATH=. python -m caption_maker              # 5. Add captions
+uv run python -m agent_researcher           # 1. Discover & score trends
+uv run python -m script_writer              # 2. Write comedy scripts
+uv run python -m static_shots_maker         # 3. Generate keyframe images
+uv run python -m video_designer             # 4. Produce final video
+uv run python -m caption_maker              # 5. Add captions
 
 # Each agent auto-detects the latest output from the previous stage.
 # To target a specific date, pass --date YYYY-MM-DD to any agent.
+# To pick specific news items: --pick 1,3,7 (1-based brief numbers)
 ```
 
 ## Agent Researcher
 
-Scans 7 sources across 3 tiers, deduplicates by URL and fuzzy title similarity, filters against 7-day history of previous briefs, and scores each item via Claude Opus with adaptive thinking.
+Scans 7 sources (50-item cap per source) across 3 tiers, deduplicates by URL and fuzzy title similarity, filters against 7-day history of previous briefs, and scores each item via Claude Opus with adaptive thinking (3 retries with exponential backoff).
 
 | Source | Tier | Auth required |
 |--------|------|---------------|
@@ -79,24 +80,34 @@ Scans 7 sources across 3 tiers, deduplicates by URL and fuzzy title similarity, 
 
 **Output**: `output/briefs/YYYY-MM-DD.md` + `.json` sidecar — top 5 picks + 10 notable items, each with comedy explanation and joke angle. Optional Notion delivery.
 
-**Scheduled mode**: `PYTHONPATH=. python -m agent_researcher --scheduled` runs daily at 07:30.
+**Scheduled mode**: `uv run python -m agent_researcher --scheduled` runs daily at 07:30.
 
 ## Script Writer
 
-Reads the daily brief, generates 3 loglines per item (observational / satirical / metaphorical), selects the best, and expands to full scripts with synopsis and scene-by-scene breakdown — all items processed in parallel.
+Reads the daily brief, generates 3 loglines per item (quiet part / betrayal / image you can't unsee), selects the best, and expands to full scripts with world-building synopsis and scene-by-scene breakdown — all items processed in parallel.
 
 ### First-time setup
 
 ```bash
-PYTHONPATH=. python -m script_writer.setup              # Characters + art style (interactive)
-PYTHONPATH=. python -m script_writer.setup characters    # Characters only
-PYTHONPATH=. python -m script_writer.setup art-style     # Art style only
-PYTHONPATH=. python -m script_writer.setup art-materials # Generate reference images (requires GOOGLE_API_KEY)
+uv run python -m script_writer.setup              # Characters + art style (interactive)
+uv run python -m script_writer.setup characters    # Characters only
+uv run python -m script_writer.setup art-style     # Art style only
+uv run python -m script_writer.setup art-materials # Generate reference images (requires GOOGLE_API_KEY)
 ```
 
 Creates `output/characters/<name>.md`, `output/art_style.md`, and `output/art_materials/canonical_characters.png`.
 
-**Output**: `output/scripts/<YYYY-MM-DD>_<N>.md` + `.json` (N = 1-5). Each script has 1 scene with a cinematographic scene prompt (80-150 words), a visual riddle, dialogue (2-3 lines), and audio direction. Duration fixed at 15 seconds.
+### Item selection
+
+```bash
+uv run python -m script_writer                     # Default: top 5 from brief
+uv run python -m script_writer --pick 1,3,7        # Pick specific items (1-based)
+uv run python -m script_writer --date 2026-03-14   # From specific date
+```
+
+Numbers 1-5 are top picks, 6-15 are also-notable items from the brief.
+
+**Output**: `output/scripts/<YYYY-MM-DD>_<N>.md` + `.json` (N = 1-5). Each script has 1 scene with a cinematographic scene prompt (60-100 words), a visual riddle, dialogue, and audio direction. Duration fixed at 15 seconds.
 
 ## Static Shots Maker
 
@@ -132,16 +143,16 @@ cartoon_maker/
 ├── video_designer/      # Stage 4: video assembly & final output
 ├── caption_maker/       # Stage 5: whisper-based video captions
 ├── shared/              # Data contracts, config, LLM helpers, context loader
-├── tests/               # 217 tests (pytest)
+├── tests/               # 221 tests (pytest)
 └── output/              # All generated artifacts (gitignored)
 ```
 
 ## Testing
 
 ```bash
-.venv/bin/pytest tests/ -v       # Run all 217 tests
-.venv/bin/pytest tests/test_dedup.py  # Single file
-.venv/bin/ruff check .           # Lint
+uv run pytest tests/ -v             # Run all 221 tests
+uv run pytest tests/test_dedup.py   # Single file
+uv run ruff check .                 # Lint
 ```
 
 Pre-commit hooks run ruff (lint + format) and pytest automatically on every commit.
