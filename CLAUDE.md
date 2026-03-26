@@ -110,6 +110,9 @@ uv run python -m script_writer --date 2026-03-14
 # Script Writer — generate scripts for specific news items from brief (1-based numbers)
 uv run python -m script_writer --pick 1,3,7
 
+# Script Writer — use Grok instead of Claude Opus
+uv run python -m script_writer --model grok
+
 # Static Shots Maker — generate shots from latest scripts
 uv run python -m static_shots_maker
 

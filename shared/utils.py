@@ -80,15 +80,15 @@ def detect_image_media_type(data: bytes) -> str:
     raise ValueError(f"Unrecognized image format (first 12 bytes: {data[:12]!r})")
 
 
-def _call_llm(
+def _call_anthropic(
     client,
     prompt: str,
     model: str,
     max_tokens: int,
     *,
     images: list[Path] | None = None,
-):
-    """Call Claude with streaming + adaptive thinking, return raw response.
+) -> str:
+    """Call Claude with streaming + adaptive thinking, return raw text.
 
     When *images* is provided, sends a multimodal message with image blocks
     before the text prompt.  Raises on API failure (caller decides fallback).
@@ -116,15 +116,43 @@ def _call_llm(
         temperature=1,
         messages=[{"role": "user", "content": content}],
     ) as stream:
-        return stream.get_final_message()
+        return extract_text(stream.get_final_message())
+
+
+def _call_xai(client, prompt: str, model: str, max_tokens: int) -> str:
+    """Call xAI Grok with reasoning, return raw text.
+
+    Uses xai_sdk.Client synchronously.  Raises on API failure.
+    """
+    from xai_sdk.chat import user
+
+    chat = client.chat.create(model=model, max_tokens=max_tokens)
+    chat.append(user(prompt))
+    response = chat.sample()
+    return response.content
+
+
+def _call_llm(
+    client,
+    prompt: str,
+    model: str,
+    max_tokens: int,
+    *,
+    images: list[Path] | None = None,
+) -> str:
+    """Dispatch to Anthropic or xAI based on model name. Returns raw text."""
+    if model.startswith("grok"):
+        return _call_xai(client, prompt, model, max_tokens)
+    return _call_anthropic(client, prompt, model, max_tokens, images=images)
 
 
 def call_llm_json(client, prompt: str, model: str, max_tokens: int) -> dict | list:
-    """Call Claude with streaming + adaptive thinking, return parsed JSON.
+    """Call LLM with adaptive thinking, return parsed JSON.
 
+    Dispatches to Anthropic or xAI based on model name.
     Raises on API or parse failure (caller decides fallback policy).
     """
-    text = strip_code_fences(extract_text(_call_llm(client, prompt, model, max_tokens)))
+    text = strip_code_fences(_call_llm(client, prompt, model, max_tokens))
     return json.loads(text)
 
 
@@ -136,9 +164,10 @@ def call_llm_text(
     *,
     images: list[Path] | None = None,
 ) -> str:
-    """Call Claude with streaming + adaptive thinking, return raw text.
+    """Call LLM with adaptive thinking, return raw text.
 
-    When *images* is provided, sends image blocks alongside the prompt.
+    Dispatches to Anthropic or xAI based on model name.
+    When *images* is provided, sends image blocks alongside the prompt (Anthropic only).
     Raises on API failure (caller decides fallback policy).
     """
-    return extract_text(_call_llm(client, prompt, model, max_tokens, images=images))
+    return _call_llm(client, prompt, model, max_tokens, images=images)

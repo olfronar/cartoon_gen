@@ -96,6 +96,11 @@ not subtle. If it's the comedy, it must read at phone size.
 carry the ENTIRE joke with zero dialogue support — extra visual clarity needed.
 - VISUAL HIERARCHY: one element rendered with more detail/weight than its \
 surroundings. This tells the viewer where to look.
+- ATMOSPHERIC GROUND: absorb the dominant light quality and ONE visible \
+atmospheric effect from the **Setting** field (haze, dust motes, heat shimmer, \
+condensation, dappled light). Weave it into the prompt as a texture, not a \
+separate sentence — "cracked asphalt radiating heat shimmer" not "the air is \
+hazy." This is what makes the image feel like a PLACE instead of a stage.
 
 **REQUIRED** (standard quality):
 - Include FULL character visual descriptions from the character profiles above \

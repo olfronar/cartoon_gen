@@ -421,6 +421,11 @@ of paper." "The 'APPROVED' stamp is bigger than the document." The wrongness mus
 be readable from shapes and scale alone at phone size.
 - Describe BILLY'S STATE: his emotion (not always deadpan — see billy_emotion), \
 his posture, where he's looking, what his hands are doing.
+- Describe THE AIR: one atmospheric cue from the world_seed that you can SEE — \
+heat shimmer above asphalt, dust motes in a shaft of light, condensation on a \
+cold surface, haze softening a distant wall. This is not mood — it's a visible \
+physical effect that an image model can render. One phrase, woven into the scene, \
+not a separate sentence.
 - NO ART TECHNIQUE WORDS in scene_prompt. NEVER write "crosshatching," "ink-wash," \
 "line weight," "sketch lines," "hatching," or any rendering terminology. The art \
 style pipeline handles rendering. scene_prompt describes WHAT IS IN THE PHOTOGRAPH, \
@@ -566,7 +571,7 @@ looking. Draw from the world_seed in the synopsis.
 "suppressing delight")
 - `scene_prompt`: 60-100 words. The STARTING STATE — one frozen photograph. \
 Front-load the key visual in the first 20 words. Layer: striking element → \
-subject position → context → wrongness → detail elements → lighting/atmosphere. \
+subject position → context → wrongness → atmosphere → detail elements. \
 If the scene has dialogue, include the FIRST line only as quoted speech with \
 character attribution (e.g. '[Character] says: "[line]"'). NO art technique words.
 - `transformation`: 30-60 words for demonstration format. Empty string ("") for \

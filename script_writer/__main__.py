@@ -47,14 +47,28 @@ def main() -> None:
             "Example: --pick 1,3,7. Default: auto top-5."
         ),
     )
+    parser.add_argument(
+        "--model",
+        type=str,
+        choices=["opus", "grok"],
+        default="opus",
+        help="LLM: opus (claude-opus-4-6) or grok (grok-4.20-beta-latest-reasoning).",
+    )
     args = parser.parse_args()
 
     target_date = date.fromisoformat(args.date) if args.date else None
     pick_indices = _parse_pick(args.pick) if args.pick else None
+    model_override = "grok-4.20-beta-latest-reasoning" if args.model == "grok" else None
 
     from script_writer.pipeline.runner import run
 
-    asyncio.run(run(target_date=target_date, pick_indices=pick_indices))
+    asyncio.run(
+        run(
+            target_date=target_date,
+            pick_indices=pick_indices,
+            model_override=model_override,
+        )
+    )
 
 
 if __name__ == "__main__":

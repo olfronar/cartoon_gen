@@ -23,20 +23,32 @@ async def run(
     settings: Settings | None = None,
     target_date: date | None = None,
     pick_indices: list[int] | None = None,
+    model_override: str | None = None,
 ) -> list[CartoonScript]:
     """Run the full script writer pipeline.
 
     Args:
         pick_indices: 0-based indices into the combined brief (top_picks + also_notable).
             If provided, only these items are processed instead of the default top-5.
+        model_override: Override the configured model (e.g. "grok-4.20-reasoning-latest").
     """
     settings = settings or load_settings()
 
-    if not settings.anthropic_api_key:
-        raise RuntimeError("ANTHROPIC_API_KEY required for script generation")
+    model = model_override or settings.script_writer_model
 
-    # Single client for all LLM calls
-    client = anthropic.Anthropic(api_key=settings.anthropic_api_key)
+    # Create the right client based on model
+    if model.startswith("grok"):
+        if not settings.xai_api_key:
+            raise RuntimeError("XAI_API_KEY required for Grok model")
+        from xai_sdk import Client as XAIClient
+
+        client = XAIClient(api_key=settings.xai_api_key)
+        print(f"Using model: {model} (xAI)")
+    else:
+        if not settings.anthropic_api_key:
+            raise RuntimeError("ANTHROPIC_API_KEY required for script generation")
+        client = anthropic.Anthropic(api_key=settings.anthropic_api_key)
+        print(f"Using model: {model} (Anthropic)")
 
     # Load brief
     brief = read_brief(brief_date=target_date, briefs_dir=settings.output_dir)
@@ -60,7 +72,6 @@ async def run(
     if not art_style:
         logger.warning("No art style found — run 'python -m script_writer.setup art-style' first")
 
-    model = settings.script_writer_model
     max_tokens = settings.script_writer_max_tokens
 
     # Stages 1+2: Generate loglines and select best, per item in parallel
