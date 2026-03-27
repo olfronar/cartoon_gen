@@ -156,6 +156,7 @@ Required for static shots: `GOOGLE_API_KEY` (Gemini image generation). Required 
 - LLM calls: use `call_llm_json(client, prompt, model, max_tokens)` from `shared/utils.py` — handles streaming, text extraction, code fence stripping, and JSON parsing. Use `call_llm_text()` for raw text responses. Both support optional `images` kwarg (`list[Path]`) for multimodal inputs. Create a single `anthropic.Anthropic` client per pipeline run and pass it through.
 - LLM response text extraction: use `extract_text(response)` from `shared/utils.py` for non-JSON responses
 - Context loading: use `shared/context_loader.py` for loading characters + art style (shared by script_writer and static_shots_maker)
+- Generation API style enforcement: use `apply_style_enforcement(prompt, art_style)` from `shared/context_loader.py` — prepends art style to prompts sent to image/video generation APIs (Gemini, xAI). For APIs with prompt length limits, use `build_style_directive(art_style)` to condense the art style first
 - Dataclass serialization: use `asdict()` with post-processing for non-serializable fields (dates, Paths). Never hand-build the dict — fields added later would be silently dropped. Add a `from_dict()` classmethod for any dataclass that is serialized to JSON — consumers should not hand-parse
 
 ## Agent Researcher Internals

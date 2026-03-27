@@ -6,6 +6,7 @@ import logging
 import urllib.request
 from pathlib import Path
 
+from shared.context_loader import apply_style_enforcement
 from shared.utils import detect_image_media_type
 
 logger = logging.getLogger(__name__)
@@ -17,9 +18,6 @@ def _download(url: str) -> bytes:
     """Download a URL with a timeout. Runs in a thread pool."""
     with urllib.request.urlopen(url, timeout=_DOWNLOAD_TIMEOUT) as resp:  # noqa: S310
         return resp.read()
-
-
-STYLE_CONSTRAINT = "\n\nMatch the art style above exactly.\n\n"
 
 
 async def generate_video(
@@ -59,10 +57,8 @@ async def generate_video(
     b64 = base64.b64encode(image_bytes).decode("ascii")
     data_uri = f"data:{media_type};base64,{b64}"
 
-    full_prompt = art_style + STYLE_CONSTRAINT + prompt if art_style else prompt
-
     response = await client.video.generate(
-        prompt=full_prompt,
+        prompt=apply_style_enforcement(prompt, art_style),
         model=model,
         image_url=data_uri,
         duration=duration,

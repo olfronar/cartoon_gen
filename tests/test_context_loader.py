@@ -1,8 +1,10 @@
 from __future__ import annotations
 
 from shared.context_loader import (
+    apply_style_enforcement,
     build_context_block,
     build_reference_image_list,
+    build_style_directive,
     load_art_materials,
     load_art_style,
     load_characters,
@@ -82,3 +84,42 @@ class TestBuildReferenceImageList:
     def test_empty_materials(self):
         result = build_reference_image_list({})
         assert result == []
+
+
+class TestBuildStyleDirective:
+    def test_empty_input(self):
+        assert build_style_directive("") == ""
+
+    def test_short_input_returns_all(self):
+        style = "# Title\n\n## Section A\nContent A\n\n## Section B\nContent B"
+        result = build_style_directive(style, max_chars=5000)
+        assert "Section A" in result
+        assert "Section B" in result
+
+    def test_truncates_at_section_boundary(self):
+        style = "# Title\n\n## A\n" + "x" * 100 + "\n\n## B\n" + "y" * 100
+        result = build_style_directive(style, max_chars=130)
+        assert "## A" in result
+        assert "## B" not in result
+
+    def test_first_section_exceeds_budget(self):
+        style = "x" * 5000
+        result = build_style_directive(style, max_chars=100)
+        assert result == "x" * 5000
+
+    def test_no_headers(self):
+        style = "Just plain text without headers"
+        result = build_style_directive(style, max_chars=5000)
+        assert result == style
+
+
+class TestApplyStyleEnforcement:
+    def test_with_art_style(self):
+        result = apply_style_enforcement("scene prompt", "2D cartoon")
+        assert result.startswith("2D cartoon")
+        assert result.endswith("scene prompt")
+        assert "Match the art style" in result
+
+    def test_empty_art_style(self):
+        result = apply_style_enforcement("scene prompt", "")
+        assert result == "scene prompt"

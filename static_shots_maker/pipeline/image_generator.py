@@ -5,11 +5,10 @@ from pathlib import Path
 
 from google.genai import types
 
+from shared.context_loader import apply_style_enforcement
 from shared.utils import detect_image_media_type
 
 logger = logging.getLogger(__name__)
-
-STYLE_CONSTRAINT = "\n\nMatch the art style above exactly.\n\n"
 
 
 def generate_image(
@@ -46,8 +45,7 @@ def generate_image(
             mime = detect_image_media_type(img_bytes)
             parts.append(types.Part.from_bytes(data=img_bytes, mime_type=mime))
 
-    full_prompt = art_style + STYLE_CONSTRAINT + prompt if art_style else prompt
-    parts.append(types.Part.from_text(text=full_prompt))
+    parts.append(types.Part.from_text(text=apply_style_enforcement(prompt, art_style)))
 
     contents = [
         types.Content(

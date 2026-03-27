@@ -60,6 +60,9 @@ def build_reference_image_list(art_materials: dict[str, Path]) -> list[Path]:
     return paths
 
 
+STYLE_CONSTRAINT = "\n\nMatch the art style above exactly.\n\n"
+
+
 def build_style_directive(art_style: str, max_chars: int = 3000) -> str:
     """Extract a condensed style directive from the full art style document.
 
@@ -81,12 +84,19 @@ def build_style_directive(art_style: str, max_chars: int = 3000) -> str:
     kept: list[str] = []
     total = 0
     for section in sections:
-        if total + len(section) + 1 > max_chars and kept:
+        if total + len(section) + 2 > max_chars and kept:
             break
         kept.append(section)
-        total += len(section) + 1  # +1 for joining newline
+        total += len(section) + 2  # +2 for "\n\n" join separator
 
     return "\n\n".join(kept)
+
+
+def apply_style_enforcement(prompt: str, art_style: str) -> str:
+    """Prepend art style text + constraint to a generation prompt."""
+    if not art_style:
+        return prompt
+    return art_style + STYLE_CONSTRAINT + prompt
 
 
 def build_context_block(characters: dict[str, str], art_style: str) -> str:
