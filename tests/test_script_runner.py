@@ -21,7 +21,7 @@ def settings(tmp_path):
     art_path.write_text("# Style\nCartoon", encoding="utf-8")
 
     # Write a brief
-    brief = make_brief(top_picks=[make_scored_item(), make_scored_item()])
+    brief = make_brief(items=[make_scored_item(), make_scored_item()])
     (briefs_dir / "2026-03-14.json").write_text(json.dumps(brief.to_dict()), encoding="utf-8")
 
     # Write a character

@@ -33,13 +33,21 @@ def main() -> None:
         default=None,
         help="Script date to process (YYYY-MM-DD). Default: latest available.",
     )
+    parser.add_argument(
+        "--model",
+        type=str,
+        choices=["opus", "grok"],
+        default="opus",
+        help="LLM for prompt rewriting: opus (claude-opus-4-6) or grok.",
+    )
     args = parser.parse_args()
 
     target_date = date.fromisoformat(args.date) if args.date else None
+    model_override = "grok-4.20-beta-latest-reasoning" if args.model == "grok" else None
 
     from static_shots_maker.pipeline.runner import run
 
-    asyncio.run(run(target_date=target_date))
+    asyncio.run(run(target_date=target_date, model_override=model_override))
 
 
 if __name__ == "__main__":

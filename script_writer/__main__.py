@@ -43,7 +43,7 @@ def main() -> None:
         default=None,
         help=(
             "Comma-separated item numbers from the brief to use (1-based). "
-            "Numbers 1-5 are top picks, 6-15 are also-notable. "
+            "Numbers 1-20 from the prioritized list. "
             "Example: --pick 1,3,7. Default: auto top-5."
         ),
     )

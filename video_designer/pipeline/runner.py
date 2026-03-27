@@ -13,6 +13,7 @@ import xai_sdk
 from shared.config import Settings, load_settings
 from shared.context_loader import (
     build_context_block,
+    build_style_directive,
     load_art_style,
     load_characters,
 )
@@ -51,6 +52,7 @@ async def run(
         characters = load_characters(settings.characters_dir)
         art_style = load_art_style(settings.art_style_path)
         context_block = build_context_block(characters, art_style)
+        style_directive = build_style_directive(art_style)
 
         # Read manifests + scripts
         data = read_manifests(
@@ -72,6 +74,7 @@ async def run(
                     xai_client=xai_client,
                     semaphore=semaphore,
                     settings=settings,
+                    art_style=style_directive,
                 )
                 for entry in data
             ]
@@ -108,6 +111,7 @@ async def _process_script(
     xai_client,
     semaphore: asyncio.Semaphore,
     settings: Settings,
+    art_style: str = "",
 ) -> tuple[VideoManifest, Path | None]:
     """Process a single script: generate clips + assemble script video."""
     output_dir = settings.video_output_dir / (f"{entry.script.date.isoformat()}_{entry.index}")
@@ -147,6 +151,7 @@ async def _process_script(
                 xai_client=xai_client,
                 semaphore=semaphore,
                 settings=settings,
+                art_style=art_style,
             )
         )
 
@@ -194,6 +199,7 @@ async def _process_clip(
     xai_client,
     semaphore: asyncio.Semaphore,
     settings: Settings,
+    art_style: str = "",
 ) -> ClipResult:
     """Generate a single video clip (scene or end card)."""
     try:
@@ -208,6 +214,7 @@ async def _process_clip(
                 settings.video_model,
                 settings.video_duration,
                 settings.video_resolution,
+                art_style=art_style,
             )
 
         print(f"    {label}: OK")

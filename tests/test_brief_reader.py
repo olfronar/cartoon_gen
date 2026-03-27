@@ -12,13 +12,13 @@ from tests.conftest import make_brief, make_scored_item
 class TestBriefReader:
     def test_read_brief_by_date(self, tmp_path):
         """Read a brief JSON sidecar by explicit date."""
-        brief = make_brief(top_picks=[make_scored_item()])
+        brief = make_brief(items=[make_scored_item()])
         json_path = tmp_path / "2026-03-14.json"
         json_path.write_text(json.dumps(brief.to_dict()), encoding="utf-8")
 
         result = read_brief(brief_date=date(2026, 3, 14), briefs_dir=tmp_path)
         assert result.date == date(2026, 3, 14)
-        assert len(result.top_picks) == 1
+        assert len(result.items) == 1
 
     def test_read_brief_latest(self, tmp_path):
         """Auto-detect latest brief when no date given."""

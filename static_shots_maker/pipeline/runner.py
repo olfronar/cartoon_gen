@@ -30,6 +30,7 @@ logger = logging.getLogger(__name__)
 async def run(
     settings: Settings | None = None,
     target_date: date | None = None,
+    model_override: str | None = None,
 ) -> list[ShotsManifest]:
     """Run the full static shots pipeline."""
     settings = settings or load_settings()
@@ -37,14 +38,23 @@ async def run(
     if not settings.google_api_key:
         raise RuntimeError("GOOGLE_API_KEY required for image generation")
 
-    has_anthropic = bool(settings.anthropic_api_key)
-    if not has_anthropic:
-        logger.warning("ANTHROPIC_API_KEY not set — will use original prompts with regex fallback")
+    prompt_model = model_override or settings.shots_prompt_model
 
-    # Clients
-    anthropic_client = (
-        anthropic.Anthropic(api_key=settings.anthropic_api_key) if has_anthropic else None
-    )
+    # Create prompt-rewriting client based on model
+    if prompt_model.startswith("grok"):
+        if not settings.xai_api_key:
+            raise RuntimeError("XAI_API_KEY required for Grok model")
+        from xai_sdk import Client as XAIClient
+
+        prompt_client = XAIClient(api_key=settings.xai_api_key)
+        print(f"Prompt rewriting: {prompt_model} (xAI)")
+    elif settings.anthropic_api_key:
+        prompt_client = anthropic.Anthropic(api_key=settings.anthropic_api_key)
+        print(f"Prompt rewriting: {prompt_model} (Anthropic)")
+    else:
+        prompt_client = None
+        logger.warning("No LLM API key — will use original prompts with regex fallback")
+
     gemini_client = genai.Client(api_key=settings.google_api_key)
 
     # Load context
@@ -70,11 +80,13 @@ async def run(
                 index=index,
                 script=script,
                 context_block=context_block,
-                anthropic_client=anthropic_client,
+                prompt_client=prompt_client,
+                prompt_model=prompt_model,
                 gemini_client=gemini_client,
                 semaphore=semaphore,
                 settings=settings,
                 reference_images=reference_images,
+                art_style=art_style,
             )
             for index, script in scripts
         ]
@@ -88,11 +100,13 @@ async def _process_script(
     index: int,
     script: CartoonScript,
     context_block: str,
-    anthropic_client,
+    prompt_client,
+    prompt_model: str,
     gemini_client,
     semaphore: asyncio.Semaphore,
     settings: Settings,
     reference_images: list[Path] | None = None,
+    art_style: str = "",
 ) -> ShotsManifest:
     """Process a single script: generate shots for all scenes + end card.
 
@@ -123,14 +137,15 @@ async def _process_script(
                 s,
                 script,
                 context_block,
-                anthropic_client,
-                settings.shots_prompt_model,
+                prompt_client,
+                prompt_model,
                 settings.shots_prompt_max_tokens,
             ),
             gemini_client=gemini_client,
             semaphore=semaphore,
             model=settings.shots_model,
             reference_images=scene_refs if scene_refs else None,
+            art_style=art_style,
         )
         shots.append(shot)
         if shot.success and shot.output_path:
@@ -164,6 +179,7 @@ async def _process_shot(
     semaphore: asyncio.Semaphore,
     model: str,
     reference_images: list[Path] | None = None,
+    art_style: str = "",
 ) -> ShotResult:
     """Generate a single shot (scene or end card). Retries image generation up to 5 times."""
     max_retries = 5
@@ -183,6 +199,7 @@ async def _process_shot(
                         gemini_client,
                         model,
                         reference_images,
+                        art_style,
                     )
                 break  # success
             except Exception as e:

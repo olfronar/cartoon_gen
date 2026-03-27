@@ -60,6 +60,35 @@ def build_reference_image_list(art_materials: dict[str, Path]) -> list[Path]:
     return paths
 
 
+def build_style_directive(art_style: str, max_chars: int = 3000) -> str:
+    """Extract a condensed style directive from the full art style document.
+
+    Keeps complete sections (split on '## ' headers) until the budget is
+    reached, prioritising sections in document order (Animation Style, Color
+    Palette, Mood & Tone, etc.).  Returns empty string if art_style is empty.
+    """
+    if not art_style:
+        return ""
+
+    # Split into sections on '## ' markdown headers
+    parts = art_style.split("\n## ")
+    sections: list[str] = []
+    for i, part in enumerate(parts):
+        section = ("## " + part) if i > 0 else part
+        sections.append(section.strip())
+
+    # Accumulate sections up to budget
+    kept: list[str] = []
+    total = 0
+    for section in sections:
+        if total + len(section) + 1 > max_chars and kept:
+            break
+        kept.append(section)
+        total += len(section) + 1  # +1 for joining newline
+
+    return "\n\n".join(kept)
+
+
 def build_context_block(characters: dict[str, str], art_style: str) -> str:
     """Build the shared context block injected into all LLM prompts."""
     parts: list[str] = []

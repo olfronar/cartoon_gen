@@ -20,7 +20,7 @@ class TestCreateArtMaterials:
         art_materials_dir = tmp_path / "art_materials"
         mock_genai.Client.return_value = MagicMock()
 
-        def fake_generate_image(prompt, output_path, client, model):
+        def fake_generate_image(prompt, output_path, client, model, **kwargs):
             output_path.parent.mkdir(parents=True, exist_ok=True)
             output_path.write_bytes(b"fake png")
             return output_path

@@ -31,25 +31,29 @@ class ScoredItem:
 @dataclass(slots=True)
 class ComedyBrief:
     date: date
-    top_picks: list[ScoredItem] = field(default_factory=list)
-    also_notable: list[ScoredItem] = field(default_factory=list)
+    items: list[ScoredItem] = field(default_factory=list)
 
     def to_dict(self) -> dict:
         """Serialize to a JSON-compatible dict."""
         data = asdict(self)
         data["date"] = self.date.isoformat()
-        for section in ("top_picks", "also_notable"):
-            for entry in data[section]:
-                entry["item"]["timestamp"] = entry["item"]["timestamp"].isoformat()
+        for entry in data["items"]:
+            entry["item"]["timestamp"] = entry["item"]["timestamp"].isoformat()
         return data
 
     @classmethod
     def from_dict(cls, data: dict) -> ComedyBrief:
         """Deserialize from a JSON-compatible dict."""
+        # Backward compat: old briefs have top_picks + also_notable instead of items
+        if "items" in data:
+            items = _deserialize_scored_items(data["items"])
+        else:
+            items = _deserialize_scored_items(
+                data.get("top_picks", []) + data.get("also_notable", [])
+            )
         return cls(
             date=date.fromisoformat(data["date"]),
-            top_picks=_deserialize_scored_items(data.get("top_picks", [])),
-            also_notable=_deserialize_scored_items(data.get("also_notable", [])),
+            items=items,
         )
 
 

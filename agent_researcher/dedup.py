@@ -137,16 +137,19 @@ def filter_already_covered(
             logger.warning("Failed to read brief: %s", json_path)
             continue
 
-        for section in ("top_picks", "also_notable"):
-            for entry in data.get(section, []):
-                raw = entry.get("item", {})
-                url = raw.get("url", "")
-                normalized = _normalize_url(url)
-                if normalized:
-                    prev_urls.add(normalized)
-                title = raw.get("title", "")
-                if title:
-                    prev_titles.append(title)
+        # Support both new ("items") and old ("top_picks"/"also_notable") formats
+        entries = data.get("items", [])
+        if not entries:
+            entries = data.get("top_picks", []) + data.get("also_notable", [])
+        for entry in entries:
+            raw = entry.get("item", {})
+            url = raw.get("url", "")
+            normalized = _normalize_url(url)
+            if normalized:
+                prev_urls.add(normalized)
+            title = raw.get("title", "")
+            if title:
+                prev_titles.append(title)
 
     if not prev_urls and not prev_titles:
         return items

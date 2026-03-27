@@ -19,6 +19,9 @@ def _download(url: str) -> bytes:
         return resp.read()
 
 
+STYLE_CONSTRAINT = "\n\nMatch the art style above exactly.\n\n"
+
+
 async def generate_video(
     prompt: str,
     image_path: Path,
@@ -27,6 +30,7 @@ async def generate_video(
     model: str,
     duration: int,
     resolution: str = "720p",
+    art_style: str = "",
 ) -> Path:
     """Generate a video from a static shot via xAI grok-imagine-video.
 
@@ -41,6 +45,7 @@ async def generate_video(
         model: xAI model name (e.g. "grok-imagine-video").
         duration: Video duration in seconds.
         resolution: Video resolution (e.g. "720p").
+        art_style: Art style guide text to prepend for style enforcement.
 
     Returns:
         The output_path on success.
@@ -54,8 +59,10 @@ async def generate_video(
     b64 = base64.b64encode(image_bytes).decode("ascii")
     data_uri = f"data:{media_type};base64,{b64}"
 
+    full_prompt = art_style + STYLE_CONSTRAINT + prompt if art_style else prompt
+
     response = await client.video.generate(
-        prompt=prompt,
+        prompt=full_prompt,
         model=model,
         image_url=data_uri,
         duration=duration,

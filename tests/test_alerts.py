@@ -8,13 +8,13 @@ from tests.conftest import make_brief, make_scored_item
 class TestAlertSuccess:
     def test_skips_when_no_webhook(self):
         settings = Settings()
-        brief = make_brief(top_picks=[make_scored_item()])
+        brief = make_brief(items=[make_scored_item()])
         # Should not raise
         alert_success(brief, ["Local: output/briefs/test.md"], settings)
 
     def test_sends_when_webhook_set(self):
         settings = Settings(slack_webhook_url="https://hooks.slack.com/test")
-        brief = make_brief(top_picks=[make_scored_item()])
+        brief = make_brief(items=[make_scored_item()])
 
         mock_resp = MagicMock()
         mock_resp.status = 200

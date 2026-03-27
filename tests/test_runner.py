@@ -24,9 +24,8 @@ async def test_run_with_no_keys(tmp_path):
     with patch("agent_researcher.runner.get_active_sources", return_value=[mock_source]):
         brief = await run(settings=settings)
 
-    assert len(brief.top_picks) == 5
-    assert len(brief.also_notable) == 5
-    assert brief.top_picks[0].item.score >= brief.top_picks[1].item.score
+    assert len(brief.items) == 10
+    assert brief.items[0].item.score >= brief.items[1].item.score
     # Verify file was written to tmp_path
     assert list(tmp_path.glob("*.md"))
 
@@ -52,7 +51,7 @@ async def test_run_handles_source_failure(tmp_path):
     ):
         brief = await run(settings=settings)
 
-    assert len(brief.top_picks) == 3
+    assert len(brief.items) == 3
 
 
 @pytest.mark.asyncio

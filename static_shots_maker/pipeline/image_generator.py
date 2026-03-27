@@ -9,6 +9,8 @@ from shared.utils import detect_image_media_type
 
 logger = logging.getLogger(__name__)
 
+STYLE_CONSTRAINT = "\n\nMatch the art style above exactly.\n\n"
+
 
 def generate_image(
     prompt: str,
@@ -16,6 +18,7 @@ def generate_image(
     client,
     model: str,
     reference_images: list[Path] | None = None,
+    art_style: str = "",
 ) -> Path:
     """Generate a 9:16 PNG image via Gemini and save to output_path.
 
@@ -28,6 +31,7 @@ def generate_image(
         client: google.genai.Client instance.
         model: Gemini model name (e.g. "gemini-3.1-flash-image-preview").
         reference_images: Optional list of image Paths to prepend as visual context.
+        art_style: Art style guide text to prepend for style enforcement.
 
     Returns:
         The output_path on success.
@@ -41,7 +45,9 @@ def generate_image(
             img_bytes = img_path.read_bytes()
             mime = detect_image_media_type(img_bytes)
             parts.append(types.Part.from_bytes(data=img_bytes, mime_type=mime))
-    parts.append(types.Part.from_text(text=prompt))
+
+    full_prompt = art_style + STYLE_CONSTRAINT + prompt if art_style else prompt
+    parts.append(types.Part.from_text(text=full_prompt))
 
     contents = [
         types.Content(

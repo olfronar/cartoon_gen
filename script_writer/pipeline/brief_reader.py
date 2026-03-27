@@ -28,7 +28,7 @@ def read_brief(brief_date: date | None = None, briefs_dir: Path | None = None) -
         raise FileNotFoundError(f"No brief found at {json_path}") from None
     brief = ComedyBrief.from_dict(data)
 
-    logger.info("Loaded brief for %s: %d top picks", brief.date, len(brief.top_picks))
+    logger.info("Loaded brief for %s: %d items", brief.date, len(brief.items))
     return brief
 
 

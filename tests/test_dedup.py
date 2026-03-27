@@ -204,8 +204,7 @@ def _write_brief_json(
     """Helper to write a minimal brief JSON for testing."""
     data = {
         "date": brief_date.isoformat(),
-        "top_picks": items,
-        "also_notable": [],
+        "items": items,
     }
     path = briefs_dir / f"{brief_date.isoformat()}.json"
     path.write_text(json.dumps(data), encoding="utf-8")
@@ -324,7 +323,8 @@ class TestFilterAlreadyCovered:
         result = filter_already_covered(items, briefs_dir, today=date(2026, 3, 17))
         assert len(result) == 1
 
-    def test_also_notable_items_checked(self, tmp_path):
+    def test_old_format_backward_compat(self, tmp_path):
+        """Old briefs with top_picks/also_notable are still read for cross-day dedup."""
         briefs_dir = tmp_path / "briefs"
         briefs_dir.mkdir()
         entry = _brief_entry(

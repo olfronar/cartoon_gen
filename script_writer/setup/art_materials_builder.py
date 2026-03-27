@@ -11,21 +11,16 @@ from static_shots_maker.pipeline.image_generator import generate_image
 logger = logging.getLogger(__name__)
 
 CHARACTER_SHEET_PROMPT = """\
-2D hand-drawn illustration. 9:16 vertical portrait format. \
-NOT photorealistic, NOT 3D, NOT CGI — this must look like a frame from a \
-2D animated show.
-
-**Art style** (follow exactly):
-{art_style_block}
+9:16 vertical portrait format.
 
 **Characters**:
 {characters_block}
 
 Draw each character full-body, facing the viewer, in a neutral standing pose. \
-Simple muted background wash, no text or labels. Consistent 2D hand-drawn \
-proportions across all characters. Characters should have clean silhouettes \
+Simple muted background wash, no text or labels. Consistent proportions \
+across all characters. Characters should have clean silhouettes \
 with understated expressions — minimal facial detail, the comedy lives in \
-posture. Match the art style above exactly.
+posture.
 """
 
 
@@ -63,11 +58,10 @@ def create_art_materials(
     )
     char_prompt = CHARACTER_SHEET_PROMPT.format(
         characters_block=characters_block,
-        art_style_block=art_style,
     )
     char_path = art_materials_dir / f"{ART_MATERIAL_NAMES[0]}.png"
     print("Generating canonical character sheet...")
-    generate_image(char_prompt, char_path, client, model)
+    generate_image(char_prompt, char_path, client, model, art_style=art_style)
     generated.append(char_path)
     print(f"  Saved: {char_path}")
 

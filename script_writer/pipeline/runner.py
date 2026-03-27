@@ -28,7 +28,7 @@ async def run(
     """Run the full script writer pipeline.
 
     Args:
-        pick_indices: 0-based indices into the combined brief (top_picks + also_notable).
+        pick_indices: 0-based indices into the brief items list.
             If provided, only these items are processed instead of the default top-5.
         model_override: Override the configured model (e.g. "grok-4.20-reasoning-latest").
     """
@@ -52,11 +52,13 @@ async def run(
 
     # Load brief
     brief = read_brief(brief_date=target_date, briefs_dir=settings.output_dir)
-    logger.info("Processing brief for %s with %d top picks", brief.date, len(brief.top_picks))
+    logger.info("Processing brief for %s with %d items", brief.date, len(brief.items))
 
     # Select items: --pick overrides default top-5
-    all_items = brief.top_picks + brief.also_notable
-    items = _resolve_picks(all_items, pick_indices) if pick_indices is not None else brief.top_picks
+    if pick_indices is not None:
+        items = _resolve_picks(brief.items, pick_indices)
+    else:
+        items = brief.items[:5]
 
     if not items:
         logger.warning("No items to process — nothing to write")

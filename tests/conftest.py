@@ -50,13 +50,11 @@ def make_scored_item(
 
 
 def make_brief(
-    top_picks: list[ScoredItem] | None = None,
-    also_notable: list[ScoredItem] | None = None,
+    items: list[ScoredItem] | None = None,
 ) -> ComedyBrief:
     return ComedyBrief(
         date=date(2026, 3, 14),
-        top_picks=top_picks or [],
-        also_notable=also_notable or [],
+        items=items or [],
     )
 
 

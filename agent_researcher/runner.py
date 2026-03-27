@@ -34,7 +34,7 @@ async def run(settings: Settings | None = None) -> ComedyBrief:
         print(f"  Delivered: {d}")
 
     alert_success(brief, deliveries, settings)
-    print(f"Top picks: {len(brief.top_picks)}, Also notable: {len(brief.also_notable)}")
+    print(f"Brief: {len(brief.items)} items")
 
     return brief
 

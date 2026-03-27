@@ -16,27 +16,38 @@ class TestComedyBriefSerialization:
     def test_roundtrip(self):
         """ComedyBrief serializes to dict and back."""
         brief = make_brief(
-            top_picks=[make_scored_item(), make_scored_item()],
-            also_notable=[make_scored_item()],
+            items=[make_scored_item(), make_scored_item(), make_scored_item()],
         )
         data = brief.to_dict()
         restored = type(brief).from_dict(data)
 
         assert restored.date == brief.date
-        assert len(restored.top_picks) == 2
-        assert len(restored.also_notable) == 1
-        assert restored.top_picks[0].comedy_angle == brief.top_picks[0].comedy_angle
-        assert restored.top_picks[0].item.title == brief.top_picks[0].item.title
+        assert len(restored.items) == 3
+        assert restored.items[0].comedy_angle == brief.items[0].comedy_angle
+        assert restored.items[0].item.title == brief.items[0].item.title
 
     def test_json_roundtrip(self):
         """ComedyBrief survives JSON serialization."""
-        brief = make_brief(top_picks=[make_scored_item()])
+        brief = make_brief(items=[make_scored_item()])
         json_str = json.dumps(brief.to_dict())
         data = json.loads(json_str)
         restored = type(brief).from_dict(data)
 
         assert restored.date == brief.date
-        assert restored.top_picks[0].total_score == brief.top_picks[0].total_score
+        assert restored.items[0].total_score == brief.items[0].total_score
+
+    def test_backward_compat_from_dict(self):
+        """ComedyBrief.from_dict handles old top_picks + also_notable format."""
+        brief = make_brief(items=[make_scored_item(), make_scored_item()])
+        data = brief.to_dict()
+        # Simulate old format
+        old_data = {
+            "date": data["date"],
+            "top_picks": data["items"][:1],
+            "also_notable": data["items"][1:],
+        }
+        restored = type(brief).from_dict(old_data)
+        assert len(restored.items) == 2
 
 
 class TestLogline:

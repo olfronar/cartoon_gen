@@ -33,7 +33,7 @@ def alert_success(brief: ComedyBrief, deliveries: list[str], settings: Settings)
     if not settings.slack_webhook_url:
         return
 
-    top_titles = [s.item.title for s in brief.top_picks[:3]]
+    top_titles = [s.item.title for s in brief.items[:3]]
     top_list = "\n".join(f"  • {t}" for t in top_titles)
 
     message = (

@@ -22,7 +22,7 @@ cartoon_maker/
 
 ### Agent Pipeline (sequential flow)
 
-1. **agent_researcher** — Scans 7 sources across 3 tiers, deduplicates, scores via Claude Opus for comedy potential, and outputs a ranked daily brief.
+1. **agent_researcher** — Scans 7 sources across 3 tiers, deduplicates, scores via Claude Opus for comedy potential, and outputs a unified numbered prioritized list of 20 news items.
 
 2. **script_writer** — Reads the daily brief JSON sidecar, generates 3 loglines per item (absurdist/satirical/surreal), selects the best, expands to synopsis + full script with scene-by-scene breakdown. Requires character profiles and art style (created via interactive setup tool).
 
@@ -66,7 +66,7 @@ Dependencies are managed in `pyproject.toml` (not requirements.txt).
 Always use `.venv/bin/` prefixed commands (not `source .venv/bin/activate && ...`) — the direct binary paths are pre-approved in permission settings and won't prompt for approval.
 
 ```bash
-# Run all tests (221 tests)
+# Run all tests (219 tests)
 .venv/bin/pytest tests/ -v
 
 # Run a single test file
@@ -107,7 +107,7 @@ uv run python -m script_writer
 # Script Writer — generate scripts from specific date
 uv run python -m script_writer --date 2026-03-14
 
-# Script Writer — generate scripts for specific news items from brief (1-based numbers)
+# Script Writer — generate scripts for specific news items from brief (1-based, 1-20)
 uv run python -m script_writer --pick 1,3,7
 
 # Script Writer — use Grok instead of Claude Opus
@@ -118,6 +118,9 @@ uv run python -m static_shots_maker
 
 # Static Shots Maker — generate shots from specific date
 uv run python -m static_shots_maker --date 2026-03-15
+
+# Static Shots Maker — use Grok for prompt rewriting
+uv run python -m static_shots_maker --model grok
 
 # Video Designer — generate videos from latest static shots
 uv run python -m video_designer
@@ -181,7 +184,7 @@ All sources must return items with valid URLs. Items with empty URLs are filtere
 - **Dedup** (`dedup.py`): URL normalization + `rapidfuzz` title similarity (threshold 85). Merges multi-source items rather than discarding. Empty URLs are excluded from URL dedup to prevent false collisions. `filter_already_covered()` provides cross-day dedup by scanning previous brief JSON sidecars (7-day lookback) and dropping items that match by normalized URL or fuzzy title.
 - **Scorer** (`scorer.py`): streams to `claude-opus-4-6` with adaptive thinking, 32k max tokens. Retries up to 3 times with exponential backoff (5s, 10s, 20s) on API or JSON parse failures. Rewrites titles for clarity, generates comedy explanations for every item. Falls back to raw score sorting (with visible warning) if all retries exhausted or API key missing. `comedy_angle` uses enriched three-part format: structural contradiction (what's said vs what's happening), double emotional hit (two contradictory emotions), and one-liner joke seed. This propagates to all downstream script prompts. Scoring uses `broad resonance` (replaces `cultural_resonance`) to favor stories accessible to non-technical audiences. Semantic dedup via `duplicate_of` field: Claude flags items covering the same event, Python code merges sources into the canonical item and drops duplicates before ranking.
 - **xAI source** (`sources/xai.py`): uses `grok-4.20-beta-latest-non-reasoning` with `web_search(allowed_domains=["x.com"])` tool for live X data.
-- **Data contracts** (`shared/models.py`): `RawItem` → `ScoredItem` → `ComedyBrief` → `Logline` (includes `format_type`) → `Synopsis` (includes `world_seed: str = ""` for place history/sensory detail) → `SceneScript` (11 fields, includes `transformation: str = ""`, `billy_emotion: str = ""`) → `CartoonScript` (includes `format_type`) → `ShotResult` → `ShotsManifest` → `ClipResult` → `VideoManifest`. All agents share these. `Synopsis.from_dict()` accepts both `development` and legacy `escalation` keys for backward compatibility. `SceneScript.from_dict()` handles missing optional fields with backward compat defaults. `Logline.format_type` and `CartoonScript.format_type` default to `""` for backward compatibility.
+- **Data contracts** (`shared/models.py`): `RawItem` → `ScoredItem` → `ComedyBrief` (single `items` list) → `Logline` (includes `format_type`) → `Synopsis` (includes `world_seed: str = ""` for place history/sensory detail) → `SceneScript` (11 fields, includes `transformation: str = ""`, `billy_emotion: str = ""`) → `CartoonScript` (includes `format_type`) → `ShotResult` → `ShotsManifest` → `ClipResult` → `VideoManifest`. All agents share these. `ComedyBrief.from_dict()` handles both new `items` and legacy `top_picks`/`also_notable` keys for backward compatibility. `Synopsis.from_dict()` accepts both `development` and legacy `escalation` keys for backward compatibility. `SceneScript.from_dict()` handles missing optional fields with backward compat defaults. `Logline.format_type` and `CartoonScript.format_type` default to `""` for backward compatibility.
 - **Shared ffmpeg** (`shared/ffmpeg.py`): `run_ffmpeg()`, `probe_video()`. Extracted from video_designer assembler for reuse by caption_maker.
 - **Shared utilities** (`shared/utils.py`): `strip_code_fences()`, `parse_iso_utc()`, `strip_html()`, `extract_text()`, `extract_json()`, `call_llm_json()`, `call_llm_text()`. `extract_json(text, expect=dict|list)` handles LLM responses with surrounding commentary by trying direct parse then bracket extraction.
 - **Context loader** (`shared/context_loader.py`): `load_characters()`, `load_art_style()`, `load_art_materials()`, `build_context_block()`, `build_reference_image_list()`. Used by script_writer, static_shots_maker, and video_designer.
@@ -203,7 +206,7 @@ Pipeline: brief JSON ingestion → parallel logline generation + selection (all 
 - **Script expander** (`pipeline/script_expander.py`): Two-step: synopsis (with `world_seed` for place/atmosphere) → full script. All 5 items run in parallel via `asyncio.gather()`. `world_seed` threads from synopsis into script expansion prompt for richer settings.
 - **Renderer** (`pipeline/renderer.py`): `CartoonScript` → `.md` (human-readable) + `.json` (machine-readable for static_shots_maker).
 - **Prompts** (`prompts.py`): All prompt templates. Core rules: (1) Billy SAYS the news fact in PLAIN LANGUAGE — no jargon, no assumed knowledge; (2) dialogue must be FUNNY, not just factual — every line does double duty (information + comedy). WHAT MAKES DIALOGUE FUNNY section teaches three tools: the reframe (framing the fact so its absurdity is undeniable), the turn (conversation goes somewhere unexpected), the committed position (other character earnestly believes something absurd). Anti-patterns: dialogue that only states facts, both characters agreeing, Billy sounding like a news anchor, last line explaining the joke, using jargon. Last line test: does the final line land as a punchline? Could you put it on a t-shirt? Logline selection #1 criterion: "Funny AND clear — both required, neither optional." Gold standard: Billy says one line and you laugh, then you see the image and laugh harder — both independently funny, together devastating. Shared humor preamble establishes 4 episode formats: (1) Visual Punchline — 1-2 lines, Billy frames fact as comedy, image amplifies; (2) Exchange — 2-4 lines, other character commits earnestly to absurd position; (3) Cold Reveal — 1 line at end names the news fact AND lands as punchline; (4) Demonstration — Billy states fact, transformation illustrates absurdity. Billy's emotional range: NOT always "quiet" — frustrated, amused, alarmed, delighted, angry, giddy, genuinely surprised. Other characters must COMMIT to their position — the more earnestly they believe, the funnier. They should never sound like they know they're in a comedy. Three comedy traditions (dry observation, deadpan absurdism, quiet irony) preserved. Material specificity preserved (in painterly muted world, not B&W stickman). CRITICAL visual rule: `scene_prompt` = starting state photograph, NO art technique words. Scene prompt rules: OBJECTS, SCALE, MATERIALS, WRONGNESS, BILLY'S STATE. `news_essence` must be plain language. NEWS DELIVERY: dialogue AND image both deliver comedy. Mute test: can't understand news on mute, unmute delivers news AND laughs. Compliance_check includes `dialogue_is_funny`, `news_delivered`, `plain_language`, `format_consistency`, `visual_specificity_check`, `emotion_specified`. 4 format-specific examples. `comedy_angle`, `snippet`, `news_explanation`, `format_type` passed through.
-- **Runner** (`pipeline/runner.py`): Async orchestrator for the full pipeline. Supports `--pick` flag to select specific items by 1-based brief number (top_picks + also_notable). When `comedy_angle` is empty (scorer fallback), downstream prompts instruct the LLM to discover the comedy angle from scratch.
+- **Runner** (`pipeline/runner.py`): Async orchestrator for the full pipeline. Supports `--pick` flag to select specific items by 1-based brief number (1-20). Default: processes top 5 items. When `comedy_angle` is empty (scorer fallback), downstream prompts instruct the LLM to discover the comedy angle from scratch.
 
 ### Setup tool
 
@@ -225,7 +228,7 @@ Pipeline: script JSON ingestion → sequential prompt rewriting + image generati
 
 - **Script reader** (`pipeline/script_reader.py`): Reads `output/scripts/<date>_<N>.json` sidecars. Auto-detects latest date if none specified. Uses `CartoonScript.from_dict()`.
 - **Prompt generator** (`pipeline/prompt_generator.py`): Claude rewrites video-oriented scene prompts into static image prompts (strips motion/audio/duration, picks peak visual moment, weaves in character details + art style). Falls back to regex stripping if Claude unavailable.
-- **Image generator** (`pipeline/image_generator.py`): Gemini `gemini-3.1-flash-image-preview` generates 9:16 PNGs. Accepts optional `reference_images` (art materials + previous scene) for visual consistency.
+- **Image generator** (`pipeline/image_generator.py`): Gemini `gemini-3.1-flash-image-preview` generates 9:16 PNGs. Accepts optional `reference_images` (art materials + previous scene) for visual consistency. Full `art_style` text from `art_style.md` is prepended to every prompt sent to Gemini for style enforcement.
 - **Prompts** (`prompts.py`): `SCENE_TO_IMAGE_PROMPT` and `END_CARD_TO_IMAGE_PROMPT` templates. Rules tiered as CRITICAL/COMPOSITION/REQUIRED/FORMAT. `SCENE_TO_IMAGE_PROMPT` accepts `{format_type}` placeholder (passed as `script.format_type or "standard"`). Editorial illustrator role focused on emotional distillation for phone screens. Includes comedy-awareness context and starting-state directive: scene prompt = pre-transformation state, render objects in original untransformed form. Texture preservation rule: hyper-detailed focal object against painterly atmospheric world is deliberate comedy. CRITICAL section enforces text constraint (one phrase, five words max). COMPOSITION section: composition hierarchy (eye path design), 4-5 elements (subject, context, 2-3 detail elements — extra objects are transformation targets in original form, load-bearing for video stage), object specificity (preserve exact names), scale relationships (preserve exact measurements), THE WRONGNESS (absurd element must be visually prominent at phone size), format awareness (visual_punchline/cold_reveal need extra clarity for zero-dialogue jokes), VISUAL HIERARCHY (one element with more detail/weight than surroundings). Two-layer depth, simple framing language. FORMAT: 70-100 word output range. Cuts generic adjectives but preserves material adjectives. Strips dialogue. References art materials and previous scene for consistency.
 - **Runner** (`pipeline/runner.py`): Async orchestrator. Level 1 parallel across scripts, scenes sequential within each script (visual continuity chain). Loads art materials as reference images.
 
@@ -242,7 +245,7 @@ Pipeline: manifest + script ingestion → parallel video prompt composition (Cla
 
 - **Manifest reader** (`pipeline/manifest_reader.py`): Reads `output/static_shots/<date>_<N>/manifest.json` + pairs with `output/scripts/<date>_<N>.json`. Auto-detects latest date. Skips scripts with no successful shots.
 - **Prompt generator** (`pipeline/prompt_generator.py`): Claude composes video-generation prompts from scene details + character profiles + art style + formatted dialogue. Sends the static shot image alongside the text prompt (multimodal) so Claude can reference the actual rendered frame. Falls back to original scene_prompt if Claude unavailable.
-- **Video generator** (`pipeline/video_generator.py`): xAI grok-imagine-video (`grok-imagine-video`) image-to-video with native audio generation. Uses static shot as source image via base64 data URI. SDK handles polling internally.
+- **Video generator** (`pipeline/video_generator.py`): xAI grok-imagine-video (`grok-imagine-video`) image-to-video with native audio generation. Uses static shot as source image via base64 data URI. SDK handles polling internally. Full `art_style` text from `art_style.md` is prepended to every prompt sent to xAI for style enforcement.
 - **Assembler** (`pipeline/assembler.py`): ffmpeg concatenation with re-encoding (`libx264 + aac`) for audio normalization. Glitch transitions (0.5s) with silence between scripts. Uses `run_ffmpeg()` and `probe_video()` from `shared/ffmpeg.py`.
 - **Prompts** (`prompts.py`): `SCENE_TO_VIDEO_PROMPT` and `END_CARD_TO_VIDEO_PROMPT` templates. Rules tiered as CRITICAL/REQUIRED/FORMAT. Include audio/dialogue direction, `{transformation}`, `{format_type}`, and `{billy_emotion}` inputs. CRITICAL section: format-aware motion direction — `visual_punchline` (environment moves, Billy still, accumulation is comedy), `exchange` (character body language drives motion, dialogue timing primary), `cold_reveal` (camera movement IS the story, slow reveal), `demonstration` (one deliberate gesture, casual gesture / impossible result). Timing follows the format's rhythm, not a rigid 5-5-5 split. Ambient world wrongness complements primary motion. REQUIRED section: Billy's body language matches his emotion (not always "barely moves"), other character: 2-3 natural motions, environment: 2-3 uncanny motions complementing the scene.
 - **Runner** (`pipeline/runner.py`): Async orchestrator. Level 1 parallel across scripts, Level 2 parallel across scenes. Uses `xai_sdk.AsyncClient` (requires `XAI_API_KEY`).
