@@ -10,11 +10,13 @@ from shared.utils import parse_iso_utc
 
 logger = logging.getLogger(__name__)
 
-# Search queries to find tech/AI content
+# Search queries to find tech/science/engineering content
 SEARCH_QUERIES = [
     "AI artificial intelligence",
     "machine learning LLM",
     "robotics biotech",
+    "medicine medical breakthrough",
+    "engineering technology innovation",
 ]
 
 MAX_POSTS_PER_QUERY = 15

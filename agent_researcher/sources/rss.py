@@ -15,10 +15,15 @@ RSS_FEEDS: dict[str, list[str]] = {
     "rss:arxiv": [
         "http://export.arxiv.org/rss/cs.AI",
         "http://export.arxiv.org/rss/cs.RO",
+        "http://export.arxiv.org/rss/cs.CE",
+        "http://export.arxiv.org/rss/eess",
         "http://export.arxiv.org/rss/q-bio",
     ],
     "rss:biorxiv": [
         "https://connect.biorxiv.org/biorxiv_xml.php?subject=all",
+    ],
+    "rss:medrxiv": [
+        "https://connect.medrxiv.org/medrxiv_xml.php?subject=all",
     ],
 }
 

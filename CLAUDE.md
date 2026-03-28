@@ -168,10 +168,10 @@ Pipeline: parallel source fetch (50-item cap per source) → URL validation → 
 | Source | Tier | Auth | Module |
 |--------|------|------|--------|
 | Hacker News (Algolia API) | validation | None | `sources/hackernews.py` |
-| RSS (arXiv cs.AI/cs.RO/q-bio, bioRxiv) | context | None | `sources/rss.py` |
+| RSS (arXiv cs.AI/cs.RO/cs.CE/eess/q-bio, bioRxiv, medRxiv) | context | None | `sources/rss.py` |
 | Manifold Markets (prediction markets) | validation | None | `sources/prediction_markets.py` |
 | X/Twitter (xAI Grok with `web_search`) | discovery | `XAI_API_KEY` | `sources/xai.py` |
-| Reddit (r/LocalLLaMA via PRAW) | discovery | `REDDIT_CLIENT_ID` + `SECRET` | `sources/reddit.py` |
+| Reddit (r/LocalLLaMA, r/technology, r/engineering, r/medicine, r/science, r/Futurology via PRAW) | discovery | `REDDIT_CLIENT_ID` + `SECRET` | `sources/reddit.py` |
 | Product Hunt (GraphQL + OAuth) | discovery | `PRODUCT_HUNT_API_KEY` + `SECRET` | `sources/producthunt.py` |
 | Bluesky (AT Protocol search) | discovery | `BLUESKY_HANDLE` + `APP_PASSWORD` | `sources/bluesky.py` |
 

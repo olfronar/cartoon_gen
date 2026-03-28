@@ -10,7 +10,14 @@ from shared.models import RawItem
 
 logger = logging.getLogger(__name__)
 
-SUBREDDITS = ["LocalLLaMA"]
+SUBREDDITS = [
+    "LocalLLaMA",
+    "technology",
+    "engineering",
+    "medicine",
+    "science",
+    "Futurology",
+]
 POST_LIMIT = 30
 
 

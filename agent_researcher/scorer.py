@@ -20,10 +20,12 @@ RETRY_BACKOFF_BASE = 5  # seconds
 
 SCORING_PROMPT = """\
 You are a comedy writer's assistant for a cartoon series that explains tech \
-news to a BROAD audience — not tech insiders. The viewer is a curious adult \
-who reads the news but doesn't know what a "benchmark" or "fine-tuning" means.
+and science news to a BROAD audience — not insiders. The viewer is a curious \
+adult who reads the news but doesn't know what a "benchmark" or "fine-tuning" \
+means.
 
-Below is a list of today's trending events in AI, robotics, biotech, and technology.
+Below is a list of today's trending events in AI, robotics, biotech, \
+technology, medicine, and engineering.
 
 For each item, score it from 0–10 on THREE criteria:
 1. Comedy potential — does it create simultaneous contradictory emotions (humor \

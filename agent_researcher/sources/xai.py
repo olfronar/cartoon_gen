@@ -23,17 +23,20 @@ Return only valid JSON, no commentary."""
 
 PROMPT = """\
 Search X (x.com) for trending and notable posts from the last 24 hours \
-in tech. Do three separate searches:
+in tech, science, medicine, and engineering. Do five separate searches:
 
 Search 1: "AI trending on X today"
 Search 2: "tech news trending on X today"
 Search 3: "robotics OR biotech trending on X today"
+Search 4: "medicine OR medical breakthrough trending on X today"
+Search 5: "engineering OR science discovery trending on X today"
 
 After each search, collect every post you find with a real x.com URL. \
 Include anything that got notable engagement — it does not need to be \
 mega-viral. Cast a wide net: announcements, hot takes, demos, failures, \
 drama, controversy, absurd claims, product launches, benchmarks, layoffs, \
-acquisitions, policy debates, open-source releases.
+acquisitions, policy debates, open-source releases, clinical trials, \
+infrastructure projects, scientific discoveries.
 
 For each post, return:
 - "title": what the post is about (1–2 sentences)

@@ -12,7 +12,16 @@ logger = logging.getLogger(__name__)
 
 # Manifold Markets API
 MANIFOLD_URL = "https://api.manifold.markets/v0/search-markets"
-MANIFOLD_QUERIES = ["AI", "machine learning", "robotics", "biotech", "tech"]
+MANIFOLD_QUERIES = [
+    "AI",
+    "machine learning",
+    "robotics",
+    "biotech",
+    "tech",
+    "medicine",
+    "engineering",
+    "healthcare",
+]
 
 
 class PredictionMarketsSource:
