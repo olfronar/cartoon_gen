@@ -74,7 +74,7 @@ in the materiality, not just the concept.
 
 3. **Quiet irony** (Jeeves & Wooster / Blackadder style): Wordplay, \
 understatement, and the gap between what someone says and what is obviously true. \
-One character smarter than the rest. The joke lands in the pause, not the punchline.
+One character smarter than the rest. The joke lands in the delivery, not the setup.
 
 The gold standard: Billy says one line and you laugh. Then you see the image and \
 you laugh harder. Both the dialogue and the image are independently funny — \
@@ -358,7 +358,10 @@ Billy stays in ONE physical location throughout. No location changes.
 
 This synopsis becomes a single 15-second scene. All three beats happen within \
 that one continuous shot. Each beat = 2-3 sentences, not paragraphs. Think \
-single-panel cartoon with a caption — then add one slow camera move.
+single-panel cartoon with a caption — then add one purposeful camera move. \
+PACING: hit the joke FAST. Setup should take 3-5 seconds max — get to the \
+funny part. Don't linger on establishing shots or atmosphere. The viewer is \
+scrolling on a phone; you have 2 seconds to hook them.
 
 Also provide:
 - **estimated_scenes**: always 1
@@ -442,15 +445,18 @@ the joke, the transformation, or the wrongness.
 **DIALOGUE RULES** (varies by format — Billy ALWAYS says the news fact out loud):
 - **visual_punchline**: 1-2 lines. Billy states the news fact AND lands a joke \
 in the same breath. Not fact-then-quip — the WAY he frames the fact IS the joke.
-- **exchange**: 2-4 lines, real back-and-forth between Billy and one other \
-character. The news fact must surface in the conversation — at least one line \
-states or directly implies what happened. Each character has their own voice and \
-logic. Conflict drives the comedy.
+- **exchange**: 2-4 SHORT lines, real back-and-forth between Billy and one other \
+character. Each line is one sentence max — punchy, not speechy. No monologues. \
+The news fact must surface in the conversation. Conflict drives the comedy.
 - **cold_reveal**: exactly 1 line, delivered by Billy at the END. Everything \
 before it is visual. The line must both recontextualize the image AND deliver \
 the news fact — the viewer should understand the real-world story from this line.
 - **demonstration**: 1-2 lines. Billy states the news fact before the \
 transformation. The transformation illustrates its absurdity.
+
+**PACING**: Every line must earn its seconds. 15 seconds total — if a line \
+doesn't advance the joke or deliver news, cut it. Dialogue should hit within \
+the first 3-5 seconds. Dead air is death on a phone screen.
 
 **WHAT MAKES DIALOGUE FUNNY** (the difference between a script and a news report):
 Every line of dialogue must do DOUBLE DUTY — deliver information AND be funny. \
@@ -586,7 +592,8 @@ Describable in a single still image (or null).
 - `duration_seconds`: 15
 - `camera_movement`: ONE camera movement with a REVEAL — the movement should \
 change what the viewer understands about the scene. A zoom that reveals nothing \
-new is wasted motion. Vary the rhythm: still then move then still, not constant drift.
+new is wasted motion. Start moving early — don't waste seconds on a static \
+establishing shot.
 
 **FORMAT EXAMPLES** (fictional topics — adapt structure, not content):
 

@@ -31,16 +31,17 @@ text descriptions below. The video should start from exactly this frame.
 **CRITICAL** (pipeline breaks if violated):
 - **Format-aware motion direction** (adapt to format type):
   - **visual_punchline**: Environment moves, Billy is still. Wrongness grows \
-visibly over 15 seconds. No transformation gesture needed. The accumulation IS the comedy.
-  - **exchange**: Character body language drives motion. Dialogue timing is primary. Characters \
-react physically — posture shifts, gestures, head turns. Billy's emotion ({billy_emotion}) is \
-visible in his body language.
-  - **cold_reveal**: Camera movement IS the story. Slow reveal that changes what the viewer \
-understands. Hold the confusion, then let the camera answer.
-  - **demonstration**: One deliberate gesture from Billy. Object transforms. Hold the \
-transformed state. The gesture is casual, the result is impossible.
-- Timing follows the format, not a rigid split. Let the joke's rhythm dictate \
-when things move. A 3-second hold before a reveal can be funnier than constant motion.
+visibly — start the motion immediately, don't wait. The accumulation IS the comedy.
+  - **exchange**: Character body language drives motion. Dialogue starts within \
+the first 2-3 seconds. Characters react physically — posture shifts, gestures, head \
+turns. Billy's emotion ({billy_emotion}) is visible in his body language.
+  - **cold_reveal**: Camera movement IS the story. Purposeful reveal that changes \
+what the viewer understands. Start moving early — the payoff needs time to land.
+  - **demonstration**: One deliberate gesture from Billy. Object transforms. The \
+gesture is casual, the result is impossible.
+- PACING: hit the action fast. Start motion or dialogue within the first 2-3 \
+seconds. Don't waste the opening on a static establishing shot — the static \
+image already established the scene. The viewer is scrolling on a phone.
 - The WORLD also moves impossibly around the action — \
 shadows shift independently, textures ripple, things breathe that shouldn't. \
 These ambient motions complement the primary motion, not compete with it.
