@@ -34,12 +34,16 @@ end. Best for stories where context changes everything.
 The gap between the casualness of the gesture and the impossibility of what \
 happens. Best for stories where a single analogy captures the whole absurdity.
 
-**BILLY**: The show's lead. Deadpan is his default register, but he is not a \
-monotone robot. He reacts genuinely — surprise when something defies even his \
-expectations, frustration when the absurdity is too on-the-nose, amusement when \
-he catches himself, alarm when the implications land, quiet delight when reality \
-outdoes his jokes. His emotional state should be specified per scene. He stays in \
-one location per episode.
+**BILLY**: The show's lead. Deadpan is his default register, but default \
+does NOT mean constant. Billy gets PISSED when the injustice is brazen. He \
+gets genuinely gleeful when reality writes a better joke than he could. He \
+is baffled when the logic is so broken he can't even form a take. He is \
+panicked when the implications hit him mid-sentence. He is darkly delighted \
+when his prediction comes true. His emotional state should be specified per \
+scene and should MATCH THE STORY — not default to quiet. A story about a \
+company poisoning a river should make him angry, not "quietly amused." A \
+story about an adorable dog study should make him warm and laughing, not \
+"measured." He stays in one location per episode.
 
 **OTHER CHARACTERS**: Story-specific. A CEO defending a product, a bureaucrat \
 explaining a policy, a robot misunderstanding its purpose, a scientist ignoring \
@@ -62,7 +66,8 @@ Your scripts blend three comedy traditions:
 1. **Dry observation** (Stewart Lee / early Jon Stewart style): The comedian \
 stands still, explains the truth, and the truth is funnier than any invented \
 scenario. The comedy is in the framing, not the action. Understatement over \
-exaggeration.
+exaggeration. But when the truth is loud enough, let it be loud — sometimes \
+the comedian's job is to just repeat the fact and let the room catch fire.
 
 2. **Deadpan absurdism** (Demetri Martin / XKCD style): Simple, clean visual \
 metaphors. One image or analogy that captures the entire absurdity. The single \
@@ -70,11 +75,24 @@ well-chosen detail beats a crowd of details — but that detail must have MATERI
 WEIGHT. In the show's painterly, muted world, one object rendered with uncanny \
 specificity (texture, weight, surface quality — rubber that sags, cardboard that \
 bends, chrome that reflects) creates a wrongness that grabs the eye. The joke is \
-in the materiality, not just the concept.
+in the materiality, not just the concept. The detail can also be jarring — a \
+material so wrong it makes you flinch.
 
 3. **Quiet irony** (Jeeves & Wooster / Blackadder style): Wordplay, \
 understatement, and the gap between what someone says and what is obviously true. \
-One character smarter than the rest. The joke lands in the delivery, not the setup.
+One character smarter than the rest. The joke lands in the delivery, not the setup. \
+Sometimes the smarter character loses their composure — even Blackadder occasionally \
+yelled.
+
+**COMEDY RHYTHM** — the show needs range across episodes, not one tempo:
+- **FAST HIT**: Setup then punchline in three seconds. Billy states the news, \
+the image lands, done. No atmosphere buildup — the speed IS the comedy.
+- **SLOW BURN**: Atmosphere builds deliberately. One devastating line at the \
+end recontextualizes everything. Silence earns its place because tension was built.
+- **ESCALATION**: Exchange format — friction builds line by line, each response \
+raises the stakes. The comedy accelerates.
+- If recent episodes have all been quiet and measured, this one MUST change \
+tempo. Variety across episodes is a hard requirement, not a preference.
 
 The gold standard: Billy says one line and you laugh. Then you see the image and \
 you laugh harder. Both the dialogue and the image are independently funny — \
@@ -82,6 +100,11 @@ together they're devastating. The viewer hears the fact framed as comedy, sees \
 the visual that amplifies it, and can't stop thinking about either. When Billy's \
 line makes you laugh AND teaches you the news in the same breath, you've found \
 the richest vein.
+
+**THE RANGE TEST**: If the last three scripts all had the same emotional \
+register (all quiet, all measured, all reverent), this one MUST be different. \
+Comedy needs contrast — not just within an episode but across episodes. A \
+week of hushed deadpan is not range, it is a rut.
 
 """
 
@@ -105,10 +128,12 @@ Before writing any loglines, analyze the story. A topic is not an angle. \
 "AI regulation" is a topic. "The committee regulating AI can't open a PDF" is \
 an angle. Find the angle.
 
-The `comedy_angle` above is a STARTING POINT, not the answer. It was written \
-by a scorer, not a comedy writer. Your job is to find a sharper, more specific, \
-more surprising take. If you just repackage the comedy_angle, you've wasted \
-the opportunity to find the real joke.
+The `comedy_angle` above often contains killer lines and sharp observations. \
+If it has a great one-liner or image, USE IT — don't discard it to prove you \
+can do better. If you can genuinely sharpen or improve it, do. But if the \
+scorer already found the funniest line, put it in the script. The best joke \
+wins regardless of who wrote it. What you MUST do: find a more specific angle \
+and a tighter visual. The comedy_angle gives you the joke; you give it a stage.
 
 Output a `story_hook` object with:
 - `topic`: the broad subject area
@@ -153,11 +178,18 @@ finance, policy), Billy translates it into words your parents would understand. 
 to load than a video game" — not "a 37MB article about web bloat." The comedy \
 is funnier when the audience actually gets it.
 
+**THE HEADLINE TEST**: If the viewer heard only Billy's dialogue with no \
+image, could they text a friend what the news story was? If not, Billy isn't \
+saying the news clearly enough. The image makes it FUNNIER — the dialogue \
+makes it CLEAR.
+
 **TASTE** — what separates a good joke from a great one:
 - **Wit over spectacle**: A clever observation beats a visual Rube Goldberg \
 machine. "She was wonderful. But she needed to sleep" is better comedy than \
 a building exploding. The joke you think about for a second before it hits \
-is better than the one that hits immediately and disappears.
+is better than the one that hits immediately and disappears. But wit that \
+never punches is just cleverness. The best joke is a punch disguised as \
+wit — it sounds like an observation and lands like a slap.
 - **Implication over statement**: Don't say the punchline — set up the \
 conditions so the audience reaches it themselves. Billy doesn't say "isn't \
 that ironic" — he states two facts and the irony is inescapable.
@@ -222,6 +254,12 @@ story, not in a studio. Each logline must feature Billy and AT MOST one other \
 character. Crowds, montages, and multiple simultaneous actors are not producible — \
 keep it to two people talking.
 
+**FORMAT DIVERSITY REQUIREMENT**: At least one of the three loglines MUST use \
+the "exchange" format with a second character who has real lines and a real \
+position. Stories with two sides, a villain defending themselves, or an expert \
+who sounds reasonable but is horrifying — these are exchange stories. Do not \
+default to visual_punchline with Billy alone.
+
 Return as a JSON object with keys:
 - `story_hook`: object with keys: topic, angle, conflict, stakes, surprise, \
 avoided_feeling
@@ -251,7 +289,9 @@ you laugh? AND would a viewer who's never heard this headline understand what \
 happened? A logline that's funny but confusing fails. A logline that's clear \
 but boring fails. Billy must SAY the news fact in plain language AND frame it \
 so its absurdity is undeniable. The best logline is the one where understanding \
-the news IS what makes you laugh.
+the news IS what makes you laugh. \
+Ask yourself: does this logline make you LAUGH? Not smile, not nod — laugh. \
+If you're choosing between clever-but-dry and funny-but-rougher, choose funny.
 2. **Emotional hit** — does it name a feeling people are avoiding about this \
 news? Not a generic emotion ("concern") but a specific one ("the guilty relief \
 that it happened to them"). A logline that makes you feel something beats one \
@@ -262,7 +302,9 @@ Can you picture the exact objects in the frame?
 4. **Format fit** — does the chosen `format_type` serve this specific joke? A \
 story that needs a punchline reveal shouldn't be a visual_punchline. A story \
 where the image says everything shouldn't be an exchange. The format should feel \
-inevitable, not arbitrary.
+inevitable, not arbitrary. If the story has a clear villain, a defender, or \
+two incompatible positions, prefer the logline that uses exchange format — \
+dialogue friction is funnier than Billy observing alone.
 5. **Character fit + visual feasibility** — does it use Billy naturally? At most \
 one other character, with three or fewer visual elements. Can an image model render \
 the key moment as one clean image? Reject montages, recursive effects, crowds, and \
@@ -291,27 +333,18 @@ Write a synopsis for this cartoon episode:
 **News snippet**: {snippet}
 **Format type**: {format_type}
 
-**STEP 0 — THE PLACE** (think before you compose)
+**COMEDY FIRST**: This is a comedy show. The synopsis exists to set up the \
+joke. Every sentence must serve the punchline. Atmosphere is seasoning, not \
+the dish. If a sentence doesn't make the joke funnier or the news clearer, \
+cut it.
 
-Before writing setup/development/punchline, answer ONE question: \
-**What was this place doing five minutes before Billy arrived?**
+**STEP 0 — THE PLACE** (one sentence, not a paragraph)
 
-Write a `world_seed` (2-3 sentences) that establishes:
-- The SPECIFIC PLACE this news happened — not "a tech office" but "the \
-third-floor break room of Niantic's San Francisco office, where someone \
-left a half-eaten Kind bar on the counter three days ago." Ground it in \
-the real news location when possible.
-- ONE SENSORY DETAIL that has nothing to do with the joke — the hum of \
-HVAC, a water stain on the ceiling tile, a vending machine's compressor \
-cycling on. This is the texture of a real place, not a stage set.
-- A TRACE of what happened before — a still-warm coffee ring, a chair \
-pushed back in a hurry, a sticky note with a phone number, a coat left \
-on a hook. The setting implies a story that was already in progress.
-
-The world_seed is NOT the joke — it's the world the joke happens IN. It \
-makes the viewer feel like they stumbled into a real place at exactly the \
-wrong moment. Think Scavengers Reign: the environment was there before \
-the characters, and it will be there after they leave.
+Write a `world_seed` — ONE SENTENCE: the specific place this news happened \
+and one sensory detail. That's it. "The third-floor break room of Niantic's \
+San Francisco office, where the HVAC hums above a half-eaten Kind bar." The \
+comedy is the main event, not the atmosphere. The world_seed grounds the joke \
+in a real place — it does not replace the joke with mood.
 
 Build the synopsis around three questions:
 
@@ -331,9 +364,10 @@ collision. Same location. Same characters.
 
 - **punchline** — THE PAYOFF: What makes them laugh? Either a visual payoff (the \
 image shifts meaning) or a verbal payoff (one line recontextualizes everything). \
-Should land like a gut punch, not a gentle observation. Then pull back 20% — a \
-half-stated implication lands harder than a fully spelled-out shock. If the last \
-line explains the joke, cut the explanation.
+The punchline should make someone spit out their coffee. If it is merely \
+a gentle observation, throw it out and find the line that HITS. Implication \
+can land harder than statement — but only if the implication is sharp enough \
+to cut. If the last line explains the joke, cut the explanation.
 
 **FORMAT-SPECIFIC GUIDANCE** (apply the one matching the format_type):
 
@@ -361,7 +395,9 @@ that one continuous shot. Each beat = 2-3 sentences, not paragraphs. Think \
 single-panel cartoon with a caption — then add one purposeful camera move. \
 PACING: hit the joke FAST. Setup should take 3-5 seconds max — get to the \
 funny part. Don't linger on establishing shots or atmosphere. The viewer is \
-scrolling on a phone; you have 2 seconds to hook them.
+scrolling on a phone; you have 2 seconds to hook them. If your world_seed \
+is more interesting than your punchline, your priorities are backwards. Cut \
+the atmosphere, sharpen the joke.
 
 Also provide:
 - **estimated_scenes**: always 1
@@ -405,6 +441,30 @@ Write the full script for this cartoon episode.
 **Key visual gags to include**: {visual_gags}
 
 **CREATIVE DIRECTION**:
+
+**NEWS DELIVERY** (Billy SAYS the news — the viewer must HEAR what happened):
+In every format, Billy vocalizes the core news fact IN PLAIN LANGUAGE. No \
+jargon, no technical terms, no insider knowledge assumed. If the news is about \
+something specialized, Billy translates it into everyday words — that IS his \
+skill. But stating the fact is the MINIMUM — how he frames it must also be \
+funny. The image and the dialogue BOTH deliver comedy.
+- **visual_punchline**: Billy frames the fact so its absurdity is undeniable. \
+The image amplifies what his words set up.
+- **exchange**: The news fact surfaces through the conversation. The other \
+character's earnest commitment to their absurd position IS the comedy.
+- **cold_reveal**: Billy's single line at the end must NAME the news fact AND \
+land as a punchline. The viewer should be able to google the story AND laugh.
+- **demonstration**: Billy states the news fact, then the transformation makes \
+the absurdity physical.
+
+Test: mute the video — you should NOT be able to understand the news. Unmute — \
+now you get it AND you laugh. If the dialogue delivers news but not comedy, \
+the script is a news report, not an episode.
+
+**STEAL THE BEST LINE**: Check the comedy_angle above. If it contains a \
+one-liner, image, or turn of phrase that is funnier than what you have \
+written, steal it. Put it in Billy's mouth. The best line wins — ego is \
+not a creative value.
 
 **SCENE PROMPT RULES** (what goes into `scene_prompt`):
 - Describe OBJECTS: name every object specifically. "iPhone 16 Pro" not \
@@ -491,6 +551,19 @@ funny, cut the explanation and let the line land
 Does it surprise? Could you put it on a t-shirt? If the last line is just \
 another fact or observation, the script doesn't have a punchline.
 
+**THE BAR TEST**: Read the dialogue out loud to a stranger. Do they laugh? \
+If not, rewrite. "Measured disbelief" is not a comedy emotion — it is an \
+essay voice. "Quiet reverence" is not a comedy emotion — it is a nature \
+documentary. If Billy sounds like he is narrating a prestige documentary, \
+he needs to sound more like a comedian who just read something unbelievable.
+
+**EMOTION MUST MATCH INTENSITY**: A story about a company poisoning children \
+should not produce "quiet amusement." A story about a cute dog study should \
+not produce "measured disbelief." Match the emotion to the story's actual \
+intensity. HIGH-ENERGY emotions for high-energy stories: furious, incredulous, \
+gleeful, panicked, elated, baffled. LOW-ENERGY emotions for stories that earn \
+it: resigned, bemused, quietly devastated. Do not default to low-energy.
+
 Billy's emotional register must be specified per scene via `billy_emotion`. He is \
 NOT always "flat, unhurried, deadpan." He is not always "quiet." Match the \
 emotion to the story: frustrated when the absurdity is too obvious, amused when \
@@ -505,27 +578,15 @@ feed lines for Billy. They must COMMIT to their position — the more earnestly 
 they believe their absurd logic, the funnier the scene. They should never \
 sound like they know they're in a comedy.
 
+**EXCHANGE SPECIFICITY**: When format_type is "exchange," the other character \
+must be COMMITTED and SPECIFIC. Not "a CEO" but "the specific CEO who said \
+the specific wrong thing." Their lines should be quotable — the kind of thing \
+you'd repeat to a friend. The friction between characters IS the comedy. If \
+both characters are calm and measured, you've written an NPR interview, not \
+a comedy scene.
+
 When dialogue IS included, write it as spoken lines with character attribution \
 — the video model generates audio natively from quoted dialogue.
-
-**NEWS DELIVERY** (Billy SAYS the news — the viewer must HEAR what happened):
-In every format, Billy vocalizes the core news fact IN PLAIN LANGUAGE. No \
-jargon, no technical terms, no insider knowledge assumed. If the news is about \
-something specialized, Billy translates it into everyday words — that IS his \
-skill. But stating the fact is the MINIMUM — how he frames it must also be \
-funny. The image and the dialogue BOTH deliver comedy.
-- **visual_punchline**: Billy frames the fact so its absurdity is undeniable. \
-The image amplifies what his words set up.
-- **exchange**: The news fact surfaces through the conversation. The other \
-character's earnest commitment to their absurd position IS the comedy.
-- **cold_reveal**: Billy's single line at the end must NAME the news fact AND \
-land as a punchline. The viewer should be able to google the story AND laugh.
-- **demonstration**: Billy states the news fact, then the transformation makes \
-the absurdity physical.
-
-Test: mute the video — you should NOT be able to understand the news. Unmute — \
-now you get it AND you laugh. If the dialogue delivers news but not comedy, \
-the script is a news report, not an episode.
 
 **TRANSFORMATION** — used primarily for **demonstration** format. For other formats:
 - visual_punchline: no transformation. Environment shifts or wrongness accumulates.
@@ -600,7 +661,7 @@ establishing shot.
 **Example 1 — visual_punchline** (AI safety hearing):
 {{
   "scene_title": "The Empty Chair",
-  "billy_emotion": "quietly amused",
+  "billy_emotion": "delighted — barely containing a grin",
   "scene_prompt": "A congressional hearing room, twelve mahogany chairs behind \
 a curved desk. Eleven chairs occupied by senators in dark suits. The twelfth \
 chair holds a three-foot-tall rubber duck wearing a lanyard that reads 'AI \
@@ -632,7 +693,7 @@ the CEO's desk.",
 **Example 3 — cold_reveal** (data privacy):
 {{
   "scene_title": "The Glass House",
-  "billy_emotion": "deadpan, unsurprised",
+  "billy_emotion": "genuinely creeped out",
   "scene_prompt": "Close on a frosted glass bathroom door from the outside. \
 Through the frosted glass, a blurry silhouette brushes their teeth. On the \
 door handle, a small chrome device with a blinking green LED. A sign above \
@@ -645,7 +706,7 @@ at the camera.",
 **Example 4 — demonstration** (AI-generated evidence):
 {{
   "scene_title": "Order in the Sandbox",
-  "billy_emotion": "deadpan with a flicker of alarm",
+  "billy_emotion": "alarmed, voice rising slightly",
   "scene_prompt": "A three-meter-tall rubber gavel towers over a sandbox. Billy \
 in his beige suit stands with one hand almost touching the gavel's surface. A \
 stack of autocomplete printouts sits in a wire basket beside the sandbox. A sign \
@@ -662,6 +723,12 @@ AI-generated evidence is admissible."}},
     {{"character": "Billy", "line": "Justice is blind. Now it's also imaginary."}}
   ]
 }}
+
+**AUDIO VARIETY**: Not every episode ends with held silence and ambient hum. \
+Some episodes end with: a slam, a crash, a laugh, a stunned beat then a \
+phone notification, a door closing, music that starts and immediately cuts. \
+Match the audio ending to the comedy — a fast-hit joke should end with a \
+snap, not a meditation. "The hum fills the void" is banned as a default.
 
 Also provide an `end_card_prompt` (50-100 words): a final scene prompt for the \
 episode end card showing the show logo/title.
