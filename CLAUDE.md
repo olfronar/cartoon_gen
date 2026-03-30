@@ -66,7 +66,7 @@ Dependencies are managed in `pyproject.toml` (not requirements.txt).
 Always use `.venv/bin/` prefixed commands (not `source .venv/bin/activate && ...`) — the direct binary paths are pre-approved in permission settings and won't prompt for approval.
 
 ```bash
-# Run all tests (219 tests)
+# Run all tests (231 tests)
 .venv/bin/pytest tests/ -v
 
 # Run a single test file
@@ -161,17 +161,19 @@ Required for static shots: `GOOGLE_API_KEY` (Gemini image generation). Required 
 
 ## Agent Researcher Internals
 
-Pipeline: parallel source fetch (50-item cap per source) → URL validation → dedup/freshness filter → cross-day history filter → LLM scoring (Claude Opus with adaptive thinking, 3 retries with exponential backoff) → Markdown brief + optional Notion delivery.
+Pipeline: parallel source fetch (30-item cap per source) → URL validation → dedup/freshness filter → cross-day history filter → LLM scoring (Claude Opus with adaptive thinking, 3 retries with exponential backoff) → Markdown brief + optional Notion delivery.
 
-### Sources (7 total, 3 tiers)
+### Sources (9 total, 3 tiers)
 
 | Source | Tier | Auth | Module |
 |--------|------|------|--------|
 | Hacker News (Algolia API) | validation | None | `sources/hackernews.py` |
+| Lobsters (JSON API) | validation | None | `sources/lobsters.py` |
 | RSS (arXiv cs.AI/cs.RO/cs.CE/eess/q-bio, bioRxiv, medRxiv) | context | None | `sources/rss.py` |
+| News RSS (BBC, Reuters, Guardian, NPR, AP, Ars Technica) | discovery | None | `sources/news_rss.py` |
 | Manifold Markets (prediction markets) | validation | None | `sources/prediction_markets.py` |
 | X/Twitter (xAI Grok with `web_search`) | discovery | `XAI_API_KEY` | `sources/xai.py` |
-| Reddit (r/LocalLLaMA, r/technology, r/engineering, r/medicine, r/science, r/Futurology via PRAW) | discovery | `REDDIT_CLIENT_ID` + `SECRET` | `sources/reddit.py` |
+| Reddit (r/LocalLLaMA, r/technology, r/engineering, r/medicine, r/science, r/Futurology, r/worldnews, r/nottheonion, r/news via PRAW) | discovery | `REDDIT_CLIENT_ID` + `SECRET` | `sources/reddit.py` |
 | Product Hunt (GraphQL + OAuth) | discovery | `PRODUCT_HUNT_API_KEY` + `SECRET` | `sources/producthunt.py` |
 | Bluesky (AT Protocol search) | discovery | `BLUESKY_HANDLE` + `APP_PASSWORD` | `sources/bluesky.py` |
 

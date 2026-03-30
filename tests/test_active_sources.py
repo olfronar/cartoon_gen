@@ -3,12 +3,14 @@ from shared.config import Settings
 
 
 class TestGetActiveSources:
-    def test_always_includes_hn_rss_predictions(self):
+    def test_always_includes_hn_rss_predictions_lobsters_news(self):
         settings = Settings()
         sources = get_active_sources(settings)
         names = [s.name for s in sources]
         assert "hackernews" in names
+        assert "lobsters" in names
         assert "rss" in names
+        assert "news_rss" in names
         assert "prediction_markets" in names
 
     def test_skips_reddit_without_credentials(self):

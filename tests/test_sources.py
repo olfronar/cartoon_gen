@@ -78,6 +78,100 @@ class TestHackerNewsSource:
         assert items == []
 
 
+class TestLobstersSource:
+    def _mock_response(self, stories: list[dict]) -> bytes:
+        return json.dumps(stories).encode()
+
+    def test_parses_stories(self):
+        from agent_researcher.sources.lobsters import LobstersSource
+
+        stories = [
+            {
+                "title": "Test Lobsters Story",
+                "url": "https://example.com/story",
+                "short_id_url": "https://lobste.rs/s/abc123",
+                "score": 25,
+                "comment_count": 8,
+                "created_at": "2026-03-14T12:00:00.000-05:00",
+                "description_plain": "A test description",
+            }
+        ]
+        mock_resp = MagicMock()
+        mock_resp.read.return_value = self._mock_response(stories)
+        mock_resp.__enter__ = lambda s: s
+        mock_resp.__exit__ = MagicMock(return_value=False)
+
+        with patch("urllib.request.urlopen", return_value=mock_resp):
+            items = LobstersSource().fetch()
+
+        assert len(items) == 1
+        assert items[0].title == "Test Lobsters Story"
+        assert items[0].score == 25
+        assert items[0].comment_count == 8
+        assert items[0].sources == ["lobsters"]
+        assert items[0].tier == "validation"
+
+    def test_falls_back_to_short_id_url(self):
+        from agent_researcher.sources.lobsters import LobstersSource
+
+        stories = [
+            {
+                "title": "Discussion Post",
+                "url": "",
+                "short_id_url": "https://lobste.rs/s/xyz789",
+                "score": 10,
+                "created_at": "2026-03-14T12:00:00.000-05:00",
+            }
+        ]
+        mock_resp = MagicMock()
+        mock_resp.read.return_value = self._mock_response(stories)
+        mock_resp.__enter__ = lambda s: s
+        mock_resp.__exit__ = MagicMock(return_value=False)
+
+        with patch("urllib.request.urlopen", return_value=mock_resp):
+            items = LobstersSource().fetch()
+
+        assert items[0].url == "https://lobste.rs/s/xyz789"
+
+    def test_handles_network_error(self):
+        from agent_researcher.sources.lobsters import LobstersSource
+
+        with patch("urllib.request.urlopen", side_effect=Exception("timeout")):
+            items = LobstersSource().fetch()
+
+        assert items == []
+
+
+class TestNewsRSSSource:
+    def test_parses_feeds(self):
+        from agent_researcher.sources.news_rss import NewsRSSSource
+
+        mock_entry = MagicMock()
+        mock_entry.get = lambda key, default="": {
+            "title": "Major World Event Happens",
+            "link": "https://bbc.co.uk/news/12345",
+            "summary": "<p>Breaking news about a major event...</p>",
+        }.get(key, default)
+
+        mock_feed = MagicMock()
+        mock_feed.entries = [mock_entry]
+
+        with patch("feedparser.parse", return_value=mock_feed):
+            items = NewsRSSSource().fetch()
+
+        assert len(items) > 0
+        assert items[0].tier == "discovery"
+        assert "<p>" not in items[0].snippet
+
+    def test_handles_parse_error(self):
+        from agent_researcher.sources.news_rss import NewsRSSSource
+
+        with patch("feedparser.parse", side_effect=Exception("parse error")):
+            items = NewsRSSSource().fetch()
+
+        assert items == []
+
+
 class TestRSSSource:
     def test_parses_feeds(self):
         from agent_researcher.sources.rss import RSSSource

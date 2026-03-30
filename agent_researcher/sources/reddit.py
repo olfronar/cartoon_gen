@@ -17,6 +17,9 @@ SUBREDDITS = [
     "medicine",
     "science",
     "Futurology",
+    "worldnews",
+    "nottheonion",
+    "news",
 ]
 POST_LIMIT = 30
 

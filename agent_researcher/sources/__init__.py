@@ -7,6 +7,8 @@ from shared.config import Settings
 from .base import Source
 from .bluesky import BlueskySource
 from .hackernews import HackerNewsSource
+from .lobsters import LobstersSource
+from .news_rss import NewsRSSSource
 from .prediction_markets import PredictionMarketsSource
 from .producthunt import ProductHuntSource
 from .reddit import RedditSource
@@ -20,7 +22,9 @@ def get_active_sources(settings: Settings) -> list[Source]:
     # Always-on sources (no auth needed)
     sources: list[Source] = [
         HackerNewsSource(),
+        LobstersSource(),
         RSSSource(),
+        NewsRSSSource(),
         PredictionMarketsSource(),
     ]
 

@@ -16,7 +16,7 @@ from .sources import get_active_sources
 
 logger = logging.getLogger(__name__)
 
-MAX_ITEMS_PER_SOURCE = 50
+MAX_ITEMS_PER_SOURCE = 30
 
 
 async def run(settings: Settings | None = None) -> ComedyBrief:
