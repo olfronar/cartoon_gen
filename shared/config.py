@@ -55,6 +55,12 @@ class Settings:
     shots_max_concurrency: int = 10
     shots_output_dir: Path = field(default_factory=lambda: Path("output/static_shots"))
 
+    # Static Shots Maker — verification & refinement
+    shots_verify: bool = False
+    shots_candidates: int = 1
+    shots_verify_model: str = "claude-opus-4-6"
+    shots_verify_max_tokens: int = 4096
+
     # Art Materials
     art_materials_dir: Path = field(default_factory=lambda: Path("output/art_materials"))
 
@@ -100,6 +106,10 @@ def load_settings(env_path: str = ".env") -> Settings:
         shots_prompt_max_tokens=int(values.get("SHOTS_PROMPT_MAX_TOKENS", "4096")),
         shots_max_concurrency=int(values.get("SHOTS_MAX_CONCURRENCY", "10")),
         shots_output_dir=Path(values.get("SHOTS_OUTPUT_DIR", "output/static_shots")),
+        shots_verify=values.get("SHOTS_VERIFY", "").lower() in ("1", "true", "yes"),
+        shots_candidates=int(values.get("SHOTS_CANDIDATES", "1")),
+        shots_verify_model=values.get("SHOTS_VERIFY_MODEL", "claude-opus-4-6"),
+        shots_verify_max_tokens=int(values.get("SHOTS_VERIFY_MAX_TOKENS", "4096")),
         art_materials_dir=Path(values.get("ART_MATERIALS_DIR", "output/art_materials")),
         openai_api_key=values.get("OPENAI_API_KEY", ""),
         whisper_model=values.get("WHISPER_MODEL", "whisper-1"),

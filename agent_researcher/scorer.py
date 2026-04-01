@@ -18,6 +18,14 @@ MAX_ITEMS_TO_SCORE = 100
 MAX_RETRIES = 3
 RETRY_BACKOFF_BASE = 5  # seconds
 
+SCORE_WEIGHTS = {
+    "comedy_potential": 2.0,
+    "cultural_resonance": 1.0,
+    "freshness": 1.0,
+    "visual_comedy_potential": 1.5,
+    "emotional_range": 1.0,
+}
+
 SCORING_PROMPT = """\
 You are a comedy writer's assistant for a cartoon series that explains tech \
 and science news to a BROAD audience — not insiders. The viewer is a curious \
@@ -27,7 +35,7 @@ means.
 Below is a list of today's trending events in AI, robotics, biotech, \
 technology, medicine, and engineering.
 
-For each item, score it from 0–10 on THREE criteria:
+For each item, score it from 0–10 on FIVE criteria:
 1. Comedy potential — does it create simultaneous contradictory emotions (humor \
 AND anxiety, admiration AND absurdity)? Look for structural contradictions: \
 stated reason vs actual constraint, public position vs private reality. Irony, \
@@ -39,6 +47,20 @@ drama, model architecture debates, open-source governance) score LOW. Stories \
 where the comedy lands for anyone who reads a newspaper score HIGH. Test: \
 would your non-tech friend find this interesting at dinner?
 3. Freshness — is this breaking today, or already a stale meme?
+4. Visual comedy potential — how well does this translate to a single static \
+image + a 15-second animated video? Can you SEE the joke? Score higher if the \
+absurdity is inherently visual: physical scale mismatch, an unexpected object \
+in the wrong context, a recognizable icon doing something wrong, a material \
+or texture that shouldn't exist. Score lower if the humor is purely \
+verbal/conceptual, requires reading text to understand, or depends on \
+abstract knowledge the viewer can't see. The gold standard: a phone-scrolling \
+stranger pauses because the image alone is arresting.
+5. Emotional range — does this story give the lead character a clear, specific \
+emotion beyond "measured observation"? Stories that provoke outrage, wonder, \
+betrayal, glee, panic, dark delight, or genuine bafflement score HIGH. \
+Generic "tech company does thing" stories where the only possible reaction is \
+mild interest score LOW. The more visceral and specific the emotional \
+reaction, the higher the score.
 
 Bonus: if an item appears across multiple sources, add +1 to its total.
 
@@ -54,6 +76,8 @@ Return as JSON array. Each element must have these exact keys:
 - "comedy_potential": float 0-10
 - "cultural_resonance": float 0-10
 - "freshness": float 0-10
+- "visual_comedy_potential": float 0-10
+- "emotional_range": float 0-10
 - "comedy_angle": string — REQUIRED. Three-part format: "[STRUCTURAL \
 CONTRADICTION: what's said vs what's actually happening — the gap that makes it \
 funny]. [DOUBLE HIT: the two contradictory emotions this creates — e.g., \
@@ -199,8 +223,17 @@ def score_items(items: list[RawItem], settings: Settings) -> list[ScoredItem]:
         comedy = float(data.get("comedy_potential", 0))
         resonance = float(data.get("cultural_resonance", 0))
         fresh = float(data.get("freshness", 0))
+        visual = float(data.get("visual_comedy_potential", 0))
+        emotion = float(data.get("emotional_range", 0))
         multi_bonus = 1.0 if len(item.sources) > 1 else 0.0
-        total = comedy + resonance + fresh + multi_bonus
+        total = (
+            comedy * SCORE_WEIGHTS["comedy_potential"]
+            + resonance * SCORE_WEIGHTS["cultural_resonance"]
+            + fresh * SCORE_WEIGHTS["freshness"]
+            + visual * SCORE_WEIGHTS["visual_comedy_potential"]
+            + emotion * SCORE_WEIGHTS["emotional_range"]
+            + multi_bonus
+        )
 
         # Use LLM-rewritten title if provided
         rewritten_title = data.get("title", "")
@@ -216,6 +249,8 @@ def score_items(items: list[RawItem], settings: Settings) -> list[ScoredItem]:
                 multi_source_bonus=multi_bonus,
                 total_score=total,
                 comedy_angle=data.get("comedy_angle", ""),
+                visual_comedy_potential=visual,
+                emotional_range=emotion,
             )
         )
 
@@ -238,6 +273,8 @@ def _fallback_scoring(items: list[RawItem]) -> list[ScoredItem]:
                 multi_source_bonus=multi_bonus,
                 total_score=float(item.score) + multi_bonus,
                 comedy_angle="",
+                visual_comedy_potential=0,
+                emotional_range=0,
             )
         )
     result.sort(key=lambda x: x.total_score, reverse=True)

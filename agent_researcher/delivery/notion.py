@@ -37,7 +37,9 @@ def _build_notion_blocks(brief: ComedyBrief) -> list[dict]:
             f"Score: {scored.total_score:.1f} "
             f"(comedy={scored.comedy_potential:.0f}, "
             f"resonance={scored.cultural_resonance:.0f}, "
-            f"fresh={scored.freshness:.0f})"
+            f"fresh={scored.freshness:.0f}, "
+            f"visual={scored.visual_comedy_potential:.0f}, "
+            f"emotion={scored.emotional_range:.0f})"
         )
         if item.url:
             details.append(f"URL: {item.url}")

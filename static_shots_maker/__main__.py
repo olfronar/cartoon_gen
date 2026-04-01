@@ -40,6 +40,18 @@ def main() -> None:
         default="opus",
         help="LLM for prompt rewriting: opus (claude-opus-4-6) or grok.",
     )
+    parser.add_argument(
+        "--verify",
+        action="store_true",
+        default=False,
+        help="Enable visual verification of generated shots via Claude vision.",
+    )
+    parser.add_argument(
+        "--candidates",
+        type=int,
+        default=None,
+        help="Number of candidate images per scene (default 1, max 3). Implies --verify.",
+    )
     args = parser.parse_args()
 
     target_date = date.fromisoformat(args.date) if args.date else None
@@ -47,7 +59,14 @@ def main() -> None:
 
     from static_shots_maker.pipeline.runner import run
 
-    asyncio.run(run(target_date=target_date, model_override=model_override))
+    asyncio.run(
+        run(
+            target_date=target_date,
+            model_override=model_override,
+            verify=args.verify,
+            candidates=args.candidates,
+        )
+    )
 
 
 if __name__ == "__main__":

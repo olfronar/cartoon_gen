@@ -26,6 +26,8 @@ class ScoredItem:
     multi_source_bonus: float  # 0 or 1
     total_score: float
     comedy_angle: str
+    visual_comedy_potential: float = 0.0
+    emotional_range: float = 0.0
 
 
 @dataclass(slots=True)

@@ -154,3 +154,73 @@ generation prompt.
 **FORMAT**:
 - Output ONLY the image prompt text, 80-200 words. No commentary.
 """
+
+SHOT_VERIFICATION_PROMPT = """\
+You are a visual quality inspector for a cartoon series. You are checking \
+whether a generated image matches the scene description.
+
+## Scene description
+Title: {scene_title}
+Scene prompt: {scene_prompt}
+Visual gag: {visual_gag}
+Format type: {format_type}
+Billy's emotion: {billy_emotion}
+
+## Evaluation axes
+
+Check the image against the scene prompt on these axes:
+
+1. **Key visual elements** — Are all specific objects named in the scene prompt \
+present in the image? List any that are missing.
+2. **Character presence** — Is the main character (Billy) present and \
+recognizable? Are other mentioned characters present?
+3. **Scale and composition** — Do scale relationships match the description? \
+Is the image composed for 9:16 vertical format? Is the key visual element \
+prominent at phone-screen size?
+4. **Visual wrongness** — Is the deliberate absurd element (the "wrongness" \
+from the scene prompt) visually prominent? A viewer scrolling on their phone \
+should notice it immediately.
+5. **Overall quality** — Is the image clear, well-composed, and aesthetically \
+consistent with an illustrated cartoon style?
+
+## Output format
+
+Return JSON:
+{{
+  "passed": true or false,
+  "score": 0-10,
+  "issues": ["list of specific problems found, empty if passed"],
+  "prompt_refinements": "Specific additions/changes to the image prompt that \
+would fix the issues. Empty string if passed."
+}}
+
+Set passed=true if score >= 6 AND no critical elements (characters, key objects) \
+are missing. Otherwise passed=false.\
+"""
+
+SHOT_COMPARISON_PROMPT = """\
+You are comparing two candidate images for the same cartoon scene. Pick the \
+better one.
+
+## Scene description
+Title: {scene_title}
+Scene prompt: {scene_prompt}
+Format type: {format_type}
+
+## Evaluation criteria
+
+Compare Image A and Image B on:
+1. Scene prompt fidelity — which better matches the described scene?
+2. Character correctness — which has more accurate character depiction?
+3. Comedy effectiveness — in which is the "wrongness" more visually prominent?
+4. Composition quality — which is better composed for 9:16 phone viewing?
+5. Overall aesthetic quality — which looks better as a cartoon illustration?
+
+## Output format
+
+Return JSON:
+{{
+  "winner": "a" or "b",
+  "reasoning": "1-2 sentences explaining your choice"
+}}\
+"""

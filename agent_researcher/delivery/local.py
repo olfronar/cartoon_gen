@@ -23,7 +23,9 @@ def render_brief(brief: ComedyBrief) -> str:
             f"   - Score: {scored.total_score:.1f} "
             f"(comedy={scored.comedy_potential:.0f}, "
             f"resonance={scored.cultural_resonance:.0f}, "
-            f"fresh={scored.freshness:.0f}"
+            f"fresh={scored.freshness:.0f}, "
+            f"visual={scored.visual_comedy_potential:.0f}, "
+            f"emotion={scored.emotional_range:.0f}"
             f"{', multi-source +1' if scored.multi_source_bonus else ''})"
         )
         lines.append(f"   - Raw URL: {item.url}")

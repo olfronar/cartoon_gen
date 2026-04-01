@@ -146,13 +146,21 @@ def _call_llm(
     return _call_anthropic(client, prompt, model, max_tokens, images=images)
 
 
-def call_llm_json(client, prompt: str, model: str, max_tokens: int) -> dict | list:
+def call_llm_json(
+    client,
+    prompt: str,
+    model: str,
+    max_tokens: int,
+    *,
+    images: list[Path] | None = None,
+) -> dict | list:
     """Call LLM with adaptive thinking, return parsed JSON.
 
     Dispatches to Anthropic or xAI based on model name.
+    When *images* is provided, sends image blocks alongside the prompt (Anthropic only).
     Raises on API or parse failure (caller decides fallback policy).
     """
-    text = strip_code_fences(_call_llm(client, prompt, model, max_tokens))
+    text = strip_code_fences(_call_llm(client, prompt, model, max_tokens, images=images))
     return json.loads(text)
 
 

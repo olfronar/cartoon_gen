@@ -1,7 +1,12 @@
 import json
 from unittest.mock import MagicMock, patch
 
-from agent_researcher.scorer import _fallback_scoring, _prepare_items_json, score_items
+from agent_researcher.scorer import (
+    SCORE_WEIGHTS,
+    _fallback_scoring,
+    _prepare_items_json,
+    score_items,
+)
 from shared.config import Settings
 from tests.conftest import make_raw_item
 
@@ -34,6 +39,8 @@ class TestFallbackScoring:
         assert result[0].comedy_potential == 0
         assert result[0].cultural_resonance == 0
         assert result[0].freshness == 0
+        assert result[0].visual_comedy_potential == 0
+        assert result[0].emotional_range == 0
         assert result[0].comedy_angle == ""
 
 
@@ -89,6 +96,8 @@ class TestScoreItemsWithMockedAPI:
                 "comedy_potential": 8.0,
                 "cultural_resonance": 7.0,
                 "freshness": 9.0,
+                "visual_comedy_potential": 6.0,
+                "emotional_range": 7.0,
                 "comedy_angle": "It's funny because reasons. 'One-liner here.'",
             }
         ]
@@ -106,7 +115,16 @@ class TestScoreItemsWithMockedAPI:
         assert result[0].comedy_potential == 8.0
         assert result[0].cultural_resonance == 7.0
         assert result[0].freshness == 9.0
-        assert result[0].total_score == 24.0
+        assert result[0].visual_comedy_potential == 6.0
+        assert result[0].emotional_range == 7.0
+        expected = (
+            8.0 * SCORE_WEIGHTS["comedy_potential"]
+            + 7.0 * SCORE_WEIGHTS["cultural_resonance"]
+            + 9.0 * SCORE_WEIGHTS["freshness"]
+            + 6.0 * SCORE_WEIGHTS["visual_comedy_potential"]
+            + 7.0 * SCORE_WEIGHTS["emotional_range"]
+        )
+        assert result[0].total_score == expected
         assert result[0].comedy_angle == "It's funny because reasons. 'One-liner here.'"
         # Title should be rewritten
         assert result[0].item.title == "Rewritten: Test Event Happens"
@@ -122,6 +140,8 @@ class TestScoreItemsWithMockedAPI:
                 "comedy_potential": 5.0,
                 "cultural_resonance": 5.0,
                 "freshness": 5.0,
+                "visual_comedy_potential": 5.0,
+                "emotional_range": 5.0,
                 "comedy_angle": "angle",
             }
         ]
@@ -192,6 +212,8 @@ class TestScoreItemsWithMockedAPI:
                 "comedy_potential": 8.0,
                 "cultural_resonance": 7.0,
                 "freshness": 9.0,
+                "visual_comedy_potential": 6.0,
+                "emotional_range": 7.0,
                 "comedy_angle": "angle-a",
                 "duplicate_of": None,
             },
@@ -200,6 +222,8 @@ class TestScoreItemsWithMockedAPI:
                 "comedy_potential": 5.0,
                 "cultural_resonance": 4.0,
                 "freshness": 6.0,
+                "visual_comedy_potential": 3.0,
+                "emotional_range": 4.0,
                 "comedy_angle": "angle-b",
                 "duplicate_of": 0,
             },
@@ -229,6 +253,8 @@ class TestScoreItemsWithMockedAPI:
                 "comedy_potential": 5.0,
                 "cultural_resonance": 5.0,
                 "freshness": 5.0,
+                "visual_comedy_potential": 5.0,
+                "emotional_range": 5.0,
                 "comedy_angle": "angle",
                 "duplicate_of": 999,
             },
@@ -255,6 +281,8 @@ class TestScoreItemsWithMockedAPI:
                 "comedy_potential": 6.0,
                 "cultural_resonance": 6.0,
                 "freshness": 6.0,
+                "visual_comedy_potential": 6.0,
+                "emotional_range": 6.0,
                 "comedy_angle": "angle",
                 "duplicate_of": None,
             },
@@ -298,3 +326,72 @@ class TestScoreItemsWithMockedAPI:
 
         # Should only score first 100
         assert len(result) == 100
+
+    def test_weighted_scoring_calculation(self):
+        settings = Settings(anthropic_api_key="test-key")
+        items = [make_raw_item(title="Weighted", sources=["hackernews", "reddit"])]
+
+        scored_data = [
+            {
+                "index": 0,
+                "comedy_potential": 10.0,
+                "cultural_resonance": 5.0,
+                "freshness": 5.0,
+                "visual_comedy_potential": 10.0,
+                "emotional_range": 5.0,
+                "comedy_angle": "angle",
+            }
+        ]
+
+        stream_ctx = self._mock_claude_response(scored_data)
+
+        with patch("agent_researcher.scorer.anthropic") as mock_anthropic:
+            mock_client = MagicMock()
+            mock_anthropic.Anthropic.return_value = mock_client
+            mock_client.messages.stream.return_value = stream_ctx
+
+            result = score_items(items, settings)
+
+        expected = (
+            10.0 * SCORE_WEIGHTS["comedy_potential"]
+            + 5.0 * SCORE_WEIGHTS["cultural_resonance"]
+            + 5.0 * SCORE_WEIGHTS["freshness"]
+            + 10.0 * SCORE_WEIGHTS["visual_comedy_potential"]
+            + 5.0 * SCORE_WEIGHTS["emotional_range"]
+            + 1.0  # multi-source bonus
+        )
+        assert result[0].total_score == expected
+
+    def test_backward_compat_missing_new_fields(self):
+        settings = Settings(anthropic_api_key="test-key")
+        items = [make_raw_item(title="Old format")]
+
+        scored_data = [
+            {
+                "index": 0,
+                "comedy_potential": 7.0,
+                "cultural_resonance": 6.0,
+                "freshness": 8.0,
+                "comedy_angle": "angle",
+            }
+        ]
+
+        stream_ctx = self._mock_claude_response(scored_data)
+
+        with patch("agent_researcher.scorer.anthropic") as mock_anthropic:
+            mock_client = MagicMock()
+            mock_anthropic.Anthropic.return_value = mock_client
+            mock_client.messages.stream.return_value = stream_ctx
+
+            result = score_items(items, settings)
+
+        assert result[0].visual_comedy_potential == 0.0
+        assert result[0].emotional_range == 0.0
+        expected = (
+            7.0 * SCORE_WEIGHTS["comedy_potential"]
+            + 6.0 * SCORE_WEIGHTS["cultural_resonance"]
+            + 8.0 * SCORE_WEIGHTS["freshness"]
+            + 0.0 * SCORE_WEIGHTS["visual_comedy_potential"]
+            + 0.0 * SCORE_WEIGHTS["emotional_range"]
+        )
+        assert result[0].total_score == expected

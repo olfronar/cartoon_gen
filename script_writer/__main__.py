@@ -54,6 +54,18 @@ def main() -> None:
         default="opus",
         help="LLM: opus (claude-opus-4-6) or grok (grok-4.20-beta-latest-reasoning).",
     )
+    parser.add_argument(
+        "--no-editor",
+        action="store_true",
+        default=False,
+        help="Skip the editor review/revision pass after script expansion.",
+    )
+    parser.add_argument(
+        "--tournament",
+        action="store_true",
+        default=False,
+        help="Enable pairwise tournament for logline selection (generates more candidates).",
+    )
     args = parser.parse_args()
 
     target_date = date.fromisoformat(args.date) if args.date else None
@@ -67,6 +79,8 @@ def main() -> None:
             target_date=target_date,
             pick_indices=pick_indices,
             model_override=model_override,
+            editor_pass=not args.no_editor,
+            tournament=args.tournament,
         )
     )
 

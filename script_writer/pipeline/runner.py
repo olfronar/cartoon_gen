@@ -11,9 +11,11 @@ from shared.context_loader import build_context_block, load_art_style, load_char
 from shared.models import CartoonScript, Logline, ScoredItem
 
 from .brief_reader import read_brief
-from .logline_generator import generate_loglines
+from .logline_generator import generate_additional_loglines, generate_loglines
 from .logline_selector import select_logline
+from .logline_tournament import run_tournament
 from .renderer import write_script
+from .script_editor import review_and_revise
 from .script_expander import expand_script, generate_synopsis
 
 logger = logging.getLogger(__name__)
@@ -24,6 +26,8 @@ async def run(
     target_date: date | None = None,
     pick_indices: list[int] | None = None,
     model_override: str | None = None,
+    editor_pass: bool = True,
+    tournament: bool = False,
 ) -> list[CartoonScript]:
     """Run the full script writer pipeline.
 
@@ -84,10 +88,14 @@ async def run(
         client=client,
         model=model,
         max_tokens=max_tokens,
+        tournament=tournament,
     )
 
     # Stage 3: Expand to full scripts (parallel)
-    print("Expanding scripts (parallel)...")
+    if editor_pass:
+        print("Expanding scripts + editor review (parallel)...")
+    else:
+        print("Expanding scripts (parallel)...")
     scripts = await _expand_all_parallel(
         selected=selected,
         items=items,
@@ -96,6 +104,7 @@ async def run(
         client=client,
         model=model,
         max_tokens=max_tokens,
+        editor_pass=editor_pass,
     )
 
     # Stage 4: Write output
@@ -130,6 +139,7 @@ async def _generate_and_select_parallel(
     client,
     model: str,
     max_tokens: int,
+    tournament: bool = False,
 ) -> dict[int, Logline]:
     """Generate 3 loglines per item and select the best, all items in parallel."""
 
@@ -140,10 +150,36 @@ async def _generate_and_select_parallel(
         if not loglines:
             logger.warning("No loglines for item %d, skipping", i)
             return None
-        best = await asyncio.to_thread(
-            select_logline, loglines, item, context_block, client, model, max_tokens
-        )
-        print(f"  Item {i + 1}/{len(items)}: selected '{best.approach}' approach")
+
+        if tournament:
+            extra = await asyncio.to_thread(
+                generate_additional_loglines,
+                item,
+                loglines,
+                context_block,
+                client,
+                model,
+                max_tokens,
+            )
+            all_loglines = loglines + extra
+            best = await asyncio.to_thread(
+                run_tournament,
+                all_loglines,
+                item,
+                context_block,
+                client,
+                model,
+                max_tokens,
+            )
+            n = len(all_loglines)
+            print(
+                f"  Item {i + 1}/{len(items)}: tournament winner '{best.approach}' ({n} candidates)"
+            )
+        else:
+            best = await asyncio.to_thread(
+                select_logline, loglines, item, context_block, client, model, max_tokens
+            )
+            print(f"  Item {i + 1}/{len(items)}: selected '{best.approach}' approach")
         return i, best
 
     results = await asyncio.gather(*[_gen_and_select(i, item) for i, item in enumerate(items)])
@@ -159,6 +195,7 @@ async def _expand_all_parallel(
     client,
     model: str,
     max_tokens: int,
+    editor_pass: bool = True,
 ) -> list[CartoonScript]:
     """Expand all selected loglines to full scripts in parallel."""
 
@@ -179,6 +216,10 @@ async def _expand_all_parallel(
                 model,
                 max_tokens,
             )
+            if editor_pass:
+                script = await asyncio.to_thread(
+                    review_and_revise, script, item, context_block, client, model, max_tokens
+                )
             return script
         except Exception:
             logger.exception("Script expansion failed for item %d", idx)

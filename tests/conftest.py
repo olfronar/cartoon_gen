@@ -35,17 +35,31 @@ def make_scored_item(
     cultural_resonance: float = 5.0,
     freshness: float = 5.0,
     comedy_angle: str = "test angle",
+    visual_comedy_potential: float = 5.0,
+    emotional_range: float = 5.0,
 ) -> ScoredItem:
+    from agent_researcher.scorer import SCORE_WEIGHTS
+
     item = raw_item or make_raw_item()
     multi_bonus = 1.0 if len(item.sources) > 1 else 0.0
+    total = (
+        comedy_potential * SCORE_WEIGHTS["comedy_potential"]
+        + cultural_resonance * SCORE_WEIGHTS["cultural_resonance"]
+        + freshness * SCORE_WEIGHTS["freshness"]
+        + visual_comedy_potential * SCORE_WEIGHTS["visual_comedy_potential"]
+        + emotional_range * SCORE_WEIGHTS["emotional_range"]
+        + multi_bonus
+    )
     return ScoredItem(
         item=item,
         comedy_potential=comedy_potential,
         cultural_resonance=cultural_resonance,
         freshness=freshness,
         multi_source_bonus=multi_bonus,
-        total_score=comedy_potential + cultural_resonance + freshness + multi_bonus,
+        total_score=total,
         comedy_angle=comedy_angle,
+        visual_comedy_potential=visual_comedy_potential,
+        emotional_range=emotional_range,
     )
 
 

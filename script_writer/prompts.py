@@ -585,6 +585,34 @@ you'd repeat to a friend. The friction between characters IS the comedy. If \
 both characters are calm and measured, you've written an NPR interview, not \
 a comedy scene.
 
+**CHARACTER EMBODIMENT** — when writing dialogue, BECOME each character:
+
+For Billy's lines:
+- Step into Billy's specific emotional state ({{billy_emotion}} for this scene).
+- Billy has seen a thousand absurd headlines. What makes THIS one get under \
+his skin? Find the specific nerve it hits. His line should sound like someone \
+who can't NOT say the thing everyone is thinking.
+- Read the character profile for Billy above. His vocabulary, his rhythm, his \
+relationship to the world — these constrain how he would say it.
+- Test: cover the character name. Can you tell it's Billy from the line alone?
+
+For the other character's lines:
+- Read their character profile above (or their description in the logline for \
+story-specific characters). Become them FULLY.
+- They do not know they are funny. They believe their position completely.
+- Their vocabulary comes from their world: a CEO uses "optimize," "leverage," \
+"unlock value." A bureaucrat uses "pursuant to," "as per," "the committee \
+has determined." A scientist uses precise but tone-deaf language.
+- Their logic is internally consistent. From THEIR perspective, everything \
+they say makes perfect sense. The comedy is that their perspective is insane.
+- Test: could this line appear in a real press release / memo / speech by this \
+kind of person? If it sounds like a comedy writer wrote it, it's too on-the-nose.
+
+Write each character's lines SEPARATELY in your head, then interleave them. \
+Do not write dialogue as a ping-pong flow — write Billy's emotional journey \
+first, then write the other character's committed position, then find where \
+they collide.
+
 When dialogue IS included, write it as spoken lines with character attribution \
 — the video model generates audio natively from quoted dialogue.
 
@@ -890,4 +918,224 @@ ART_STYLE_TEMPLATE = """\
 
 ## Text & Title Conventions
 {text_conventions}
+"""
+
+LOGLINE_PAIRWISE_PROMPT = """\
+You are a comedy competition judge. Two loglines for the same news story \
+are competing head-to-head. Pick the funnier one.
+
+## Characters & Art Style
+{context}
+
+## News headline
+{title}
+
+## Comedy angle (starting point — loglines may have found sharper angles)
+{comedy_angle}
+
+## The two competing loglines
+
+{logline_a}
+
+---
+
+{logline_b}
+
+## Judging criteria (in priority order)
+
+1. **Funny AND clear** — both required, neither optional. Does it make you \
+laugh AND convey the news? If only one logline achieves both, it wins.
+2. **Emotional hit** — does it name a specific feeling people are avoiding? \
+Not generic "concern" but a precise uncomfortable truth.
+3. **Specificity** — concrete objects, not abstractions. "iPhone 16 Pro" not \
+"smartphone."
+4. **Format fit** — does the chosen format_type serve the joke?
+5. **Visual feasibility** — at most one other character, three or fewer visual \
+elements, renderable as one clean image.
+
+## Rules
+
+- Do NOT favor position A or B by default. Read both fully before deciding.
+- The funnier logline wins. If tied on funny, the clearer one wins.
+- Provide specific feedback for the loser explaining what the winner did better.
+
+## Output format
+
+Return JSON:
+{{
+  "winner": "a" or "b",
+  "reasoning": "1-2 sentences explaining your choice",
+  "loser_feedback": "1-2 sentences: what specific improvement would make the loser competitive"
+}}\
+"""
+
+LOGLINE_GENERATION_ROUND2_PROMPT = """\
+{preamble}
+
+## Characters & Art Style
+{context}
+
+## News item
+Title: {title}
+URL: {url}
+Comedy angle: {comedy_angle}
+Snippet: {snippet}
+
+## Already generated loglines
+
+These loglines have already been written. Do NOT refine them — find angles \
+they missed entirely.
+
+{existing_loglines}
+
+## Your task
+
+Generate exactly 2 MORE loglines that take a COMPLETELY DIFFERENT angle from \
+the ones above. Consider:
+- What if the comedy came from a completely different aspect of this story?
+- What if the format was different from those already used?
+- What uncomfortable truth did the existing loglines NOT touch?
+- What visual would reframe this story in a way none of the above considered?
+
+Use the same format as the original loglines. Each must have a different \
+format_type from each other AND from the existing loglines where possible.
+
+Return JSON:
+{{
+  "loglines": [
+    {{
+      "text": "ONE sentence, sharp enough to be a tweet",
+      "approach": "fresh_angle_1 or fresh_angle_2 (name your specific approach)",
+      "format_type": "visual_punchline | exchange | cold_reveal | demonstration",
+      "featured_characters": ["Billy", ...],
+      "visual_hook": "One frozen frame, one idea, one sentence",
+      "news_essence": "The real-world news story in plain language"
+    }}
+  ]
+}}\
+"""
+
+SCRIPT_REVIEW_PROMPT = """\
+You are a comedy EDITOR reviewing a cartoon script. You did NOT write this — \
+your job is to find what is NOT working and provide specific, actionable feedback.
+
+The script is for a 15-second cartoon that explains a news story through comedy. \
+The lead character Billy delivers news while the visual scene amplifies the joke.
+
+## Characters & Art Style
+{context}
+
+## News headline
+{title}
+
+## Format type
+{format_type}
+
+## Script to review
+{script_json}
+
+## Evaluation criteria
+
+Evaluate the script on these axes. For each, answer true/false and give \
+a 1-2 sentence reason:
+
+1. **dialogue_funny** — Read each line aloud. Does at least one make you \
+laugh or smile? Apply these tests:
+   - Last line test: does the final line land as a punchline?
+   - Bar test: would you repeat this joke to a friend?
+   - If the dialogue only states facts without comedy framing, it FAILS.
+
+2. **news_clear** — Would a viewer who never heard this headline understand \
+the news story from the dialogue alone? Billy must state the fact in plain \
+language — no jargon, no assumed knowledge.
+
+3. **format_consistent** — Does the dialogue count match the format type? \
+(visual_punchline: 1-2 lines, exchange: 2-4 lines, cold_reveal: 1 line, \
+demonstration: 1-2 lines). Is transformation present only for demonstration \
+format? Is it empty for others?
+
+4. **visual_specific** — Does the scene_prompt contain specific objects with \
+names (not "a device" but "iPhone 16 Pro"), materials, scale relationships, \
+and THE WRONGNESS (the absurd element)? Is it 60-100 words? Is it affirmative \
+only (no "there is no X")?
+
+5. **emotion_match** — Does billy_emotion match the story's emotional valence? \
+A betrayal story should not have billy_emotion="amused". A wonder story should \
+not have billy_emotion="deadpan".
+
+## Output format
+
+Return JSON:
+{{
+  "dialogue_funny": {{"pass": true, "reason": "..."}},
+  "news_clear": {{"pass": true, "reason": "..."}},
+  "format_consistent": {{"pass": true, "reason": "..."}},
+  "visual_specific": {{"pass": true, "reason": "..."}},
+  "emotion_match": {{"pass": true, "reason": "..."}},
+  "overall_verdict": "pass or needs_revision",
+  "revision_notes": "Specific, actionable rewrite instructions. Address each \
+failing axis. Be concrete: 'Billy\\'s line X just states a fact — reframe as: \
+[specific suggestion]'. Empty string if overall_verdict is pass."
+}}
+
+Set overall_verdict to "pass" ONLY if all five axes pass. Otherwise "needs_revision".\
+"""
+
+SCRIPT_REVISION_PROMPT = """\
+You are a comedy writer receiving editorial feedback on your cartoon script. \
+Your job is to execute the revision precisely — address every note, keep what \
+works, and return a complete revised script.
+
+## Characters & Art Style
+{context}
+
+## News headline
+{title}
+
+## Format type
+{format_type}
+
+## Original script
+{original_script_json}
+
+## Editor feedback
+{feedback_json}
+
+## Specific revision instructions
+{revision_notes}
+
+## Rules
+
+1. Address EVERY point in the revision instructions.
+2. If the editor says dialogue is funny — do NOT rewrite dialogue.
+3. If the editor says news is clear — do NOT change how news is delivered.
+4. Keep the same format_type, same number of scenes, same characters.
+5. The scene_prompt describes the STARTING STATE — one frozen photograph. \
+No motion, no art technique words, affirmative only.
+6. Billy must state the news fact in plain language in at least one line.
+7. Output the COMPLETE revised script — do not omit any fields.
+
+## Output format
+
+Return JSON with the same structure as the original script:
+{{
+  "title": "...",
+  "scenes": [
+    {{
+      "scene_number": 1,
+      "scene_title": "...",
+      "setting": "...",
+      "scene_prompt": "...",
+      "dialogue": [{{"character": "...", "line": "..."}}],
+      "visual_gag": "...",
+      "audio_direction": "...",
+      "duration_seconds": 15,
+      "camera_movement": "...",
+      "transformation": "",
+      "billy_emotion": "..."
+    }}
+  ],
+  "end_card_prompt": "...",
+  "characters_used": ["..."]
+}}\
 """
