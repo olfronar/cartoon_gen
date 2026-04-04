@@ -357,7 +357,7 @@ class TestScoreItemsWithMockedAPI:
 
     def test_max_items_truncation(self):
         settings = Settings(anthropic_api_key="test-key")
-        items = [make_raw_item(title=f"Item {i}", url=f"https://ex.com/{i}") for i in range(150)]
+        items = [make_raw_item(title=f"Item {i}", url=f"https://ex.com/{i}") for i in range(80)]
 
         scored_data = [
             {
@@ -367,7 +367,7 @@ class TestScoreItemsWithMockedAPI:
                 "freshness": 1.0,
                 "comedy_angle": "angle",
             }
-            for i in range(100)
+            for i in range(50)
         ]
 
         stream_ctx = self._mock_claude_response(scored_data)
@@ -379,8 +379,8 @@ class TestScoreItemsWithMockedAPI:
 
             result = score_items(items, settings)
 
-        # Should only score first 100
-        assert len(result) == 100
+        # Should only score first 50
+        assert len(result) == 50
 
     def test_weighted_scoring_calculation(self):
         settings = Settings(anthropic_api_key="test-key")

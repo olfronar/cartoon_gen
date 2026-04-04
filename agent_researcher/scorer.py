@@ -14,7 +14,7 @@ from shared.utils import extract_json, extract_text, strip_code_fences
 logger = logging.getLogger(__name__)
 
 SCORING_MODEL = "claude-opus-4-6"
-MAX_ITEMS_TO_SCORE = 100
+MAX_ITEMS_TO_SCORE = 50
 MAX_RETRIES = 3
 RETRY_BACKOFF_BASE = 5  # seconds
 
@@ -111,7 +111,7 @@ def _call_scorer_once(client, items_json: str):
     """Single scorer API call. Returns (parsed_list, stop_reason) or raises."""
     with client.messages.stream(
         model=SCORING_MODEL,
-        max_tokens=65536,
+        max_tokens=32768,
         thinking={"type": "adaptive"},
         temperature=1,  # required when thinking is enabled
         messages=[{"role": "user", "content": SCORING_PROMPT + items_json}],
