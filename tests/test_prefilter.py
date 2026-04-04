@@ -37,23 +37,16 @@ class TestPrefilterNoKey:
 
 
 class TestPrefilterWithMockedAPI:
-    def _mock_sonnet_response(
-        self, scored_data: list[dict], *, stop_reason: str = "end_turn"
-    ) -> MagicMock:
-        """Build a mock streaming context manager returning scored_data as JSON."""
+    def _mock_sonnet_response(self, scored_data: list[dict]) -> MagicMock:
+        """Build a mock response for client.messages.create()."""
         text_block = MagicMock()
         text_block.type = "text"
         text_block.text = json.dumps(scored_data)
 
         message = MagicMock()
         message.content = [text_block]
-        message.stop_reason = stop_reason
-
-        stream_ctx = MagicMock()
-        stream_ctx.__enter__ = lambda s: s
-        stream_ctx.__exit__ = MagicMock(return_value=False)
-        stream_ctx.get_final_message.return_value = message
-        return stream_ctx
+        message.stop_reason = "end_turn"
+        return message
 
     def test_successful_prefilter(self):
         settings = Settings(anthropic_api_key="test-key")
@@ -61,20 +54,17 @@ class TestPrefilterWithMockedAPI:
             make_raw_item(title=f"Item {i}", url=f"https://ex.com/{i}", score=1) for i in range(10)
         ]
 
-        # Sonnet scores: items 0,2,4 get high scores, rest get low
         scores = [{"index": i, "score": 9.0 if i % 2 == 0 else 1.0} for i in range(10)]
-        stream_ctx = self._mock_sonnet_response(scores)
+        mock_response = self._mock_sonnet_response(scores)
 
         with patch("agent_researcher.prefilter.anthropic") as mock_anthropic:
             mock_client = MagicMock()
             mock_anthropic.Anthropic.return_value = mock_client
-            mock_client.messages.stream.return_value = stream_ctx
+            mock_client.messages.create.return_value = mock_response
 
             result = prefilter_items(items, settings)
 
-        # All 10 returned (fewer than PREFILTER_TOP_N)
         assert len(result) == 10
-        # High-scored items come first
         assert result[0].title == "Item 0"
         assert result[1].title == "Item 2"
 
@@ -87,12 +77,11 @@ class TestPrefilterWithMockedAPI:
         with patch("agent_researcher.prefilter.anthropic") as mock_anthropic:
             mock_client = MagicMock()
             mock_anthropic.Anthropic.return_value = mock_client
-            mock_client.messages.stream.side_effect = Exception("API down")
+            mock_client.messages.create.side_effect = Exception("API down")
 
             result = prefilter_items(items, settings)
 
         assert len(result) == PREFILTER_TOP_N
-        # Fallback sorts by raw score
         scores = [r.score for r in result]
         assert scores == sorted(scores, reverse=True)
 
@@ -102,15 +91,15 @@ class TestPrefilterWithMockedAPI:
 
         scores = [
             {"index": 0, "score": 8.0},
-            {"index": 999, "score": 10.0},  # invalid
-            {"index": -1, "score": 10.0},  # invalid
+            {"index": 999, "score": 10.0},
+            {"index": -1, "score": 10.0},
         ]
-        stream_ctx = self._mock_sonnet_response(scores)
+        mock_response = self._mock_sonnet_response(scores)
 
         with patch("agent_researcher.prefilter.anthropic") as mock_anthropic:
             mock_client = MagicMock()
             mock_anthropic.Anthropic.return_value = mock_client
-            mock_client.messages.stream.return_value = stream_ctx
+            mock_client.messages.create.return_value = mock_response
 
             result = prefilter_items(items, settings)
 
@@ -122,14 +111,33 @@ class TestPrefilterWithMockedAPI:
         items = [make_raw_item()]
 
         scores = [{"index": 0, "score": 5.0}]
-        stream_ctx = self._mock_sonnet_response(scores)
+        mock_response = self._mock_sonnet_response(scores)
 
         with patch("agent_researcher.prefilter.anthropic") as mock_anthropic:
             mock_client = MagicMock()
             mock_anthropic.Anthropic.return_value = mock_client
-            mock_client.messages.stream.return_value = stream_ctx
+            mock_client.messages.create.return_value = mock_response
 
             prefilter_items(items, settings)
 
-        call_kwargs = mock_client.messages.stream.call_args[1]
+        call_kwargs = mock_client.messages.create.call_args[1]
         assert "sonnet" in call_kwargs["model"]
+
+    def test_no_thinking_enabled(self):
+        """Prefilter uses temperature=0 without thinking for reliable JSON."""
+        settings = Settings(anthropic_api_key="test-key")
+        items = [make_raw_item()]
+
+        scores = [{"index": 0, "score": 5.0}]
+        mock_response = self._mock_sonnet_response(scores)
+
+        with patch("agent_researcher.prefilter.anthropic") as mock_anthropic:
+            mock_client = MagicMock()
+            mock_anthropic.Anthropic.return_value = mock_client
+            mock_client.messages.create.return_value = mock_response
+
+            prefilter_items(items, settings)
+
+        call_kwargs = mock_client.messages.create.call_args[1]
+        assert call_kwargs["temperature"] == 0
+        assert "thinking" not in call_kwargs

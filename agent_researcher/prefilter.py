@@ -8,7 +8,7 @@ import anthropic
 
 from shared.config import Settings
 from shared.models import RawItem
-from shared.utils import extract_json, extract_text, strip_code_fences
+from shared.utils import extract_json
 
 logger = logging.getLogger(__name__)
 
@@ -36,22 +36,21 @@ Return a JSON array with one object per item:
 
 Every item must appear exactly once. No other keys needed.
 
+Output ONLY the JSON array, no commentary or explanation.
+
 Items:
 """
 
 
 def _call_prefilter(client, items_json: str) -> list[dict]:
     """Call Sonnet for fast pre-filtering. Returns parsed list or raises."""
-    with client.messages.stream(
+    response = client.messages.create(
         model=PREFILTER_MODEL,
         max_tokens=4096,
-        thinking={"type": "adaptive"},
-        temperature=1,
+        temperature=0,
         messages=[{"role": "user", "content": PREFILTER_PROMPT + items_json}],
-    ) as stream:
-        response = stream.get_final_message()
-
-    text = strip_code_fences(extract_text(response))
+    )
+    text = response.content[0].text
     return extract_json(text, expect=list)
 
 
