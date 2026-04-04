@@ -9,7 +9,7 @@ import anthropic
 
 from shared.config import Settings
 from shared.models import RawItem, ScoredItem
-from shared.utils import extract_text, strip_code_fences
+from shared.utils import extract_json, extract_text, strip_code_fences
 
 logger = logging.getLogger(__name__)
 
@@ -102,67 +102,119 @@ Items:
 """
 
 
+_REFUSAL = "refusal"
+_MAX_TOKENS = "max_tokens"
+_MIN_SPLIT_SIZE = 3  # don't split batches smaller than this
+
+
+def _call_scorer_once(client, items_json: str):
+    """Single scorer API call. Returns (parsed_list, stop_reason) or raises."""
+    with client.messages.stream(
+        model=SCORING_MODEL,
+        max_tokens=65536,
+        thinking={"type": "adaptive"},
+        temperature=1,  # required when thinking is enabled
+        messages=[{"role": "user", "content": SCORING_PROMPT + items_json}],
+    ) as stream:
+        response = stream.get_final_message()
+
+    if response.stop_reason == _REFUSAL:
+        return None, _REFUSAL
+
+    text = strip_code_fences(extract_text(response))
+
+    if not text.strip():
+        block_types = [
+            f"{b.type}({len(getattr(b, 'thinking', '') or getattr(b, 'text', ''))}ch)"
+            for b in response.content
+        ]
+        raise ValueError(
+            f"empty response text. Content blocks: {block_types}, "
+            f"stop_reason: {response.stop_reason}"
+        )
+
+    if response.stop_reason == _MAX_TOKENS:
+        logger.warning("Response hit max_tokens — batch too large for single call")
+        return None, _MAX_TOKENS
+
+    scored_data = extract_json(text, expect=list)
+    return scored_data, response.stop_reason
+
+
 def _call_scorer_with_retry(client, items_json: str) -> list[dict] | None:
     """Call Claude scorer with retries. Returns parsed JSON array or None on failure."""
     last_error = None
     for attempt in range(1, MAX_RETRIES + 1):
         try:
-            with client.messages.stream(
-                model=SCORING_MODEL,
-                max_tokens=32768,
-                thinking={"type": "adaptive"},
-                temperature=1,  # required when thinking is enabled
-                messages=[{"role": "user", "content": SCORING_PROMPT + items_json}],
-            ) as stream:
-                response = stream.get_final_message()
+            scored_data, stop_reason = _call_scorer_once(client, items_json)
         except Exception as exc:
             last_error = exc
-            logger.warning("Scorer API call failed (attempt %d/%d): %s", attempt, MAX_RETRIES, exc)
+            logger.warning("Scorer failed (attempt %d/%d): %s", attempt, MAX_RETRIES, exc)
             if attempt < MAX_RETRIES:
                 backoff = RETRY_BACKOFF_BASE * (2 ** (attempt - 1))
                 logger.info("Retrying in %ds...", backoff)
                 time.sleep(backoff)
             continue
 
-        text = strip_code_fences(extract_text(response))
+        if stop_reason == _REFUSAL:
+            logger.warning("Scorer refused the batch (attempt %d/%d)", attempt, MAX_RETRIES)
+            return None  # caller handles refusal via batch splitting
 
-        try:
-            scored_data = json.loads(text)
-            if isinstance(scored_data, list):
-                return scored_data
-            logger.warning("Scorer returned non-array JSON (attempt %d/%d)", attempt, MAX_RETRIES)
-        except json.JSONDecodeError as exc:
-            last_error = exc
-            logger.warning(
-                "Failed to parse scorer JSON (attempt %d/%d):\n%s",
-                attempt,
-                MAX_RETRIES,
-                text[:500],
-            )
+        if stop_reason == _MAX_TOKENS:
+            return None  # retrying won't help — trigger batch split
 
-        if attempt < MAX_RETRIES:
-            backoff = RETRY_BACKOFF_BASE * (2 ** (attempt - 1))
-            logger.info("Retrying in %ds...", backoff)
-            time.sleep(backoff)
+        if scored_data is not None:
+            return scored_data
 
     logger.error("Scorer failed after %d attempts. Last error: %s", MAX_RETRIES, last_error)
     return None
 
 
-def _prepare_items_json(items: list[RawItem]) -> str:
-    serializable = []
-    for i, item in enumerate(items):
-        serializable.append(
-            {
-                "index": i,
-                "title": item.title,
-                "url": item.url,
-                "sources": item.sources,
-                "score": item.score,
-                "snippet": item.snippet,
-            }
+def _score_batch_with_split(client, items: list[dict], *, depth: int = 0) -> list[dict]:
+    """Score a batch, splitting on refusal to isolate problematic items.
+
+    Returns scored entries (possibly partial if some sub-batches were refused).
+    """
+    items_json = json.dumps(items)
+    scored = _call_scorer_with_retry(client, items_json)
+    if scored is not None:
+        return scored
+
+    # Refusal or total failure — try splitting
+    if len(items) < _MIN_SPLIT_SIZE:
+        titles = [it.get("title", "?")[:60] for it in items]
+        logger.warning(
+            "Dropping %d items after refusal (too small to split): %s", len(items), titles
         )
-    return json.dumps(serializable)
+        return []
+
+    mid = len(items) // 2
+    left, right = items[:mid], items[mid:]
+    logger.info(
+        "Splitting refused batch (%d items) into halves (%d + %d), depth=%d",
+        len(items),
+        len(left),
+        len(right),
+        depth,
+    )
+    scored_left = _score_batch_with_split(client, left, depth=depth + 1)
+    scored_right = _score_batch_with_split(client, right, depth=depth + 1)
+    return scored_left + scored_right
+
+
+def _prepare_items_list(items: list[RawItem]) -> list[dict]:
+    """Build serializable item dicts with original indices for scorer prompt."""
+    return [
+        {
+            "index": i,
+            "title": item.title,
+            "url": item.url,
+            "sources": item.sources,
+            "score": item.score,
+            "snippet": item.snippet,
+        }
+        for i, item in enumerate(items)
+    ]
 
 
 def score_items(items: list[RawItem], settings: Settings) -> list[ScoredItem]:
@@ -173,12 +225,12 @@ def score_items(items: list[RawItem], settings: Settings) -> list[ScoredItem]:
 
     # Cap items to avoid huge prompts
     to_score = items[:MAX_ITEMS_TO_SCORE]
-    items_json = _prepare_items_json(to_score)
+    serializable = _prepare_items_list(to_score)
 
     client = anthropic.Anthropic(api_key=settings.anthropic_api_key)
 
-    scored_data = _call_scorer_with_retry(client, items_json)
-    if scored_data is None:
+    scored_data = _score_batch_with_split(client, serializable)
+    if not scored_data:
         print(
             "⚠ WARNING: LLM scoring failed after retries"
             " — using fallback scoring (no comedy angles)"

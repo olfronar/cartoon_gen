@@ -4,7 +4,7 @@ from unittest.mock import MagicMock, patch
 from agent_researcher.scorer import (
     SCORE_WEIGHTS,
     _fallback_scoring,
-    _prepare_items_json,
+    _prepare_items_list,
     score_items,
 )
 from shared.config import Settings
@@ -44,20 +44,20 @@ class TestFallbackScoring:
         assert result[0].comedy_angle == ""
 
 
-class TestPrepareItemsJson:
-    def test_returns_valid_json(self):
+class TestPrepareItemsList:
+    def test_returns_valid_list(self):
         items = [make_raw_item(title="Test", score=42)]
-        result = _prepare_items_json(items)
-        parsed = json.loads(result)
-        assert len(parsed) == 1
-        assert parsed[0]["title"] == "Test"
-        assert parsed[0]["score"] == 42
-        assert parsed[0]["index"] == 0
+        result = _prepare_items_list(items)
+        assert len(result) == 1
+        assert result[0]["title"] == "Test"
+        assert result[0]["score"] == 42
+        assert result[0]["index"] == 0
 
-    def test_no_indent(self):
+    def test_serializable_to_json(self):
         items = [make_raw_item()]
-        result = _prepare_items_json(items)
-        assert "\n" not in result
+        result = _prepare_items_list(items)
+        serialized = json.dumps(result)
+        assert "\n" not in serialized
 
 
 class TestScoreItemsNoKey:
@@ -70,7 +70,9 @@ class TestScoreItemsNoKey:
 
 
 class TestScoreItemsWithMockedAPI:
-    def _mock_claude_response(self, scored_data: list[dict]) -> MagicMock:
+    def _mock_claude_response(
+        self, scored_data: list[dict], *, stop_reason: str = "end_turn"
+    ) -> MagicMock:
         """Build a mock streaming context manager returning scored_data as JSON."""
         text_block = MagicMock()
         text_block.type = "text"
@@ -78,6 +80,7 @@ class TestScoreItemsWithMockedAPI:
 
         message = MagicMock()
         message.content = [text_block]
+        message.stop_reason = stop_reason
 
         stream_ctx = MagicMock()
         stream_ctx.__enter__ = lambda s: s
@@ -184,6 +187,58 @@ class TestScoreItemsWithMockedAPI:
         assert len(result) == 1
         assert result[0].total_score == 42.0
         assert result[0].comedy_potential == 0
+
+    def test_max_tokens_triggers_split_not_retry(self):
+        """When response is truncated (max_tokens), split immediately instead of retrying."""
+        settings = Settings(anthropic_api_key="test-key")
+        items = [
+            make_raw_item(title=f"Item {i}", url=f"https://ex.com/{i}", score=10) for i in range(6)
+        ]
+
+        # First call: truncated response (max_tokens) for full batch
+        truncated_ctx = self._mock_claude_response([], stop_reason="max_tokens")
+        truncated_ctx.get_final_message.return_value.content[
+            0
+        ].text = '[{"index": 0, "comedy_potential": 5.0, "comedy_angle": "truncat'
+
+        # Second + third calls: successful halves
+        left_data = [
+            {
+                "index": i,
+                "comedy_potential": 7.0,
+                "cultural_resonance": 5.0,
+                "freshness": 5.0,
+                "comedy_angle": "angle",
+            }
+            for i in range(3)
+        ]
+        right_data = [
+            {
+                "index": i,
+                "comedy_potential": 6.0,
+                "cultural_resonance": 4.0,
+                "freshness": 4.0,
+                "comedy_angle": "angle",
+            }
+            for i in range(3, 6)
+        ]
+        left_ctx = self._mock_claude_response(left_data)
+        right_ctx = self._mock_claude_response(right_data)
+
+        with patch("agent_researcher.scorer.anthropic") as mock_anthropic:
+            mock_client = MagicMock()
+            mock_anthropic.Anthropic.return_value = mock_client
+            mock_client.messages.stream.side_effect = [
+                truncated_ctx,
+                left_ctx,
+                right_ctx,
+            ]
+
+            result = score_items(items, settings)
+
+        assert len(result) == 6
+        # Only 3 calls: 1 truncated + 2 halves (no wasted retries)
+        assert mock_client.messages.stream.call_count == 3
 
     def test_api_exception_falls_back(self):
         settings = Settings(anthropic_api_key="test-key")
