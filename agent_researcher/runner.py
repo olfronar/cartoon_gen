@@ -11,6 +11,7 @@ from .alerts import alert_failure, alert_success
 from .brief import generate_brief
 from .dedup import dedup_and_filter, filter_already_covered
 from .delivery import deliver_brief
+from .prefilter import prefilter_items
 from .scorer import score_items
 from .sources import get_active_sources
 
@@ -84,7 +85,11 @@ async def _pipeline(settings: Settings) -> ComedyBrief:
     with contextlib.suppress(OSError):
         filtered = filter_already_covered(filtered, settings.output_dir)
 
-    # LLM scoring
+    # LLM pre-filter (Sonnet — fast ranking)
+    filtered = await asyncio.to_thread(prefilter_items, filtered, settings)
+    logger.info("After prefilter: %d items", len(filtered))
+
+    # LLM scoring (Opus — deep analysis)
     scored = await asyncio.to_thread(score_items, filtered, settings)
 
     # Generate brief
