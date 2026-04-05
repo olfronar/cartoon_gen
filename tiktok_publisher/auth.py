@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+import base64
+import hashlib
 import json
 import logging
 import secrets
@@ -28,6 +30,11 @@ def authorize(settings: Settings) -> dict:
     port = settings.tiktok_redirect_port
     redirect_uri = f"http://localhost:{port}/callback"
 
+    # PKCE: generate code_verifier and code_challenge (S256)
+    code_verifier = secrets.token_urlsafe(64)
+    challenge_digest = hashlib.sha256(code_verifier.encode("ascii")).digest()
+    code_challenge = base64.urlsafe_b64encode(challenge_digest).rstrip(b"=").decode("ascii")
+
     params = urllib.parse.urlencode(
         {
             "client_key": settings.tiktok_client_key,
@@ -35,6 +42,8 @@ def authorize(settings: Settings) -> dict:
             "scope": "video.publish,video.upload",
             "redirect_uri": redirect_uri,
             "state": state,
+            "code_challenge": code_challenge,
+            "code_challenge_method": "S256",
         }
     )
     auth_url = f"{_AUTH_URL}?{params}"
@@ -60,7 +69,7 @@ def authorize(settings: Settings) -> dict:
         raise RuntimeError(f"Authorization failed: {result['error']}")
 
     code = result["code"]
-    token_data = _exchange_code(settings, code, redirect_uri)
+    token_data = _exchange_code(settings, code, redirect_uri, code_verifier)
     _save_tokens(settings, token_data)
 
     print(f"Authorization successful! Tokens saved to {settings.tiktok_tokens_path}")
@@ -120,7 +129,7 @@ def load_tokens(settings: Settings) -> dict:
     return tokens
 
 
-def _exchange_code(settings: Settings, code: str, redirect_uri: str) -> dict:
+def _exchange_code(settings: Settings, code: str, redirect_uri: str, code_verifier: str) -> dict:
     """Exchange authorization code for tokens."""
     data = urllib.parse.urlencode(
         {
@@ -129,6 +138,7 @@ def _exchange_code(settings: Settings, code: str, redirect_uri: str) -> dict:
             "code": code,
             "grant_type": "authorization_code",
             "redirect_uri": redirect_uri,
+            "code_verifier": code_verifier,
         }
     ).encode("utf-8")
 
