@@ -61,9 +61,7 @@ def authorize(settings: Settings) -> dict:
     redirect_uri = f"{tunnel_url}/callback"
     print(f"\nTunnel ready! Your redirect URI is:\n\n  {redirect_uri}\n")
     print("Register this URI in your TikTok Developer portal (app Settings > Redirect URI).")
-    print("Press Enter when done...")
-    with contextlib.suppress(EOFError):
-        input()
+    _prompt_enter("Press Enter when done...")
 
     state = secrets.token_urlsafe(32)
 
@@ -185,6 +183,15 @@ def _wait_for_tunnel_url(proc: subprocess.Popen, timeout: int = 30) -> str | Non
         if match:
             return match.group(1)
     return None
+
+
+def _prompt_enter(msg: str) -> None:
+    """Print a message and wait for Enter, resetting terminal first."""
+    # cloudflared corrupts terminal even with piped I/O — force reset
+    subprocess.run(["stty", "sane"], stdin=sys.stdin, check=False)
+    print(msg)
+    with contextlib.suppress(EOFError):
+        input()
 
 
 def _save_terminal() -> object | None:
