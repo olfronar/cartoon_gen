@@ -82,7 +82,7 @@ class Settings:
     tiktok_client_key: str = ""
     tiktok_client_secret: str = ""
     tiktok_tokens_path: Path = field(default_factory=lambda: Path("output/tiktok_tokens.json"))
-    tiktok_redirect_uri: str = ""
+    tiktok_redirect_port: int = 8585
     tiktok_privacy_level: str = "SELF_ONLY"
 
 
@@ -131,7 +131,7 @@ def load_settings(env_path: str = ".env") -> Settings:
         tiktok_client_key=values.get("TIKTOK_CLIENT_KEY", ""),
         tiktok_client_secret=values.get("TIKTOK_CLIENT_SECRET", ""),
         tiktok_tokens_path=Path(values.get("TIKTOK_TOKENS_PATH", "output/tiktok_tokens.json")),
-        tiktok_redirect_uri=values.get("TIKTOK_REDIRECT_URI", ""),
+        tiktok_redirect_port=int(values.get("TIKTOK_REDIRECT_PORT", "8585")),
         tiktok_privacy_level=values.get("TIKTOK_PRIVACY_LEVEL", "SELF_ONLY"),
     )
 

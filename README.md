@@ -154,7 +154,7 @@ uv run python -m tiktok_publisher upload --date 2026-04-02
 uv run python -m tiktok_publisher upload --privacy PUBLIC_TO_EVERYONE
 ```
 
-Requires `TIKTOK_CLIENT_KEY`, `TIKTOK_CLIENT_SECRET`, and `TIKTOK_REDIRECT_URI` from the [TikTok Developer portal](https://developers.tiktok.com/). The redirect URI must exactly match what's registered in your app settings. During auth, you'll be prompted to paste the callback URL from your browser.
+Requires `TIKTOK_CLIENT_KEY` and `TIKTOK_CLIENT_SECRET` from the [TikTok Developer portal](https://developers.tiktok.com/), and `cloudflared` CLI installed. During auth, a cloudflared tunnel provides an HTTPS redirect URI — register it in your TikTok app settings when prompted.
 
 ## Project Structure
 

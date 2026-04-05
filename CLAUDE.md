@@ -177,7 +177,7 @@ Environment variables loaded from `.env` (see `.env.example` for template). Miss
 
 Required: `ANTHROPIC_API_KEY` (without it, scorer falls back to raw score sorting — no comedy angles).
 
-Required for static shots: `GOOGLE_API_KEY` (Gemini image generation). Required for video: `XAI_API_KEY` (xAI grok-imagine-video). Optional: `ANTHROPIC_API_KEY` enables Claude prompt rewriting (falls back to regex stripping for shots, original prompts for video). Required for captions: `OPENAI_API_KEY` (OpenAI Whisper API). Optional: `WHISPER_MODEL` (default: `whisper-1`). Optional shot verification: `SHOTS_VERIFY` (enable visual verification, default: false), `SHOTS_CANDIDATES` (candidates per scene, default: 1), `SHOTS_VERIFY_MODEL` (default: `claude-opus-4-6`), `SHOTS_VERIFY_MAX_TOKENS` (default: 4096). Required for TikTok publishing: `TIKTOK_CLIENT_KEY`, `TIKTOK_CLIENT_SECRET`, `TIKTOK_REDIRECT_URI` (from TikTok Developer portal — must match registered redirect URI). Optional: `TIKTOK_PRIVACY_LEVEL` (default: `SELF_ONLY`).
+Required for static shots: `GOOGLE_API_KEY` (Gemini image generation). Required for video: `XAI_API_KEY` (xAI grok-imagine-video). Optional: `ANTHROPIC_API_KEY` enables Claude prompt rewriting (falls back to regex stripping for shots, original prompts for video). Required for captions: `OPENAI_API_KEY` (OpenAI Whisper API). Optional: `WHISPER_MODEL` (default: `whisper-1`). Optional shot verification: `SHOTS_VERIFY` (enable visual verification, default: false), `SHOTS_CANDIDATES` (candidates per scene, default: 1), `SHOTS_VERIFY_MODEL` (default: `claude-opus-4-6`), `SHOTS_VERIFY_MAX_TOKENS` (default: 4096). Required for TikTok publishing: `TIKTOK_CLIENT_KEY`, `TIKTOK_CLIENT_SECRET` (from TikTok Developer portal). Requires `cloudflared` CLI installed. Optional: `TIKTOK_REDIRECT_PORT` (default: 8585), `TIKTOK_PRIVACY_LEVEL` (default: `SELF_ONLY`).
 
 ## Documentation Maintenance
 
@@ -332,15 +332,15 @@ Pipeline: OAuth authentication (one-time) → find per-script videos (prefer cap
 
 ### Pipeline stages
 
-- **Auth** (`auth.py`): TikTok OAuth 2.0 authorization code flow. Starts a local HTTP server to receive the callback, opens browser for user consent, exchanges code for tokens. Tokens saved to `output/tiktok_tokens.json`. Auto-refreshes expired access tokens (24h lifetime). Refresh tokens rotate on each use (365-day lifetime).
+- **Auth** (`auth.py`): TikTok OAuth 2.0 authorization code flow with PKCE. Starts a cloudflared tunnel to expose a local HTTP server with an HTTPS URL (TikTok requires non-localhost redirect URIs). User registers the tunnel URL in TikTok Developer portal, then authorizes in browser. Callback is handled automatically. Tokens saved to `output/tiktok_tokens.json`. Auto-refreshes expired access tokens (24h lifetime). Refresh tokens rotate on each use (365-day lifetime).
 - **Video finder** (`pipeline/video_finder.py`): Scans `output/videos/` for date directories. Prefers `script_video_captioned.mp4`, falls back to `script_video.mp4`. Auto-detects latest date.
 - **Uploader** (`pipeline/uploader.py`): TikTok Direct Post with chunked FILE_UPLOAD. Init → sequential chunk PUT (5-64MB chunks) → poll status until `PUBLISH_COMPLETE`. Sets `is_aigc=true` for AI-generated content disclosure.
 - **Runner** (`pipeline/runner.py`): Async orchestrator. Sequential uploads (TikTok rate limit: 6 req/min on init). Reads `CartoonScript` from JSON sidecar for title + logline. Continues on individual upload failures.
 
 ### Auth flow
 
-1. Set `TIKTOK_REDIRECT_URI` in `.env` — must exactly match the redirect URI registered in the TikTok Developer portal
-2. `python -m tiktok_publisher auth` — opens browser, user authorizes on TikTok, gets redirected, pastes the full callback URL back into the terminal
+1. `python -m tiktok_publisher auth` — starts a cloudflared tunnel, shows the HTTPS redirect URI to register in the TikTok Developer portal
+2. After registering the URI, press Enter — opens browser for TikTok authorization, callback is handled automatically via the tunnel
 3. Tokens auto-refresh on expiry during upload; force refresh via `auth --refresh`
 
 ### Output
