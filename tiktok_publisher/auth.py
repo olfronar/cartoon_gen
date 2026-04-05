@@ -32,12 +32,12 @@ def authorize(settings: Settings) -> dict:
 
     port = settings.tiktok_redirect_port
 
-    # Start cloudflared tunnel
+    # Start cloudflared tunnel (logs go to stderr)
     print(f"Starting cloudflared tunnel on port {port}...")
     tunnel_proc = subprocess.Popen(
         ["cloudflared", "tunnel", "--url", f"http://localhost:{port}"],
-        stdout=subprocess.PIPE,
-        stderr=subprocess.STDOUT,
+        stdout=subprocess.DEVNULL,
+        stderr=subprocess.PIPE,
         text=True,
     )
 
@@ -46,8 +46,8 @@ def authorize(settings: Settings) -> dict:
         tunnel_proc.terminate()
         raise RuntimeError("Failed to start cloudflared tunnel — is cloudflared installed?")
 
-    # Drain remaining cloudflared output in background so pipe doesn't block
-    Thread(target=_drain_pipe, args=(tunnel_proc.stdout,), daemon=True).start()
+    # Drain remaining cloudflared stderr in background so pipe doesn't block
+    Thread(target=_drain_pipe, args=(tunnel_proc.stderr,), daemon=True).start()
 
     redirect_uri = f"{tunnel_url}/callback"
     print(f"\nTunnel ready! Your redirect URI is:\n\n  {redirect_uri}\n")
@@ -163,11 +163,11 @@ def load_tokens(settings: Settings) -> dict:
 
 
 def _wait_for_tunnel_url(proc: subprocess.Popen, timeout: int = 30) -> str | None:
-    """Read cloudflared output until the tunnel URL appears."""
-    assert proc.stdout is not None
+    """Read cloudflared stderr until the tunnel URL appears."""
+    assert proc.stderr is not None
     deadline = time.monotonic() + timeout
     while time.monotonic() < deadline:
-        line = proc.stdout.readline()
+        line = proc.stderr.readline()
         if not line:
             if proc.poll() is not None:
                 return None
