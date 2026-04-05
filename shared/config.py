@@ -78,6 +78,13 @@ class Settings:
     video_duration: int = 15
     video_resolution: str = "720p"
 
+    # TikTok Publisher
+    tiktok_client_key: str = ""
+    tiktok_client_secret: str = ""
+    tiktok_tokens_path: Path = field(default_factory=lambda: Path("output/tiktok_tokens.json"))
+    tiktok_redirect_port: int = 8585
+    tiktok_privacy_level: str = "SELF_ONLY"
+
 
 def load_settings(env_path: str = ".env") -> Settings:
     values = dotenv_values(env_path)
@@ -121,6 +128,11 @@ def load_settings(env_path: str = ".env") -> Settings:
         video_output_dir=Path(values.get("VIDEO_OUTPUT_DIR", "output/videos")),
         video_duration=int(values.get("VIDEO_DURATION", "15")),
         video_resolution=values.get("VIDEO_RESOLUTION", "720p"),
+        tiktok_client_key=values.get("TIKTOK_CLIENT_KEY", ""),
+        tiktok_client_secret=values.get("TIKTOK_CLIENT_SECRET", ""),
+        tiktok_tokens_path=Path(values.get("TIKTOK_TOKENS_PATH", "output/tiktok_tokens.json")),
+        tiktok_redirect_port=int(values.get("TIKTOK_REDIRECT_PORT", "8585")),
+        tiktok_privacy_level=values.get("TIKTOK_PRIVACY_LEVEL", "SELF_ONLY"),
     )
 
     if not settings.anthropic_api_key:

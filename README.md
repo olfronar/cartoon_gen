@@ -1,6 +1,6 @@
 # Cartoon Maker
 
-AI-powered pipeline that discovers trending topics, writes comedy scripts, generates static shot keyframes, assembles final cartoon videos with native audio, and adds whisper-based captions.
+AI-powered pipeline that discovers trending topics, writes comedy scripts, generates static shot keyframes, assembles final cartoon videos with native audio, adds whisper-based captions, and publishes to TikTok.
 
 Free to use, modify, and distribute — [MIT License](LICENSE).
 
@@ -20,6 +20,9 @@ trending news ──▶ Agent Researcher ──▶ daily brief (.md + .json)
                                             │
                                             ▼
                   Caption Maker ──▶ captioned video with subtitles
+                                            │
+                                            ▼
+                  TikTok Publisher ──▶ individual posts per script
 ```
 
 Each agent is a self-contained module. Agents communicate through JSON sidecars — the output of one feeds into the next. Cross-agent utilities (data contracts, config, shared helpers) live in `shared/`.
@@ -56,12 +59,14 @@ uv run python -m script_writer.setup art-materials
 uv run python -m agent_researcher           # 1. Discover & score trends
 uv run python -m script_writer              # 2. Write comedy scripts
 uv run python -m static_shots_maker         # 3. Generate keyframe images
-uv run python -m video_designer             # 4. Produce final video
+uv run python -m video_designer             # 4. Produce per-script videos
 uv run python -m caption_maker              # 5. Add captions
+uv run python -m tiktok_publisher upload    # 6. Publish to TikTok
 
 # Each agent auto-detects the latest output from the previous stage.
 # To target a specific date, pass --date YYYY-MM-DD to any agent.
 # To pick specific news items: --pick 1,3,7 (1-based brief numbers)
+# To compile all scripts into one video: --compile (video_designer, caption_maker)
 ```
 
 ## Agent Researcher
@@ -117,12 +122,12 @@ Rewrites video-oriented scene prompts into image-optimized prompts via Claude (c
 
 ## Video Designer
 
-Composes video prompts from scene details + character profiles via Claude, generates 15s clips with native audio (dialogue, sound effects, ambient) via xAI grok-imagine-video, then assembles per-script videos and a final concatenated video with glitch transitions.
+Composes video prompts from scene details + character profiles via Claude, generates 15s clips with native audio (dialogue, sound effects, ambient) via xAI grok-imagine-video, then assembles per-script videos. Optionally compiles all scripts into one video with glitch transitions (`--compile`).
 
 **Output**:
 - `output/videos/<YYYY-MM-DD>_<N>/scene_<M>.mp4` — individual clips
 - `output/videos/<YYYY-MM-DD>_<N>/script_video.mp4` — per-script assembly
-- `output/videos/final_<YYYY-MM-DD>.mp4` — all scripts concatenated
+- `output/videos/final_<YYYY-MM-DD>.mp4` — all scripts concatenated (only with `--compile`)
 
 ## Caption Maker
 
@@ -130,8 +135,26 @@ Transcribes spoken audio from generated videos via the OpenAI Whisper API, gener
 
 **Output**:
 - `output/videos/<YYYY-MM-DD>_<N>/script_video_captioned.mp4` — captioned per-script video
-- `output/videos/final_<YYYY-MM-DD>_captioned.mp4` — all scripts captioned and concatenated
+- `output/videos/final_<YYYY-MM-DD>_captioned.mp4` — all scripts captioned and concatenated (only with `--compile`)
 - Original uncaptioned files are untouched
+
+## TikTok Publisher
+
+Uploads each per-script video as a separate TikTok post. Prefers captioned videos, falls back to uncaptioned. Uses TikTok's Direct Post API with chunked file upload. Content is flagged as AI-generated.
+
+```bash
+# One-time: authenticate (opens browser)
+uv run python -m tiktok_publisher auth
+
+# Upload latest videos
+uv run python -m tiktok_publisher upload
+
+# Upload with options
+uv run python -m tiktok_publisher upload --date 2026-04-02
+uv run python -m tiktok_publisher upload --privacy PUBLIC_TO_EVERYONE
+```
+
+Requires `TIKTOK_CLIENT_KEY` and `TIKTOK_CLIENT_SECRET` from the [TikTok Developer portal](https://developers.tiktok.com/). Redirect URI must be configured as `http://localhost:8585/callback` in the app settings.
 
 ## Project Structure
 
@@ -142,15 +165,16 @@ cartoon_maker/
 ├── static_shots_maker/  # Stage 3: static shot generation
 ├── video_designer/      # Stage 4: video assembly & final output
 ├── caption_maker/       # Stage 5: whisper-based video captions
+├── tiktok_publisher/    # Stage 6: TikTok video publishing
 ├── shared/              # Data contracts, config, LLM helpers, context loader
-├── tests/               # 221 tests (pytest)
+├── tests/               # 287 tests (pytest)
 └── output/              # All generated artifacts (gitignored)
 ```
 
 ## Testing
 
 ```bash
-uv run pytest tests/ -v             # Run all 221 tests
+uv run pytest tests/ -v             # Run all 287 tests
 uv run pytest tests/test_dedup.py   # Single file
 uv run ruff check .                 # Lint
 ```
@@ -167,4 +191,5 @@ See `.env.example` for the full list.
 | `GOOGLE_API_KEY` | Static shots, art materials | None (pipeline fails) |
 | `XAI_API_KEY` | Video generation, X/Twitter source | Video fails; X source skipped |
 | `OPENAI_API_KEY` | Captions | Caption pipeline fails |
+| `TIKTOK_CLIENT_KEY` + `SECRET` | TikTok publishing | Publisher fails |
 | Source credentials | Individual sources | Source skipped gracefully |

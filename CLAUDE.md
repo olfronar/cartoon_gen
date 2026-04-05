@@ -4,7 +4,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Project Overview
 
-Cartoon Maker is an AI-powered pipeline that automatically discovers trending topics from social media, writes comedy scripts, generates static shots, produces final cartoon videos, and adds whisper-based captions. The pipeline is composed of five independent agents that run sequentially.
+Cartoon Maker is an AI-powered pipeline that automatically discovers trending topics from social media, writes comedy scripts, generates static shots, produces final cartoon videos, adds whisper-based captions, and publishes to TikTok. The pipeline is composed of six independent agents that run sequentially.
 
 ## Architecture
 
@@ -18,6 +18,7 @@ cartoon_maker/
 ├── static_shots_maker/  # Stage 3: Static shot generation       [IMPLEMENTED]
 ├── video_designer/      # Stage 4: Video assembly & final output [IMPLEMENTED]
 ├── caption_maker/       # Stage 5: Whisper-based video captions  [IMPLEMENTED]
+├── tiktok_publisher/    # Stage 6: TikTok video publishing       [IMPLEMENTED]
 ```
 
 ### Agent Pipeline (sequential flow)
@@ -31,6 +32,8 @@ cartoon_maker/
 4. **video_designer** — Reads static shots + script JSONs, uses Claude to compose video prompts, generates 15s clips via xAI grok-imagine-video (with native audio), assembles with glitch transitions into final cartoon videos.
 
 5. **caption_maker** — Transcribes spoken audio from generated videos via OpenAI Whisper API, generates ASS subtitles with cumulative word reveal, and burns styled captions into videos via ffmpeg. Requires `OPENAI_API_KEY`.
+
+6. **tiktok_publisher** — Authenticates via TikTok OAuth, finds captioned (preferred) or raw per-script videos, reads script JSON for title/description, uploads videos individually via TikTok's Direct Post API (chunked FILE_UPLOAD). Content flagged as AI-generated (`is_aigc=true`). Requires `TIKTOK_CLIENT_KEY` + `TIKTOK_CLIENT_SECRET`.
 
 ### Design Principles
 
@@ -140,11 +143,32 @@ uv run python -m video_designer
 # Video Designer — generate videos from specific date
 uv run python -m video_designer --date 2026-03-15
 
+# Video Designer — also compile final video from all scripts
+uv run python -m video_designer --compile
+
 # Caption Maker — add captions to latest videos
 uv run python -m caption_maker
 
 # Caption Maker — add captions for specific date
 uv run python -m caption_maker --date 2026-03-15
+
+# Caption Maker — also compile final captioned video
+uv run python -m caption_maker --compile
+
+# TikTok Publisher — authenticate (opens browser for OAuth)
+uv run python -m tiktok_publisher auth
+
+# TikTok Publisher — force refresh tokens
+uv run python -m tiktok_publisher auth --refresh
+
+# TikTok Publisher — upload latest videos
+uv run python -m tiktok_publisher upload
+
+# TikTok Publisher — upload specific date
+uv run python -m tiktok_publisher upload --date 2026-04-02
+
+# TikTok Publisher — upload with specific privacy
+uv run python -m tiktok_publisher upload --privacy PUBLIC_TO_EVERYONE
 ```
 
 ### Config
@@ -153,7 +177,15 @@ Environment variables loaded from `.env` (see `.env.example` for template). Miss
 
 Required: `ANTHROPIC_API_KEY` (without it, scorer falls back to raw score sorting — no comedy angles).
 
-Required for static shots: `GOOGLE_API_KEY` (Gemini image generation). Required for video: `XAI_API_KEY` (xAI grok-imagine-video). Optional: `ANTHROPIC_API_KEY` enables Claude prompt rewriting (falls back to regex stripping for shots, original prompts for video). Required for captions: `OPENAI_API_KEY` (OpenAI Whisper API). Optional: `WHISPER_MODEL` (default: `whisper-1`). Optional shot verification: `SHOTS_VERIFY` (enable visual verification, default: false), `SHOTS_CANDIDATES` (candidates per scene, default: 1), `SHOTS_VERIFY_MODEL` (default: `claude-opus-4-6`), `SHOTS_VERIFY_MAX_TOKENS` (default: 4096).
+Required for static shots: `GOOGLE_API_KEY` (Gemini image generation). Required for video: `XAI_API_KEY` (xAI grok-imagine-video). Optional: `ANTHROPIC_API_KEY` enables Claude prompt rewriting (falls back to regex stripping for shots, original prompts for video). Required for captions: `OPENAI_API_KEY` (OpenAI Whisper API). Optional: `WHISPER_MODEL` (default: `whisper-1`). Optional shot verification: `SHOTS_VERIFY` (enable visual verification, default: false), `SHOTS_CANDIDATES` (candidates per scene, default: 1), `SHOTS_VERIFY_MODEL` (default: `claude-opus-4-6`), `SHOTS_VERIFY_MAX_TOKENS` (default: 4096). Required for TikTok publishing: `TIKTOK_CLIENT_KEY`, `TIKTOK_CLIENT_SECRET` (from TikTok Developer portal). Optional: `TIKTOK_REDIRECT_PORT` (default: 8585), `TIKTOK_PRIVACY_LEVEL` (default: `SELF_ONLY`).
+
+## Documentation Maintenance
+
+After completing any plan or significant update (new module, architectural change, new CLI flag, config change):
+- Update `CLAUDE.md` to reflect the new state: architecture diagram, agent pipeline, CLI commands, config docs, internals sections
+- Update `README.md` if it exists, to keep user-facing documentation accurate
+
+These files are the primary context for agents and users. Stale docs cause incorrect assumptions and wasted effort.
 
 ## Code Conventions
 
@@ -272,7 +304,7 @@ Pipeline: manifest + script ingestion → parallel video prompt composition (Cla
 ### Output
 
 - `output/videos/<YYYY-MM-DD>_<N>/scene_<M>.mp4` + `end_card.mp4` + `script_video.mp4` + `video_manifest.json` per script.
-- `output/videos/final_<YYYY-MM-DD>.mp4` — all scripts concatenated with glitch transitions + silence.
+- `output/videos/final_<YYYY-MM-DD>.mp4` — all scripts concatenated with glitch transitions + silence (only with `--compile` flag).
 - Video clips include native audio (dialogue, sound effects, ambient) generated by grok-imagine-video.
 
 ## Caption Maker Internals
@@ -291,6 +323,28 @@ Pipeline: find script_video.mp4 files → transcribe via OpenAI Whisper API (wor
 
 - `output/videos/<YYYY-MM-DD>_<N>/captions_filter.txt` — intermediate drawtext filter script (kept for debugging).
 - `output/videos/<YYYY-MM-DD>_<N>/script_video_captioned.mp4` — captioned per-script video.
-- `output/videos/final_<YYYY-MM-DD>_captioned.mp4` — all captioned scripts assembled with glitch transitions.
+- `output/videos/final_<YYYY-MM-DD>_captioned.mp4` — all captioned scripts assembled with glitch transitions (only with `--compile` flag).
 - Original uncaptioned files are untouched (non-destructive).
+
+## TikTok Publisher Internals
+
+Pipeline: OAuth authentication (one-time) → find per-script videos (prefer captioned) → read script JSON for title → chunked file upload via TikTok Direct Post API → poll until published. No LLM calls. Uses stdlib `urllib.request` + `http.server` (no extra dependencies).
+
+### Pipeline stages
+
+- **Auth** (`auth.py`): TikTok OAuth 2.0 authorization code flow. Starts a local HTTP server to receive the callback, opens browser for user consent, exchanges code for tokens. Tokens saved to `output/tiktok_tokens.json`. Auto-refreshes expired access tokens (24h lifetime). Refresh tokens rotate on each use (365-day lifetime).
+- **Video finder** (`pipeline/video_finder.py`): Scans `output/videos/` for date directories. Prefers `script_video_captioned.mp4`, falls back to `script_video.mp4`. Auto-detects latest date.
+- **Uploader** (`pipeline/uploader.py`): TikTok Direct Post with chunked FILE_UPLOAD. Init → sequential chunk PUT (5-64MB chunks) → poll status until `PUBLISH_COMPLETE`. Sets `is_aigc=true` for AI-generated content disclosure.
+- **Runner** (`pipeline/runner.py`): Async orchestrator. Sequential uploads (TikTok rate limit: 6 req/min on init). Reads `CartoonScript` from JSON sidecar for title + logline. Continues on individual upload failures.
+
+### Auth flow
+
+1. `python -m tiktok_publisher auth` — opens browser, user authorizes, tokens saved to `output/tiktok_tokens.json`
+2. Redirect URI must be configured as `http://localhost:8585/callback` in the TikTok Developer portal
+3. Tokens auto-refresh on expiry during upload; force refresh via `auth --refresh`
+
+### Output
+
+- `output/tiktok_tokens.json` — OAuth tokens (gitignored via `output/`)
+- Videos are uploaded individually (one TikTok post per script), not as a compiled video
 

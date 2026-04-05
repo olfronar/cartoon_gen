@@ -67,7 +67,7 @@ class TestCaptionRunner:
         mock_burn.return_value = vid_dir / "script_video_captioned.mp4"
 
         settings = _make_settings(tmp_path)
-        await run(settings=settings, target_date=None)
+        await run(settings=settings, target_date=None, compile=True)
 
         mock_transcribe.assert_called_once()
         mock_burn.assert_called_once()
@@ -107,7 +107,7 @@ class TestCaptionRunner:
         mock_burn.return_value = vid2_dir / "script_video_captioned.mp4"
 
         settings = _make_settings(tmp_path)
-        await run(settings=settings, target_date=None)
+        await run(settings=settings, target_date=None, compile=True)
 
         # Only one video should be burned (the one with speech)
         mock_burn.assert_called_once()

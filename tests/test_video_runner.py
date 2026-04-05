@@ -96,7 +96,7 @@ class TestVideoRunner:
         mock_assemble_script.side_effect = fake_assemble
         mock_assemble_final.side_effect = fake_assemble
 
-        await run(settings=settings, target_date=date(2026, 3, 15))
+        await run(settings=settings, target_date=date(2026, 3, 15), compile=True)
 
         # Check video manifest was written
         manifest_path = settings.video_output_dir / "2026-03-15_1" / "video_manifest.json"

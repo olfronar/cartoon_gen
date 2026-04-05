@@ -30,6 +30,7 @@ logger = logging.getLogger(__name__)
 async def run(
     settings: Settings | None = None,
     target_date: date | None = None,
+    compile: bool = False,
 ) -> Path:
     """Run the full video designer pipeline. Returns path to final video."""
     settings = settings or load_settings()
@@ -90,18 +91,22 @@ async def run(
         print("No script videos were produced.")
         return settings.video_output_dir
 
-    # Assemble final video
-    date_str = data[0].script.date.isoformat()
-    final_path = settings.video_output_dir / f"final_{date_str}.mp4"
+    if compile:
+        # Assemble final video from all script videos
+        date_str = data[0].script.date.isoformat()
+        final_path = settings.video_output_dir / f"final_{date_str}.mp4"
 
-    await asyncio.to_thread(
-        assemble_final_video,
-        [path for _, path in script_videos],
-        final_path,
-    )
+        await asyncio.to_thread(
+            assemble_final_video,
+            [path for _, path in script_videos],
+            final_path,
+        )
 
-    print(f"\nDone! Final video: {final_path}")
-    return final_path
+        print(f"\nDone! Final video: {final_path}")
+        return final_path
+
+    print(f"\nDone! {len(script_videos)} script video(s) produced.")
+    return settings.video_output_dir
 
 
 async def _process_script(

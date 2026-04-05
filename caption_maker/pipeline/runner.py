@@ -19,6 +19,7 @@ logger = logging.getLogger(__name__)
 async def run(
     settings: Settings | None = None,
     target_date: date | None = None,
+    compile: bool = False,
 ) -> Path:
     """Run the full caption maker pipeline. Returns path to final captioned video."""
     settings = settings or load_settings()
@@ -48,20 +49,24 @@ async def run(
         print("No videos were captioned.")
         return settings.video_output_dir
 
-    # Assemble final captioned video
-    from video_designer.pipeline.assembler import assemble_final_video
+    if compile:
+        # Assemble final captioned video
+        from video_designer.pipeline.assembler import assemble_final_video
 
-    date_str = videos[0][1].parent.name.rsplit("_", 1)[0]
-    final_path = settings.video_output_dir / f"final_{date_str}_captioned.mp4"
+        date_str = videos[0][1].parent.name.rsplit("_", 1)[0]
+        final_path = settings.video_output_dir / f"final_{date_str}_captioned.mp4"
 
-    await asyncio.to_thread(
-        assemble_final_video,
-        [path for _, path in captioned],
-        final_path,
-    )
+        await asyncio.to_thread(
+            assemble_final_video,
+            [path for _, path in captioned],
+            final_path,
+        )
 
-    print(f"\nDone! Captioned video: {final_path}")
-    return final_path
+        print(f"\nDone! Captioned video: {final_path}")
+        return final_path
+
+    print(f"\nDone! {len(captioned)} video(s) captioned.")
+    return settings.video_output_dir
 
 
 async def _process_video(

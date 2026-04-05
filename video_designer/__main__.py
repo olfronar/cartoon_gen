@@ -25,13 +25,19 @@ def main() -> None:
         default=None,
         help="Date to process (YYYY-MM-DD). Default: latest available.",
     )
+    parser.add_argument(
+        "--compile",
+        action="store_true",
+        default=False,
+        help="Assemble a final video from all script videos.",
+    )
     args = parser.parse_args()
 
     target_date = date.fromisoformat(args.date) if args.date else None
 
     from video_designer.pipeline.runner import run
 
-    asyncio.run(run(target_date=target_date))
+    asyncio.run(run(target_date=target_date, compile=args.compile))
 
 
 if __name__ == "__main__":
