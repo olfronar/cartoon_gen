@@ -9,9 +9,7 @@ import time
 import urllib.parse
 import urllib.request
 import webbrowser
-from http.server import BaseHTTPRequestHandler, HTTPServer
 from pathlib import Path
-from threading import Event
 
 from shared.config import Settings
 
@@ -22,13 +20,18 @@ _AUTH_URL = "https://www.tiktok.com/v2/auth/authorize/"
 
 
 def authorize(settings: Settings) -> dict:
-    """Run the full OAuth authorization flow. Opens browser, waits for callback."""
+    """Run the OAuth authorization flow via manual redirect URL paste."""
     if not settings.tiktok_client_key or not settings.tiktok_client_secret:
         raise RuntimeError("TIKTOK_CLIENT_KEY and TIKTOK_CLIENT_SECRET must be set in .env")
 
+    if not settings.tiktok_redirect_uri:
+        raise RuntimeError(
+            "TIKTOK_REDIRECT_URI must be set in .env "
+            "(must match the redirect URI registered in TikTok Developer portal)"
+        )
+
     state = secrets.token_urlsafe(32)
-    port = settings.tiktok_redirect_port
-    redirect_uri = f"http://localhost:{port}/callback"
+    redirect_uri = settings.tiktok_redirect_uri
 
     # PKCE: generate code_verifier and code_challenge (S256)
     code_verifier = secrets.token_urlsafe(64)
@@ -48,31 +51,34 @@ def authorize(settings: Settings) -> dict:
     )
     auth_url = f"{_AUTH_URL}?{params}"
 
-    # Shared state for callback handler
-    result: dict = {}
-    done = Event()
-
-    handler_class = _make_handler_class(state, result, done)
-    server = HTTPServer(("localhost", port), handler_class)
-
     print("Opening browser for TikTok authorization...")
     print(f"If the browser doesn't open, visit:\n  {auth_url}\n")
     webbrowser.open(auth_url)
 
-    # Wait for the callback
-    while not done.is_set():
-        server.handle_request()
+    print("After authorizing, you will be redirected to your redirect URI.")
+    print("Paste the FULL redirect URL from your browser here:\n")
+    callback_url = input("> ").strip()
 
-    server.server_close()
+    # Parse the callback URL
+    parsed = urllib.parse.urlparse(callback_url)
+    params_dict = urllib.parse.parse_qs(parsed.query)
 
-    if "error" in result:
-        raise RuntimeError(f"Authorization failed: {result['error']}")
+    if "error" in params_dict:
+        error_desc = params_dict.get("error_description", ["Unknown error"])[0]
+        raise RuntimeError(f"Authorization failed: {error_desc}")
 
-    code = result["code"]
+    received_state = params_dict.get("state", [None])[0]
+    if received_state != state:
+        raise RuntimeError("Authorization failed: state mismatch (CSRF check failed)")
+
+    if "code" not in params_dict:
+        raise RuntimeError("Authorization failed: no authorization code in redirect URL")
+
+    code = params_dict["code"][0]
     token_data = _exchange_code(settings, code, redirect_uri, code_verifier)
     _save_tokens(settings, token_data)
 
-    print(f"Authorization successful! Tokens saved to {settings.tiktok_tokens_path}")
+    print(f"\nAuthorization successful! Tokens saved to {settings.tiktok_tokens_path}")
     return token_data
 
 
@@ -179,63 +185,3 @@ def _read_tokens(settings: Settings) -> dict:
     if not path.is_file():
         return {}
     return json.loads(path.read_text(encoding="utf-8"))
-
-
-def _make_handler_class(state: str, result: dict, done: Event) -> type[BaseHTTPRequestHandler]:
-    """Create a handler class with shared state via closure."""
-
-    class Handler(BaseHTTPRequestHandler):
-        expected_state = state
-        callback_result = result
-        callback_done = done
-
-        def do_GET(self) -> None:
-            parsed = urllib.parse.urlparse(self.path)
-            params = urllib.parse.parse_qs(parsed.query)
-
-            if parsed.path != "/callback":
-                self.send_response(404)
-                self.end_headers()
-                return
-
-            # Check for error
-            if "error" in params:
-                self.callback_result["error"] = params["error"][0]
-                self._respond(
-                    400,
-                    f"<h1>Authorization Failed</h1>"
-                    f"<p>{params.get('error_description', ['Unknown error'])[0]}</p>",
-                )
-                self.callback_done.set()
-                return
-
-            # Validate state
-            received_state = params.get("state", [None])[0]
-            if received_state != self.expected_state:
-                self.callback_result["error"] = "state_mismatch"
-                self._respond(
-                    400,
-                    "<h1>Authorization Failed</h1><p>State mismatch (CSRF check failed).</p>",
-                )
-                self.callback_done.set()
-                return
-
-            # Success
-            self.callback_result["code"] = params["code"][0]
-            self._respond(
-                200,
-                "<h1>Authorization Successful!</h1>"
-                "<p>You can close this tab and return to the terminal.</p>",
-            )
-            self.callback_done.set()
-
-        def _respond(self, code: int, body: str) -> None:
-            self.send_response(code)
-            self.send_header("Content-Type", "text/html")
-            self.end_headers()
-            self.wfile.write(body.encode("utf-8"))
-
-        def log_message(self, format: str, *args) -> None:  # noqa: A002
-            """Suppress default HTTP server logging."""
-
-    return Handler

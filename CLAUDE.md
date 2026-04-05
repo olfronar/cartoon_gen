@@ -177,7 +177,7 @@ Environment variables loaded from `.env` (see `.env.example` for template). Miss
 
 Required: `ANTHROPIC_API_KEY` (without it, scorer falls back to raw score sorting — no comedy angles).
 
-Required for static shots: `GOOGLE_API_KEY` (Gemini image generation). Required for video: `XAI_API_KEY` (xAI grok-imagine-video). Optional: `ANTHROPIC_API_KEY` enables Claude prompt rewriting (falls back to regex stripping for shots, original prompts for video). Required for captions: `OPENAI_API_KEY` (OpenAI Whisper API). Optional: `WHISPER_MODEL` (default: `whisper-1`). Optional shot verification: `SHOTS_VERIFY` (enable visual verification, default: false), `SHOTS_CANDIDATES` (candidates per scene, default: 1), `SHOTS_VERIFY_MODEL` (default: `claude-opus-4-6`), `SHOTS_VERIFY_MAX_TOKENS` (default: 4096). Required for TikTok publishing: `TIKTOK_CLIENT_KEY`, `TIKTOK_CLIENT_SECRET` (from TikTok Developer portal). Optional: `TIKTOK_REDIRECT_PORT` (default: 8585), `TIKTOK_PRIVACY_LEVEL` (default: `SELF_ONLY`).
+Required for static shots: `GOOGLE_API_KEY` (Gemini image generation). Required for video: `XAI_API_KEY` (xAI grok-imagine-video). Optional: `ANTHROPIC_API_KEY` enables Claude prompt rewriting (falls back to regex stripping for shots, original prompts for video). Required for captions: `OPENAI_API_KEY` (OpenAI Whisper API). Optional: `WHISPER_MODEL` (default: `whisper-1`). Optional shot verification: `SHOTS_VERIFY` (enable visual verification, default: false), `SHOTS_CANDIDATES` (candidates per scene, default: 1), `SHOTS_VERIFY_MODEL` (default: `claude-opus-4-6`), `SHOTS_VERIFY_MAX_TOKENS` (default: 4096). Required for TikTok publishing: `TIKTOK_CLIENT_KEY`, `TIKTOK_CLIENT_SECRET`, `TIKTOK_REDIRECT_URI` (from TikTok Developer portal — must match registered redirect URI). Optional: `TIKTOK_PRIVACY_LEVEL` (default: `SELF_ONLY`).
 
 ## Documentation Maintenance
 
@@ -339,8 +339,8 @@ Pipeline: OAuth authentication (one-time) → find per-script videos (prefer cap
 
 ### Auth flow
 
-1. `python -m tiktok_publisher auth` — opens browser, user authorizes, tokens saved to `output/tiktok_tokens.json`
-2. Redirect URI must be configured as `http://localhost:8585/callback` in the TikTok Developer portal
+1. Set `TIKTOK_REDIRECT_URI` in `.env` — must exactly match the redirect URI registered in the TikTok Developer portal
+2. `python -m tiktok_publisher auth` — opens browser, user authorizes on TikTok, gets redirected, pastes the full callback URL back into the terminal
 3. Tokens auto-refresh on expiry during upload; force refresh via `auth --refresh`
 
 ### Output
