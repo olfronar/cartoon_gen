@@ -10,7 +10,7 @@ from pathlib import Path
 
 logger = logging.getLogger(__name__)
 
-_INIT_URL = "https://open.tiktokapis.com/v2/post/publish/video/init/"
+_INBOX_INIT_URL = "https://open.tiktokapis.com/v2/post/publish/inbox/video/init/"
 _STATUS_URL = "https://open.tiktokapis.com/v2/post/publish/status/fetch/"
 
 # Chunk constraints (bytes)
@@ -22,16 +22,14 @@ _MAX_CHUNK = 64 * 1024 * 1024  # 64 MB
 def upload_video(
     access_token: str,
     video_path: Path,
-    title: str,
-    privacy_level: str = "SELF_ONLY",
 ) -> str:
-    """Upload a video to TikTok. Returns the publish_id."""
+    """Upload a video to TikTok inbox as draft. Returns the publish_id."""
     video_size = video_path.stat().st_size
     chunk_size = _compute_chunk_size(video_size)
 
     logger.info("Uploading %s (%.1f MB)", video_path.name, video_size / 1024 / 1024)
 
-    publish_id, upload_url = init_upload(access_token, title, video_size, privacy_level, chunk_size)
+    publish_id, upload_url = init_upload(access_token, video_size, chunk_size)
 
     upload_chunks(upload_url, video_path, chunk_size)
 
@@ -43,25 +41,14 @@ def upload_video(
 
 def init_upload(
     access_token: str,
-    title: str,
     video_size: int,
-    privacy_level: str,
     chunk_size: int,
 ) -> tuple[str, str]:
-    """Initialize a TikTok Direct Post upload. Returns (publish_id, upload_url)."""
+    """Initialize a TikTok inbox/draft upload. Returns (publish_id, upload_url)."""
     total_chunks = math.ceil(video_size / chunk_size)
 
     body = json.dumps(
         {
-            "post_info": {
-                "title": title[:2200],
-                "privacy_level": privacy_level,
-                "disable_duet": False,
-                "disable_comment": False,
-                "disable_stitch": False,
-                "video_cover_timestamp_ms": 1000,
-                "is_aigc": True,
-            },
             "source_info": {
                 "source": "FILE_UPLOAD",
                 "video_size": video_size,
@@ -72,7 +59,7 @@ def init_upload(
     ).encode("utf-8")
 
     req = urllib.request.Request(
-        _INIT_URL,
+        _INBOX_INIT_URL,
         data=body,
         headers={
             "Authorization": f"Bearer {access_token}",

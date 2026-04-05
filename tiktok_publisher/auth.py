@@ -74,7 +74,7 @@ def authorize(settings: Settings) -> dict:
         {
             "client_key": settings.tiktok_client_key,
             "response_type": "code",
-            "scope": "video.publish,video.upload",
+            "scope": "video.upload",
             "redirect_uri": redirect_uri,
             "state": state,
             "code_challenge": code_challenge,

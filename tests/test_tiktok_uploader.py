@@ -44,33 +44,17 @@ class TestInitUpload:
         ).encode()
         mock_urlopen_fn.return_value = _mock_urlopen(resp_data)
 
-        pub_id, url = init_upload("token123", "My Title", 1000, "SELF_ONLY", 1000)
+        pub_id, url = init_upload("token123", 1000, 1000)
 
         assert pub_id == "pub123"
         assert url == "https://upload.example.com"
 
-        # Verify request body
+        # Verify request body — inbox mode has no post_info
         req = mock_urlopen_fn.call_args[0][0]
         body = json.loads(req.data.decode())
-        assert body["post_info"]["title"] == "My Title"
-        assert body["post_info"]["is_aigc"] is True
-        assert body["post_info"]["privacy_level"] == "SELF_ONLY"
+        assert "post_info" not in body
         assert body["source_info"]["source"] == "FILE_UPLOAD"
-
-    @patch("tiktok_publisher.pipeline.uploader.urllib.request.urlopen")
-    def test_truncates_long_title(self, mock_urlopen_fn):
-        resp_data = json.dumps(
-            {
-                "data": {"publish_id": "pub", "upload_url": "https://u.com"},
-                "error": {"code": "ok"},
-            }
-        ).encode()
-        mock_urlopen_fn.return_value = _mock_urlopen(resp_data)
-
-        init_upload("token", "x" * 5000, 1000, "SELF_ONLY", 1000)
-        req = mock_urlopen_fn.call_args[0][0]
-        body = json.loads(req.data.decode())
-        assert len(body["post_info"]["title"]) == 2200
+        assert body["source_info"]["video_size"] == 1000
 
 
 class TestUploadChunks:

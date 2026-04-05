@@ -36,12 +36,6 @@ def main() -> None:
         default=False,
         help="Force refresh tokens (auth command only).",
     )
-    parser.add_argument(
-        "--privacy",
-        type=str,
-        default=None,
-        help="Privacy level: SELF_ONLY, PUBLIC_TO_EVERYONE, etc.",
-    )
     args = parser.parse_args()
 
     from shared.config import load_settings
@@ -58,11 +52,10 @@ def main() -> None:
 
     elif args.command == "upload":
         target_date = date.fromisoformat(args.date) if args.date else None
-        privacy = args.privacy or settings.tiktok_privacy_level
 
         from tiktok_publisher.pipeline.runner import run
 
-        asyncio.run(run(settings=settings, target_date=target_date, privacy_level=privacy))
+        asyncio.run(run(settings=settings, target_date=target_date))
 
 
 if __name__ == "__main__":
