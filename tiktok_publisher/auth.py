@@ -8,6 +8,7 @@ import logging
 import re
 import secrets
 import subprocess
+import sys
 import time
 import urllib.parse
 import urllib.request
@@ -32,10 +33,14 @@ def authorize(settings: Settings) -> dict:
 
     port = settings.tiktok_redirect_port
 
+    # Save terminal settings before cloudflared (it can corrupt them)
+    _saved_termios = _save_terminal()
+
     # Start cloudflared tunnel (logs go to stderr)
     print(f"Starting cloudflared tunnel on port {port}...")
     tunnel_proc = subprocess.Popen(
         ["cloudflared", "tunnel", "--url", f"http://localhost:{port}"],
+        stdin=subprocess.DEVNULL,
         stdout=subprocess.DEVNULL,
         stderr=subprocess.PIPE,
         text=True,
@@ -44,10 +49,14 @@ def authorize(settings: Settings) -> dict:
     tunnel_url = _wait_for_tunnel_url(tunnel_proc)
     if not tunnel_url:
         tunnel_proc.terminate()
+        _restore_terminal(_saved_termios)
         raise RuntimeError("Failed to start cloudflared tunnel — is cloudflared installed?")
 
     # Drain remaining cloudflared stderr in background so pipe doesn't block
     Thread(target=_drain_pipe, args=(tunnel_proc.stderr,), daemon=True).start()
+
+    # Restore terminal settings after cloudflared startup
+    _restore_terminal(_saved_termios)
 
     redirect_uri = f"{tunnel_url}/callback"
     print(f"\nTunnel ready! Your redirect URI is:\n\n  {redirect_uri}\n")
@@ -176,6 +185,28 @@ def _wait_for_tunnel_url(proc: subprocess.Popen, timeout: int = 30) -> str | Non
         if match:
             return match.group(1)
     return None
+
+
+def _save_terminal() -> object | None:
+    """Save terminal settings (Unix only). Returns None if unavailable."""
+    try:
+        import termios
+
+        return termios.tcgetattr(sys.stdin.fileno())
+    except (ImportError, OSError):
+        return None
+
+
+def _restore_terminal(saved: object | None) -> None:
+    """Restore terminal settings from a previous _save_terminal() call."""
+    if saved is None:
+        return
+    try:
+        import termios
+
+        termios.tcsetattr(sys.stdin.fileno(), termios.TCSADRAIN, saved)
+    except (ImportError, OSError):
+        pass
 
 
 def _drain_pipe(pipe) -> None:
