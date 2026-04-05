@@ -61,10 +61,10 @@ def main() -> None:
         help="Skip the editor review/revision pass after script expansion.",
     )
     parser.add_argument(
-        "--tournament",
+        "--no-tournament",
         action="store_true",
         default=False,
-        help="Enable pairwise tournament for logline selection (generates more candidates).",
+        help="Disable pairwise tournament for logline selection (simple 3-candidate mode).",
     )
     args = parser.parse_args()
 
@@ -80,7 +80,7 @@ def main() -> None:
             pick_indices=pick_indices,
             model_override=model_override,
             editor_pass=not args.no_editor,
-            tournament=args.tournament,
+            tournament=not args.no_tournament,
         )
     )
 

@@ -15,7 +15,7 @@ from .logline_generator import generate_additional_loglines, generate_loglines
 from .logline_selector import select_logline
 from .logline_tournament import run_tournament
 from .renderer import write_script
-from .script_editor import review_and_revise
+from .script_editor import punchup_script, review_and_revise
 from .script_expander import expand_script, generate_synopsis
 
 logger = logging.getLogger(__name__)
@@ -27,7 +27,7 @@ async def run(
     pick_indices: list[int] | None = None,
     model_override: str | None = None,
     editor_pass: bool = True,
-    tournament: bool = False,
+    tournament: bool = True,
 ) -> list[CartoonScript]:
     """Run the full script writer pipeline.
 
@@ -217,6 +217,9 @@ async def _expand_all_parallel(
                 max_tokens,
             )
             if editor_pass:
+                script = await asyncio.to_thread(
+                    punchup_script, script, item, context_block, client, model, max_tokens
+                )
                 script = await asyncio.to_thread(
                     review_and_revise, script, item, context_block, client, model, max_tokens
                 )

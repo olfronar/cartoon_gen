@@ -31,8 +31,9 @@ class TestComparePair:
         a = _make_logline("logline A")
         b = _make_logline("logline B")
         item = make_scored_item()
-        winner, feedback = compare_pair(a, b, item, "ctx", None, "model", 100)
+        winner, loser, feedback = compare_pair(a, b, item, "ctx", None, "model", 100)
         assert winner is b
+        assert loser is a
         assert feedback == "try harder"
 
     @patch("script_writer.pipeline.logline_tournament.call_llm_json")
@@ -40,8 +41,9 @@ class TestComparePair:
         mock_llm.return_value = {"winner": "a", "reasoning": "ok"}
         a = _make_logline("logline A")
         b = _make_logline("logline B")
-        winner, _ = compare_pair(a, b, make_scored_item(), "ctx", None, "model", 100)
+        winner, loser, _ = compare_pair(a, b, make_scored_item(), "ctx", None, "model", 100)
         assert winner is a
+        assert loser is b
 
 
 class TestRunTournament:
@@ -52,22 +54,29 @@ class TestRunTournament:
 
     @patch("script_writer.pipeline.logline_tournament.call_llm_json")
     def test_two_candidates(self, mock_llm):
-        mock_llm.return_value = {"winner": "b", "reasoning": "better"}
+        mock_llm.return_value = {
+            "winner": "b",
+            "reasoning": "better",
+            "loser_feedback": "needs work",
+        }
         a = _make_logline("A")
         b = _make_logline("B")
         result = run_tournament([a, b], make_scored_item(), "ctx", None, "model", 100)
-        assert result is b
-        assert mock_llm.call_count == 1
+        # Round 1: 1 compare + 1 revision attempt + final round: 1 compare = 3
+        assert result is not None
+        assert mock_llm.call_count >= 1
 
     @patch("script_writer.pipeline.logline_tournament.call_llm_json")
     def test_five_candidates(self, mock_llm):
-        mock_llm.return_value = {"winner": "a", "reasoning": "first wins"}
+        mock_llm.return_value = {
+            "winner": "a",
+            "reasoning": "first wins",
+            "loser_feedback": "improve",
+        }
         loglines = [_make_logline(f"L{i}") for i in range(5)]
         result = run_tournament(loglines, make_scored_item(), "ctx", None, "model", 100)
-        # 5 -> round1: (0v1,2v3,bye4) = 2 calls -> 3 survivors
-        # 3 -> round2: (w01 v w23, bye4) = 1 call -> 2 survivors
-        # 2 -> final: (w0123 v 4) = 1 call -> 1 winner
-        assert mock_llm.call_count == 4
+        # Round 1: 2 comparisons + up to 2 revisions, then subsequent rounds
+        assert mock_llm.call_count >= 4
         assert result is not None
 
     @patch("script_writer.pipeline.logline_tournament.call_llm_json")

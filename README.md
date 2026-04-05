@@ -89,7 +89,7 @@ Scans 7 sources (50-item cap per source) across 3 tiers, deduplicates by URL and
 
 ## Script Writer
 
-Reads the daily brief, generates 3 loglines per item (quiet part / betrayal / image you can't unsee), selects the best, and expands to full scripts with world-building synopsis and scene-by-scene breakdown — all items processed in parallel.
+Reads the daily brief, generates 5 logline candidates per item (3 core approaches + relatable reframe + absurd escalation), runs a pairwise tournament with feedback-driven revision, and expands the winner to a full script with world-building synopsis, comedy punch-up pass, and editor review — all items processed in parallel.
 
 ### First-time setup
 
@@ -105,9 +105,11 @@ Creates `output/characters/<name>.md`, `output/art_style.md`, and `output/art_ma
 ### Item selection
 
 ```bash
-uv run python -m script_writer                     # Default: top 5 from brief
+uv run python -m script_writer                     # Default: top 5 from brief (tournament + punch-up)
 uv run python -m script_writer --pick 1,3,7        # Pick specific items (1-based)
 uv run python -m script_writer --date 2026-03-14   # From specific date
+uv run python -m script_writer --no-tournament     # Simple 3-candidate selection (faster, cheaper)
+uv run python -m script_writer --no-editor         # Skip punch-up + editor review
 ```
 
 Numbers 1-5 are top picks, 6-15 are also-notable items from the brief.
@@ -116,7 +118,7 @@ Numbers 1-5 are top picks, 6-15 are also-notable items from the brief.
 
 ## Static Shots Maker
 
-Rewrites video-oriented scene prompts into image-optimized prompts via Claude (cinematographic composition: depth layering, explicit lighting, atmosphere), then generates 9:16 PNGs via Gemini. Scenes within each script are processed sequentially so each shot can serve as a visual reference for the next; scripts run in parallel.
+Rewrites video-oriented scene prompts into image-optimized prompts via Claude (cinematographic composition: depth layering, explicit lighting, atmosphere), verifies comedy intent via Sonnet (meme test, visual incongruity check), then generates 9:16 PNGs via Gemini. Scenes within each script are processed sequentially so each shot can serve as a visual reference for the next; scripts run in parallel.
 
 **Output**: `output/static_shots/<YYYY-MM-DD>_<N>/scene_<M>.png` + `manifest.json` per script.
 

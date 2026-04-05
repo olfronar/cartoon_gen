@@ -102,6 +102,23 @@ condensation, dappled light). Weave it into the prompt as a texture, not a \
 separate sentence — "cracked asphalt radiating heat shimmer" not "the air is \
 hazy." This is what makes the image feel like a PLACE instead of a stage.
 
+**COMEDY AMPLIFICATION** (the image must be independently funny):
+- The image is NOT an illustration of the joke — it is the SECOND punchline. \
+The dialogue delivers one joke. The image delivers a DIFFERENT joke about the \
+same story. Together they are devastating. If the image only shows what Billy \
+said, it fails.
+- FIND THE VISUAL IRONY the dialogue did not mention. A detail in the background \
+that contradicts the foreground. A prop that implies something the dialogue left \
+unsaid. A scale relationship that makes the absurdity physical. The best editorial \
+cartoons have a detail you notice on second look that makes the cartoon funnier — \
+add that detail.
+- THE MEME TEST: Could someone crop this image, add white-bar text above it, and \
+have a sharable meme? If the image needs the dialogue to be interesting, it is \
+not visually funny enough.
+- PRIORITIZE visual incongruity over visual beauty. A perfectly composed, \
+atmospherically gorgeous image that is not funny is a failure. An image that \
+makes someone snort is a success.
+
 **REQUIRED** (standard quality):
 - Include FULL character visual descriptions from the character profiles above \
 (clothing, colors, distinguishing features) — the image model has no memory.
@@ -125,6 +142,43 @@ phrase, shorten it to its essence.
 - **Instant-read test**: blur to 100×100 pixels in your mind — can you identify \
 subject, context, and riddle from shapes alone? If not, simplify further.
 - Output ONLY the image prompt text, 60-85 words. No commentary.
+"""
+
+IMAGE_COMEDY_CHECK_PROMPT = """\
+You are evaluating whether an image generation prompt will produce a FUNNY \
+image — not a well-composed or faithful image, but a FUNNY one.
+
+## Original scene context
+Title: {title}
+Scene prompt: {scene_prompt}
+Visual gag: {visual_gag}
+
+## Image generation prompt to evaluate
+{image_prompt}
+
+## Evaluation
+
+Answer these questions:
+1. If someone saw ONLY the generated image with zero context, would they \
+find it funny? (Yes/No + why)
+2. Does the image contain a visual incongruity, absurdity, or wrongness \
+that reads at phone size? (Yes/No + what)
+3. Is the image funny for a DIFFERENT reason than the dialogue would be? \
+(Yes/No + what's the second joke?)
+
+If any answer is No, suggest a specific revision to the image prompt that \
+would fix it — adding one prop, changing a scale relationship, or introducing \
+a visual contradiction.
+
+Return JSON:
+{{
+  "independently_funny": true or false,
+  "visual_incongruity": true or false,
+  "different_joke": true or false,
+  "revision_needed": true or false,
+  "suggested_revision": "specific change to the image prompt (add/change/amplify \
+one element), or empty string if all pass"
+}}\
 """
 
 SHOT_VERIFICATION_PROMPT = """\

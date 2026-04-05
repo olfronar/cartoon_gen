@@ -146,6 +146,28 @@ Output a `story_hook` object with:
 precisely — not "concern" or "unease" but "the guilty relief that it happened to \
 them and not us" or "the quiet dread that we already knew and did nothing"
 
+**STEP 1.5 — CREATIVE COLLISION** (break your own analysis before writing)
+
+Before writing loglines, force a collision between the story and an UNRELATED \
+domain. Pick ONE and answer briefly:
+- A completely different profession encountering this news (a plumber, a \
+kindergarten teacher, a wedding planner, a marine biologist)
+- A mundane domestic situation with the same structural shape (a couple \
+arguing about the thermostat, a child explaining why the dog ate their \
+homework, a neighbor dispute about a fence)
+- An object from a completely unrelated context that, placed in this news \
+story, becomes the funniest possible prop
+
+Add a `creative_leap` to the story_hook object:
+- `collision`: the unrelated domain, situation, or object you chose
+- `structural_match`: WHY it matches the news story's shape (one sentence)
+- `unexpected_angle`: what comedy angle this collision reveals that pure \
+analysis of the news would never produce
+
+You do NOT need to use this collision in your loglines. It exists to break \
+your analytical pattern. But if the collision produces something funnier than \
+your story_hook angle — USE IT. The best joke wins regardless of where it came from.
+
 **STEP 2 — WRITE THREE LOGLINES**
 
 Each logline must take a DIFFERENT approach AND specify a different `format_type` \
@@ -200,6 +222,11 @@ simplify until it has one.
 - **The New Yorker test**: Could this work as a single-panel cartoon with a \
 caption? One image + one line = the whole joke. If the idea needs staging, \
 camera movements, or a sequence to be funny, it's not sharp enough yet.
+- **The two-readings test**: Cover the visual hook and read only the logline \
+text. It should be funny. Now cover the text and look only at the visual hook. \
+It should ALSO be funny, for a DIFFERENT reason. If both halves are funny \
+independently and devastatingly together, you have a multi-level joke. If only \
+one half carries the comedy, the joke is single-dimensional — sharpen it.
 
 **ANTI-PATTERNS** (if you catch yourself doing these, start over):
 - Relying on the image alone to be funny — dialogue must pull its own comedic \
@@ -244,6 +271,12 @@ not camera movements — just the image itself. "A six-foot stack of unread \
 safety reports propping open the door to a nuclear control room." Subject, \
 context, one weird detail. Must be readable at phone size. If you need more \
 than one sentence to describe it, the image is too complicated.
+- `layers`: list of 2-3 strings. The joke MUST work on at least two levels \
+simultaneously. Name each level. Example: ["Literal: the safety helmet is made \
+of paper", "Metaphorical: the protection is performative", "Self-referential: \
+we all own paper helmets we pretend are real"]. If you cannot identify two \
+distinct levels where the joke independently lands, the logline is \
+single-dimensional and needs sharpening.
 
 Each logline must contain enough information that someone unfamiliar with this \
 headline understands the basic story. The comedic premise should arise from the \
@@ -262,9 +295,10 @@ default to visual_punchline with Billy alone.
 
 Return as a JSON object with keys:
 - `story_hook`: object with keys: topic, angle, conflict, stakes, surprise, \
-avoided_feeling
+avoided_feeling, creative_leap (object with: collision, structural_match, \
+unexpected_angle)
 - `loglines`: array of 3 objects with keys: text, approach, format_type, \
-featured_characters, visual_hook, news_essence
+featured_characters, visual_hook, news_essence, layers
 """
 
 LOGLINE_SELECTION_PROMPT = """\
@@ -283,32 +317,33 @@ Here are 3 candidate loglines (each includes a `format_type`):
 
 {loglines_formatted}
 
-Select the BEST one. Criteria (in order of importance):
-1. **Funny AND clear** — BOTH required, neither optional. Does the logline make \
-you laugh? AND would a viewer who's never heard this headline understand what \
-happened? A logline that's funny but confusing fails. A logline that's clear \
-but boring fails. Billy must SAY the news fact in plain language AND frame it \
-so its absurdity is undeniable. The best logline is the one where understanding \
-the news IS what makes you laugh. \
-Ask yourself: does this logline make you LAUGH? Not smile, not nod — laugh. \
-If you're choosing between clever-but-dry and funny-but-rougher, choose funny.
-2. **Emotional hit** — does it name a feeling people are avoiding about this \
-news? Not a generic emotion ("concern") but a specific one ("the guilty relief \
-that it happened to them"). A logline that makes you feel something beats one \
-that merely informs.
-3. **Specificity** — concrete objects, not abstractions. "iPhone 16 Pro" not \
-"smartphone." "A six-foot stack of unread safety reports" not "ignored warnings." \
-Can you picture the exact objects in the frame?
-4. **Format fit** — does the chosen `format_type` serve this specific joke? A \
-story that needs a punchline reveal shouldn't be a visual_punchline. A story \
-where the image says everything shouldn't be an exchange. The format should feel \
-inevitable, not arbitrary. If the story has a clear villain, a defender, or \
-two incompatible positions, prefer the logline that uses exchange format — \
-dialogue friction is funnier than Billy observing alone.
-5. **Character fit + visual feasibility** — does it use Billy naturally? At most \
-one other character, with three or fewer visual elements. Can an image model render \
-the key moment as one clean image? Reject montages, recursive effects, crowds, and \
-abstract concepts.
+Select the BEST one. Do NOT evaluate as a writer — evaluate as THREE DIFFERENT \
+AUDIENCE MEMBERS watching on TikTok:
+
+**Audience 1 — The Scroller** (casual viewer, phone in one hand):
+Which logline makes them STOP SCROLLING in the first 2 seconds? What is the \
+visual that halts the thumb? Which logline has the strongest instant-read image? \
+Rate each logline 1-5 for scroll-stopping power.
+
+**Audience 2 — The Sharer** (the person who texts friends):
+Which logline makes them screenshot and send to a group chat with "lmaooo"? \
+Which one is most QUOTABLE — which has a line someone would repeat at dinner? \
+Rate each logline 1-5 for share impulse.
+
+**Audience 3 — The Rewatcher** (finds new details on second view):
+Which logline has the most LAYERS — funny on first watch AND funnier on second \
+watch when you notice more? Which visual hook rewards closer inspection? Which \
+joke works on multiple levels simultaneously? Rate each logline 1-5 for rewatch depth.
+
+Sum the three scores per logline. Highest total wins. Ties broken by which \
+logline made YOU laugh hardest — not smile, not nod, LAUGH. If you're choosing \
+between clever-but-dry and funny-but-rougher, choose funny.
+
+**PREREQUISITE** — all candidates must pass:
+- **Funny AND clear**: Billy says the news fact in plain language AND frames it \
+so its absurdity is undeniable. A logline that's confusing fails regardless of score.
+- **Visual feasibility**: at most one other character, three or fewer visual \
+elements, renderable as one clean image. Reject montages, crowds, abstract concepts.
 
 Return a JSON object with:
 - `selected_index`: 0, 1, or 2 (which logline to use)
@@ -369,6 +404,18 @@ a gentle observation, throw it out and find the line that HITS. Implication \
 can land harder than statement — but only if the implication is sharp enough \
 to cut. If the last line explains the joke, cut the explanation.
 
+**THE RELATABILITY BRIDGE**: The news story is specific. The joke must be \
+UNIVERSAL. Find the everyday human experience this news is secretly about. \
+"Company fires people" is news. "Your boss explaining that your replacement \
+isn't a replacement, it's an 'optimization'" is relatable. "Government acts \
+slower than a soda company" is universal frustration. The bridge from specific \
+news to universal experience is what makes people share. Before writing the \
+punchline, name the universal experience as `relatable_core` in the output — \
+one sentence describing the everyday frustration, fear, or absurdity this news \
+maps onto. "The thing that works perfectly for everyone except you." "The person \
+who confidently explains why the bad thing is actually good." "The meeting \
+where everyone agrees on the problem and then does nothing."
+
 **FORMAT-SPECIFIC GUIDANCE** (apply the one matching the format_type):
 
 - **visual_punchline**: The setup IS the punchline. Development = wrongness \
@@ -410,7 +457,7 @@ the joke from shapes alone.
 - **news_explanation**: in 2-3 sentences, what is the real-world news story this \
 episode explains?
 
-Return as JSON with keys: world_seed, setup, development, \
+Return as JSON with keys: world_seed, relatable_core, setup, development, \
 punchline, estimated_scenes, key_visual_gags, news_explanation, \
 news_explanation_check.
 - `news_explanation_check`: boolean — true if your news_explanation would let \
@@ -460,6 +507,18 @@ the absurdity physical.
 Test: mute the video — you should NOT be able to understand the news. Unmute — \
 now you get it AND you laugh. If the dialogue delivers news but not comedy, \
 the script is a news report, not an episode.
+
+**NARRATIVE EXTRAPOLATION** — before writing the scene, answer silently:
+- What happens NEXT in this news story that would be even more absurd? \
+(Don't depict this — but let the implication hang in the air)
+- What is the VIEWER doing right now that connects to this story? (Scrolling \
+on a phone made by the company in the story? Using the product being recalled? \
+Living in the world being described?)
+- What would a CHILD say about this news? (Children name absurdity directly \
+because they haven't learned to politely ignore it)
+Use whichever answer is funniest to sharpen Billy's dialogue. The scene doesn't \
+need to reference these directly — but the comedy should carry the implication \
+of at least one.
 
 **STEAL THE BEST LINE**: Check the comedy_angle above. If it contains a \
 one-liner, image, or turn of phrase that is funnier than what you have \
@@ -991,27 +1050,136 @@ they missed entirely.
 ## Your task
 
 Generate exactly 2 MORE loglines that take a COMPLETELY DIFFERENT angle from \
-the ones above. Consider:
-- What if the comedy came from a completely different aspect of this story?
-- What if the format was different from those already used?
-- What uncomfortable truth did the existing loglines NOT touch?
-- What visual would reframe this story in a way none of the above considered?
+the ones above. Each must use a SPECIFIC humor strategy:
 
-Use the same format as the original loglines. Each must have a different \
-format_type from each other AND from the existing loglines where possible.
+**Logline 4 — THE RELATABLE REFRAME**: Forget the news angle for a moment. \
+What everyday human experience does this story secretly describe? Find the \
+version of this story that happens in everyone's kitchen, office, or group chat. \
+The comedy comes from recognition — "oh god, that's me." Ground the news in a \
+universal frustration, fear, or absurdity that the viewer has personally felt. \
+If the existing loglines are all clever observations, this one must be a gut punch \
+of relatability.
+
+**Logline 5 — THE ABSURD ESCALATION**: Take the news premise and push it one \
+logical step further into absurdity. If X happened, what happens next? What is \
+the LOGICAL CONCLUSION that nobody wants to say out loud? The comedy comes from \
+following the premise to its terrifying/hilarious endpoint. The visual should \
+show the consequence, not the cause.
+
+These are NOT refinements of existing loglines — they must start from different \
+observations about the same news story. Each must have a different format_type \
+from each other AND from the existing loglines where possible.
 
 Return JSON:
 {{
   "loglines": [
     {{
       "text": "ONE sentence, sharp enough to be a tweet",
-      "approach": "fresh_angle_1 or fresh_angle_2 (name your specific approach)",
+      "approach": "relatable_reframe or absurd_escalation",
       "format_type": "visual_punchline | exchange | cold_reveal | demonstration",
       "featured_characters": ["Billy", ...],
       "visual_hook": "One frozen frame, one idea, one sentence",
-      "news_essence": "The real-world news story in plain language"
+      "news_essence": "The real-world news story in plain language",
+      "layers": ["Level 1: ...", "Level 2: ..."]
     }}
   ]
+}}\
+"""
+
+LOGLINE_REVISION_PROMPT = """\
+{preamble}
+
+## Characters & Art Style
+{context}
+
+## News item
+Title: {title}
+Comedy angle: {comedy_angle}
+
+## The losing logline
+{loser_logline}
+
+## Why it lost (feedback from the judge)
+{feedback}
+
+## The winning logline (for reference — do NOT copy it)
+{winner_logline}
+
+## Your task
+
+Revise the losing logline to address the specific feedback. Keep the same \
+approach and format_type — improve the EXECUTION, not the strategy. The judge \
+said what was wrong. Fix exactly that.
+
+Rules:
+- The revised logline must still deliver the news fact in plain language
+- It must still work as a single-panel cartoon (New Yorker test)
+- If the feedback says "not funny enough," make it FUNNIER — don't just rephrase
+- The visual_hook must be a single frozen frame, readable at phone size
+- Billy + at most one other character
+
+Return JSON with the same format as the original logline:
+{{
+  "text": "ONE sentence, sharp enough to be a tweet",
+  "approach": "{approach}",
+  "format_type": "{format_type}",
+  "featured_characters": ["Billy", ...],
+  "visual_hook": "One frozen frame, one idea, one sentence",
+  "news_essence": "The real-world news story in plain language",
+  "layers": ["Level 1: ...", "Level 2: ..."]
+}}\
+"""
+
+COMEDY_PUNCHUP_PROMPT = """\
+You are a comedy punch-up writer. You did NOT write this script. Your ONLY \
+job is to make it funnier. Do not fix technical issues, do not improve \
+composition, do not worry about format compliance. Make. It. Funnier.
+
+## Characters & Art Style
+{context}
+
+## News headline
+{title}
+
+## Format type
+{format_type}
+
+## Current script
+{script_json}
+
+## Your mission
+
+For each of these elements, provide a FUNNIER alternative. If the current \
+version is already as funny as you can make it, write "KEEP" — do not change \
+things for the sake of change.
+
+1. **Billy's punchline**: The current last line is: "{last_line}"
+   Write 3 alternative last lines. Each must:
+   - Still deliver the same news information
+   - Be funny for a DIFFERENT reason than the current line
+   - Pass the t-shirt test (would someone print this on a shirt?)
+   Pick the best of your 3 alternatives, or KEEP the original if it's already \
+   the funniest option.
+
+2. **The visual wrongness**: The current visual_gag is: "{visual_gag}"
+   Suggest 1 alternative that is MORE visually absurd while still connecting \
+   to the news story. Or KEEP.
+
+3. **The background detail**: Name 1 specific prop or detail NOT currently in \
+   the scene_prompt that would make a viewer laugh on second watch. The kind of \
+   detail you'd see in a Simpsons freeze-frame. Or "NONE" if the scene is \
+   already dense enough.
+
+4. **The scene_prompt comedy**: Read only the scene_prompt. Is it funny WITHOUT \
+   the dialogue? If not, suggest 1 specific change to make the image independently \
+   comedic — a visual irony, an absurd prop, or a contradiction. Or KEEP.
+
+Return JSON:
+{{
+  "last_line": {{"action": "keep" or "replace", "new_line": "...", "reasoning": "..."}},
+  "visual_gag": {{"action": "keep" or "replace", "new_gag": "...", "reasoning": "..."}},
+  "background_detail": {{"action": "add" or "none", "detail": "...", "reasoning": "..."}},
+  "scene_prompt_comedy": {{"action": "keep" or "revise", "suggestion": "...", "reasoning": "..."}}
 }}\
 """
 
@@ -1039,27 +1207,34 @@ The lead character Billy delivers news while the visual scene amplifies the joke
 Evaluate the script on these axes. For each, answer true/false and give \
 a 1-2 sentence reason:
 
-1. **dialogue_funny** — Read each line aloud. Does at least one make you \
-laugh or smile? Apply these tests:
-   - Last line test: does the final line land as a punchline?
-   - Bar test: would you repeat this joke to a friend?
-   - If the dialogue only states facts without comedy framing, it FAILS.
+1. **punchline_lands** — Read ONLY the last line of dialogue. Does it surprise? \
+Does it recontextualize what came before? Could you put it on a t-shirt? A last \
+line that merely observes, summarizes, or explains FAILS. Test: say the line out \
+loud to a stranger with zero context — do they at least react? If the line just \
+states a fact without comedy framing, it FAILS.
 
-2. **news_clear** — Would a viewer who never heard this headline understand \
+2. **joke_has_layers** — Does the joke work on multiple levels? Is there a surface \
+reading AND a deeper reading? Is the dialogue funny for one reason AND the visual \
+funny for a different reason? Single-dimensional humor (only one thing is funny) \
+FAILS. The best scripts reward a second watch.
+
+3. **news_clear** — Would a viewer who never heard this headline understand \
 the news story from the dialogue alone? Billy must state the fact in plain \
 language — no jargon, no assumed knowledge.
 
-3. **format_consistent** — Does the dialogue count match the format type? \
+4. **format_consistent** — Does the dialogue count match the format type? \
 (visual_punchline: 1-2 lines, exchange: 2-4 lines, cold_reveal: 1 line, \
 demonstration: 1-2 lines). Is transformation present only for demonstration \
 format? Is it empty for others?
 
-4. **visual_specific** — Does the scene_prompt contain specific objects with \
-names (not "a device" but "iPhone 16 Pro"), materials, scale relationships, \
-and THE WRONGNESS (the absurd element)? Is it 60-100 words? Is it affirmative \
-only (no "there is no X")?
+5. **visual_independently_funny** — Cover the dialogue. Look at ONLY the \
+scene_prompt and visual_gag. Is the IMAGE funny on its own? Not interesting, \
+not atmospheric, not well-composed — FUNNY. Does the visual wrongness make you \
+react? If the image only illustrates the joke rather than amplifying it with \
+its own comedy, it FAILS. Could someone crop this image, add text above it, \
+and have a sharable meme?
 
-5. **emotion_match** — Does billy_emotion match the story's emotional valence? \
+6. **emotion_match** — Does billy_emotion match the story's emotional valence? \
 A betrayal story should not have billy_emotion="amused". A wonder story should \
 not have billy_emotion="deadpan".
 
@@ -1067,10 +1242,11 @@ not have billy_emotion="deadpan".
 
 Return JSON:
 {{
-  "dialogue_funny": {{"pass": true, "reason": "..."}},
+  "punchline_lands": {{"pass": true, "reason": "..."}},
+  "joke_has_layers": {{"pass": true, "reason": "..."}},
   "news_clear": {{"pass": true, "reason": "..."}},
   "format_consistent": {{"pass": true, "reason": "..."}},
-  "visual_specific": {{"pass": true, "reason": "..."}},
+  "visual_independently_funny": {{"pass": true, "reason": "..."}},
   "emotion_match": {{"pass": true, "reason": "..."}},
   "overall_verdict": "pass or needs_revision",
   "revision_notes": "Specific, actionable rewrite instructions. Address each \
@@ -1078,7 +1254,7 @@ failing axis. Be concrete: 'Billy\\'s line X just states a fact — reframe as: 
 [specific suggestion]'. Empty string if overall_verdict is pass."
 }}
 
-Set overall_verdict to "pass" ONLY if all five axes pass. Otherwise "needs_revision".\
+Set overall_verdict to "pass" ONLY if all six axes pass. Otherwise "needs_revision".\
 """
 
 SCRIPT_REVISION_PROMPT = """\
