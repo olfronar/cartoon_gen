@@ -99,7 +99,7 @@ def authorize(settings: Settings) -> dict:
 
     # Wait for callback
     done.wait(timeout=300)
-    server.shutdown()
+    server.server_close()
     tunnel_proc.terminate()
 
     if not done.is_set():
