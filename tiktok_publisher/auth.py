@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import base64
+import contextlib
 import hashlib
 import json
 import logging
@@ -45,10 +46,15 @@ def authorize(settings: Settings) -> dict:
         tunnel_proc.terminate()
         raise RuntimeError("Failed to start cloudflared tunnel — is cloudflared installed?")
 
+    # Drain remaining cloudflared output in background so pipe doesn't block
+    Thread(target=_drain_pipe, args=(tunnel_proc.stdout,), daemon=True).start()
+
     redirect_uri = f"{tunnel_url}/callback"
     print(f"\nTunnel ready! Your redirect URI is:\n\n  {redirect_uri}\n")
     print("Register this URI in your TikTok Developer portal (app Settings > Redirect URI).")
-    input("Press Enter when done...")
+    print("Press Enter when done...")
+    with contextlib.suppress(EOFError):
+        input()
 
     state = secrets.token_urlsafe(32)
 
@@ -158,6 +164,7 @@ def load_tokens(settings: Settings) -> dict:
 
 def _wait_for_tunnel_url(proc: subprocess.Popen, timeout: int = 30) -> str | None:
     """Read cloudflared output until the tunnel URL appears."""
+    assert proc.stdout is not None
     deadline = time.monotonic() + timeout
     while time.monotonic() < deadline:
         line = proc.stdout.readline()
@@ -169,6 +176,15 @@ def _wait_for_tunnel_url(proc: subprocess.Popen, timeout: int = 30) -> str | Non
         if match:
             return match.group(1)
     return None
+
+
+def _drain_pipe(pipe) -> None:
+    """Read and discard output from a pipe to prevent buffer blocking."""
+    try:
+        for _ in pipe:
+            pass
+    except (OSError, ValueError):
+        pass
 
 
 def _serve_until_done(server: HTTPServer, done: Event) -> None:
