@@ -4,6 +4,7 @@ import json
 import logging
 import math
 import time
+import urllib.error
 import urllib.request
 from pathlib import Path
 
@@ -80,8 +81,7 @@ def init_upload(
         method="POST",
     )
 
-    with urllib.request.urlopen(req, timeout=30) as resp:
-        result = json.loads(resp.read().decode("utf-8"))
+    result = _api_request(req)
 
     error = result.get("error", {})
     if error.get("code") not in ("ok", None):
@@ -151,8 +151,7 @@ def poll_status(
             method="POST",
         )
 
-        with urllib.request.urlopen(req, timeout=30) as resp:
-            result = json.loads(resp.read().decode("utf-8"))
+        result = _api_request(req)
 
         data = result.get("data", {})
         status = data.get("status", "")
@@ -168,6 +167,22 @@ def poll_status(
     raise TimeoutError(
         f"Upload did not complete after {max_attempts * interval}s (last status: {status})"
     )
+
+
+def _api_request(req: urllib.request.Request) -> dict:
+    """Make an API request, reading the response body even on HTTP errors."""
+    try:
+        with urllib.request.urlopen(req, timeout=30) as resp:
+            return json.loads(resp.read().decode("utf-8"))
+    except urllib.error.HTTPError as e:
+        body = e.read().decode("utf-8", errors="replace")
+        try:
+            data = json.loads(body)
+            error = data.get("error", {})
+            msg = error.get("message") or error.get("code") or body
+        except (json.JSONDecodeError, AttributeError):
+            msg = body
+        raise RuntimeError(f"TikTok API error (HTTP {e.code}): {msg}") from e
 
 
 def _compute_chunk_size(video_size: int) -> int:
