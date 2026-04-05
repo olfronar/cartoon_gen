@@ -2,9 +2,13 @@ from __future__ import annotations
 
 import base64
 import json
+import logging
 import re
-from datetime import datetime, timezone
+import time
+from datetime import date, datetime, timezone
 from pathlib import Path
+
+logger = logging.getLogger(__name__)
 
 _HTML_TAG_RE = re.compile(r"<[^>]+>")
 
@@ -78,6 +82,68 @@ def detect_image_media_type(data: bytes) -> str:
     if data[:4] == b"RIFF" and data[8:12] == b"WEBP":
         return "image/webp"
     raise ValueError(f"Unrecognized image format (first 12 bytes: {data[:12]!r})")
+
+
+OUTPUT_INDEX_RE = re.compile(r"^\d{4}-\d{2}-\d{2}_(\d+)$")
+
+
+def find_latest_output_date(directory: Path) -> date:
+    """Find the most recent date by scanning subdirectory names matching YYYY-MM-DD_N."""
+    dates: set[str] = set()
+    for path in directory.iterdir():
+        if path.is_dir() and OUTPUT_INDEX_RE.match(path.name):
+            dates.add(path.name.rsplit("_", 1)[0])
+    if not dates:
+        raise FileNotFoundError(f"No output directories found in {directory}")
+    return date.fromisoformat(max(dates))
+
+
+def find_script_videos(
+    target_date: date | None,
+    video_dir: Path,
+    prefer_captioned: bool = False,
+) -> list[tuple[int, Path]]:
+    """Find script video files for a date. Returns (index, path) sorted by index."""
+    video_dir = video_dir or Path("output/videos")
+    if target_date is None:
+        target_date = find_latest_output_date(video_dir)
+    date_str = target_date.isoformat()
+    results: list[tuple[int, Path]] = []
+    for subdir in sorted(video_dir.glob(f"{date_str}_*")):
+        if not subdir.is_dir():
+            continue
+        match = OUTPUT_INDEX_RE.match(subdir.name)
+        if not match:
+            continue
+        if prefer_captioned:
+            captioned = subdir / "script_video_captioned.mp4"
+            raw = subdir / "script_video.mp4"
+            if captioned.is_file():
+                results.append((int(match.group(1)), captioned))
+            elif raw.is_file():
+                results.append((int(match.group(1)), raw))
+        else:
+            video_path = subdir / "script_video.mp4"
+            if video_path.is_file():
+                results.append((int(match.group(1)), video_path))
+    if not results:
+        raise FileNotFoundError(f"No script videos found for {date_str} in {video_dir}")
+    logger.info("Found %d script videos for %s", len(results), date_str)
+    return results
+
+
+def parse_feed_timestamp(entry) -> datetime:
+    """Parse a feedparser entry's timestamp. Falls back to now(UTC)."""
+    from time import mktime
+
+    for field in ("published_parsed", "updated_parsed"):
+        parsed = entry.get(field) if isinstance(entry, dict) else getattr(entry, field, None)
+        if parsed and isinstance(parsed, (tuple, time.struct_time)):
+            try:
+                return datetime.fromtimestamp(mktime(parsed), tz=timezone.utc)
+            except (ValueError, OverflowError):
+                pass
+    return datetime.now(timezone.utc)
 
 
 def _call_anthropic(

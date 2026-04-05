@@ -217,7 +217,11 @@ def _prepare_items_list(items: list[RawItem]) -> list[dict]:
     ]
 
 
-def score_items(items: list[RawItem], settings: Settings) -> list[ScoredItem]:
+def score_items(
+    items: list[RawItem],
+    settings: Settings,
+    client: anthropic.Anthropic | None = None,
+) -> list[ScoredItem]:
     if not settings.anthropic_api_key:
         logger.warning("No ANTHROPIC_API_KEY — returning items with default scores")
         print("⚠ WARNING: No ANTHROPIC_API_KEY — using fallback scoring (no comedy angles)")
@@ -227,7 +231,8 @@ def score_items(items: list[RawItem], settings: Settings) -> list[ScoredItem]:
     to_score = items[:MAX_ITEMS_TO_SCORE]
     serializable = _prepare_items_list(to_score)
 
-    client = anthropic.Anthropic(api_key=settings.anthropic_api_key)
+    if client is None:
+        client = anthropic.Anthropic(api_key=settings.anthropic_api_key)
 
     scored_data = _score_batch_with_split(client, serializable)
     if not scored_data:

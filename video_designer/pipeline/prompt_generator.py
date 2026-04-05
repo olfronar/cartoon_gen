@@ -5,7 +5,7 @@ from pathlib import Path
 
 from shared.models import CartoonScript, SceneScript
 from shared.utils import call_llm_text
-from video_designer.prompts import END_CARD_TO_VIDEO_PROMPT, SCENE_TO_VIDEO_PROMPT
+from video_designer.prompts import SCENE_TO_VIDEO_PROMPT
 
 logger = logging.getLogger(__name__)
 
@@ -61,23 +61,3 @@ def generate_video_prompt(
             scene.scene_number,
         )
         return scene.scene_prompt
-
-
-def generate_end_card_video_prompt(
-    script: CartoonScript,
-    context_block: str,
-    client,
-    model: str,
-    max_tokens: int,
-) -> str:
-    """Compose a video generation prompt for an end card."""
-    prompt = END_CARD_TO_VIDEO_PROMPT.format(
-        context=context_block,
-        title=script.title,
-        end_card_prompt=script.end_card_prompt,
-    )
-    try:
-        return call_llm_text(client, prompt, model, max_tokens).strip()
-    except Exception:
-        logger.exception("Claude video prompt failed for end card, using original")
-        return script.end_card_prompt

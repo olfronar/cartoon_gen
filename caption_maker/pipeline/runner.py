@@ -51,7 +51,7 @@ async def run(
 
     if compile:
         # Assemble final captioned video
-        from video_designer.pipeline.assembler import assemble_final_video
+        from shared.assembler import assemble_final_video
 
         date_str = videos[0][1].parent.name.rsplit("_", 1)[0]
         final_path = settings.video_output_dir / f"final_{date_str}_captioned.mp4"

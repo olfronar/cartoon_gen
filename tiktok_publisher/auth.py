@@ -10,6 +10,7 @@ import secrets
 import subprocess
 import sys
 import time
+import urllib.error
 import urllib.parse
 import urllib.request
 import webbrowser
@@ -89,6 +90,9 @@ def authorize(settings: Settings) -> dict:
     handler_class = _make_handler_class(state, result, done)
     server = HTTPServer(("localhost", port), handler_class)
 
+    # Set timeout so handle_request() returns promptly (500ms)
+    server.timeout = 0.5
+
     # Run server in background thread
     server_thread = Thread(target=_serve_until_done, args=(server, done), daemon=True)
     server_thread.start()
@@ -97,10 +101,12 @@ def authorize(settings: Settings) -> dict:
     print(f"If the browser doesn't open, visit:\n  {auth_url}\n")
     webbrowser.open(auth_url)
 
-    # Wait for callback
-    done.wait(timeout=300)
-    server.server_close()
-    tunnel_proc.terminate()
+    try:
+        # Wait for callback
+        done.wait(timeout=300)
+    finally:
+        server.server_close()
+        tunnel_proc.terminate()
 
     if not done.is_set():
         raise RuntimeError("Authorization timed out (5 minutes)")
@@ -124,29 +130,15 @@ def refresh_tokens(settings: Settings) -> dict:
             f"No refresh token found in {settings.tiktok_tokens_path}. Run 'auth' first."
         )
 
-    data = urllib.parse.urlencode(
+    token_data = _token_request(
         {
             "client_key": settings.tiktok_client_key,
             "client_secret": settings.tiktok_client_secret,
             "grant_type": "refresh_token",
             "refresh_token": tokens["refresh_token"],
-        }
-    ).encode("utf-8")
-
-    req = urllib.request.Request(
-        _TOKEN_URL,
-        data=data,
-        headers={"Content-Type": "application/x-www-form-urlencoded"},
-        method="POST",
+        },
+        error_label="Token refresh failed",
     )
-
-    with urllib.request.urlopen(req, timeout=30) as resp:
-        token_data = json.loads(resp.read().decode("utf-8"))
-
-    if "error" in token_data and token_data["error"] != "ok":
-        raise RuntimeError(
-            f"Token refresh failed: {token_data.get('error_description', token_data['error'])}"
-        )
 
     _save_tokens(settings, token_data)
     logger.info("Tokens refreshed successfully")
@@ -231,19 +223,13 @@ def _serve_until_done(server: HTTPServer, done: Event) -> None:
         server.handle_request()
 
 
-def _exchange_code(settings: Settings, code: str, redirect_uri: str, code_verifier: str) -> dict:
-    """Exchange authorization code for tokens."""
-    data = urllib.parse.urlencode(
-        {
-            "client_key": settings.tiktok_client_key,
-            "client_secret": settings.tiktok_client_secret,
-            "code": code,
-            "grant_type": "authorization_code",
-            "redirect_uri": redirect_uri,
-            "code_verifier": code_verifier,
-        }
-    ).encode("utf-8")
+def _token_request(params: dict, error_label: str) -> dict:
+    """Send a POST to the TikTok token endpoint with proper error handling.
 
+    Catches ``urllib.error.HTTPError`` so callers get a clear message instead of
+    a raw traceback on 4xx/5xx responses.
+    """
+    data = urllib.parse.urlencode(params).encode("utf-8")
     req = urllib.request.Request(
         _TOKEN_URL,
         data=data,
@@ -251,15 +237,39 @@ def _exchange_code(settings: Settings, code: str, redirect_uri: str, code_verifi
         method="POST",
     )
 
-    with urllib.request.urlopen(req, timeout=30) as resp:
-        token_data = json.loads(resp.read().decode("utf-8"))
+    try:
+        with urllib.request.urlopen(req, timeout=30) as resp:
+            token_data = json.loads(resp.read().decode("utf-8"))
+    except urllib.error.HTTPError as e:
+        body = e.read().decode("utf-8", errors="replace")
+        try:
+            err_data = json.loads(body)
+            msg = err_data.get("error_description") or err_data.get("error") or body
+        except (json.JSONDecodeError, AttributeError):
+            msg = body
+        raise RuntimeError(f"{error_label} (HTTP {e.code}): {msg}") from e
 
     if "error" in token_data and token_data["error"] != "ok":
         raise RuntimeError(
-            f"Token exchange failed: {token_data.get('error_description', token_data['error'])}"
+            f"{error_label}: {token_data.get('error_description', token_data['error'])}"
         )
 
     return token_data
+
+
+def _exchange_code(settings: Settings, code: str, redirect_uri: str, code_verifier: str) -> dict:
+    """Exchange authorization code for tokens."""
+    return _token_request(
+        {
+            "client_key": settings.tiktok_client_key,
+            "client_secret": settings.tiktok_client_secret,
+            "code": code,
+            "grant_type": "authorization_code",
+            "redirect_uri": redirect_uri,
+            "code_verifier": code_verifier,
+        },
+        error_label="Token exchange failed",
+    )
 
 
 def _save_tokens(settings: Settings, token_data: dict) -> None:

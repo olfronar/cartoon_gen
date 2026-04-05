@@ -45,7 +45,7 @@ For each post, return:
 - "engagement": "viral", "high", or "moderate"
 
 Skip any item where you do not have a real x.com URL. Do not invent URLs. \
-Return as many items as you found across all three searches. More is better — \
+Return as many items as you found across all five searches. More is better — \
 I deduplicate downstream.
 
 Return ONLY a JSON array.

@@ -314,7 +314,7 @@ Return a JSON object with:
 - `selected_index`: 0, 1, or 2 (which logline to use)
 - `reasoning`: 1-2 sentences explaining why
 
-If none of the three loglines passes visual feasibility (criterion 6), \
+If none of the three loglines passes visual feasibility (criterion 5), \
 select the closest and note the issue in reasoning.
 """
 

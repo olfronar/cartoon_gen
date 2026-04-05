@@ -1,24 +1,9 @@
 from __future__ import annotations
 
-import json
 from unittest.mock import MagicMock
 
 from script_writer.pipeline.logline_generator import generate_loglines
-from tests.conftest import make_scored_item
-
-
-def _mock_stream_response(json_data):
-    """Create a mock streaming response context manager."""
-    mock_message = MagicMock()
-    mock_message.content = [
-        MagicMock(type="text", text=json.dumps(json_data)),
-    ]
-    mock_stream = MagicMock()
-    mock_stream.__enter__ = MagicMock(return_value=mock_stream)
-    mock_stream.__exit__ = MagicMock(return_value=False)
-    mock_stream.get_final_message.return_value = mock_message
-    return mock_stream
-
+from tests.conftest import make_scored_item, mock_stream_response
 
 MOCK_LOGLINES_ARRAY = [
     {
@@ -56,7 +41,7 @@ MOCK_LOGLINES = {
 class TestGenerateLoglines:
     def test_generates_three_loglines(self):
         mock_client = MagicMock()
-        mock_client.messages.stream.return_value = _mock_stream_response(MOCK_LOGLINES)
+        mock_client.messages.stream.return_value = mock_stream_response(MOCK_LOGLINES)
 
         result = generate_loglines(
             item=make_scored_item(),

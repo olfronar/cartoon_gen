@@ -1,13 +1,11 @@
 from __future__ import annotations
 
 import logging
-from datetime import datetime, timezone
-from time import mktime
 
 import feedparser
 
 from shared.models import RawItem
-from shared.utils import strip_html
+from shared.utils import parse_feed_timestamp, strip_html
 
 logger = logging.getLogger(__name__)
 
@@ -33,17 +31,6 @@ NEWS_FEEDS: dict[str, list[str]] = {
 }
 
 MAX_ITEMS_PER_FEED = 30
-
-
-def _parse_timestamp(entry: dict) -> datetime:
-    for field in ("published_parsed", "updated_parsed"):
-        parsed = entry.get(field)
-        if parsed:
-            try:
-                return datetime.fromtimestamp(mktime(parsed), tz=timezone.utc)
-            except (ValueError, OverflowError):
-                pass
-    return datetime.now(timezone.utc)
 
 
 class NewsRSSSource:
@@ -78,7 +65,7 @@ class NewsRSSSource:
                             sources=[source_name],
                             tier="discovery",
                             score=0,
-                            timestamp=_parse_timestamp(entry),
+                            timestamp=parse_feed_timestamp(entry),
                             snippet=summary,
                         )
                     )

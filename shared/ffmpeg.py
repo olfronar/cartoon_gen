@@ -6,6 +6,8 @@ from pathlib import Path
 
 logger = logging.getLogger(__name__)
 
+ENCODE_ARGS = ["-c:v", "libx264", "-preset", "fast", "-c:a", "aac"]
+
 
 def run_ffmpeg(cmd: list[str]) -> None:
     """Run an ffmpeg command, raising on failure."""

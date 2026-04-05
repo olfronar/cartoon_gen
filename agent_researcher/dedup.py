@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import json
 import logging
+from dataclasses import replace
 from datetime import date, datetime, timedelta, timezone
 from pathlib import Path
 from urllib.parse import parse_qs, urlencode, urlparse, urlunparse
@@ -37,11 +38,9 @@ def _normalize_url(url: str) -> str:
 
 def _merge_items(keep: RawItem, discard: RawItem) -> RawItem:
     """Merge discard into keep: combine sources, take higher score."""
-    merged_sources = list(set(keep.sources + discard.sources))
-    return RawItem(
-        title=keep.title,
-        url=keep.url,
-        sources=merged_sources,
+    return replace(
+        keep,
+        sources=list(set(keep.sources + discard.sources)),
         tier=keep.tier if keep.score >= discard.score else discard.tier,
         score=max(keep.score, discard.score),
         timestamp=min(keep.timestamp, discard.timestamp),

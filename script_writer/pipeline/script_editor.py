@@ -24,7 +24,7 @@ def review_script(
     prompt = SCRIPT_REVIEW_PROMPT.format(
         context=context_block,
         title=item.item.title,
-        format_type=script.format_type or "standard",
+        format_type=script.format_type or "visual_punchline",
         script_json=script_json,
     )
     return call_llm_json(client, prompt, model, max_tokens)
@@ -47,7 +47,7 @@ def revise_script(
     prompt = SCRIPT_REVISION_PROMPT.format(
         context=context_block,
         title=item.item.title,
-        format_type=script.format_type or "standard",
+        format_type=script.format_type or "visual_punchline",
         original_script_json=script_json,
         feedback_json=feedback_json,
         revision_notes=revision_notes,

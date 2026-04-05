@@ -8,7 +8,7 @@ import anthropic
 
 from shared.config import Settings
 from shared.models import RawItem
-from shared.utils import extract_json
+from shared.utils import extract_json, extract_text
 
 logger = logging.getLogger(__name__)
 
@@ -50,7 +50,7 @@ def _call_prefilter(client, items_json: str) -> list[dict]:
         temperature=0,
         messages=[{"role": "user", "content": PREFILTER_PROMPT + items_json}],
     )
-    text = response.content[0].text
+    text = extract_text(response)
     return extract_json(text, expect=list)
 
 
@@ -77,7 +77,11 @@ def _call_prefilter_with_retry(client, items_json: str) -> list[dict] | None:
     return None
 
 
-def prefilter_items(items: list[RawItem], settings: Settings) -> list[RawItem]:
+def prefilter_items(
+    items: list[RawItem],
+    settings: Settings,
+    client: anthropic.Anthropic | None = None,
+) -> list[RawItem]:
     """Fast pre-filter using Sonnet. Returns top N items ranked by comedy potential.
 
     Falls back to raw-score sorting if LLM unavailable.
@@ -100,7 +104,8 @@ def prefilter_items(items: list[RawItem], settings: Settings) -> list[RawItem]:
         for i, item in enumerate(to_filter)
     ]
 
-    client = anthropic.Anthropic(api_key=settings.anthropic_api_key)
+    if client is None:
+        client = anthropic.Anthropic(api_key=settings.anthropic_api_key)
     scores = _call_prefilter_with_retry(client, json.dumps(serializable))
 
     if not scores:

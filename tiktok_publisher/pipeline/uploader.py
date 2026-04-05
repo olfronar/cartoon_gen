@@ -31,7 +31,7 @@ def upload_video(
 
     publish_id, upload_url = init_upload(access_token, video_size, chunk_size)
 
-    upload_chunks(upload_url, video_path, chunk_size)
+    upload_chunks(upload_url, video_path, chunk_size, video_size)
 
     status = poll_status(access_token, publish_id)
     logger.info("Upload status: %s", status.get("status"))
@@ -78,9 +78,8 @@ def init_upload(
     return data["publish_id"], data["upload_url"]
 
 
-def upload_chunks(upload_url: str, video_path: Path, chunk_size: int) -> None:
+def upload_chunks(upload_url: str, video_path: Path, chunk_size: int, total_size: int) -> None:
     """Upload video file in sequential chunks."""
-    total_size = video_path.stat().st_size
 
     with open(video_path, "rb") as f:
         offset = 0

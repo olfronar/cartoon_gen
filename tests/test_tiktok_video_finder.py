@@ -4,6 +4,7 @@ from datetime import date
 
 import pytest
 
+from shared.utils import find_script_videos
 from tiktok_publisher.pipeline.video_finder import find_publishable_videos
 
 
@@ -32,7 +33,7 @@ class TestFindPublishableVideos:
         d.mkdir()
         # No video files
 
-        with pytest.raises(FileNotFoundError, match="No publishable videos"):
+        with pytest.raises(FileNotFoundError, match="No script videos"):
             find_publishable_videos(date(2026, 4, 1), tmp_path)
 
     def test_multiple_scripts_sorted(self, tmp_path):
@@ -54,5 +55,27 @@ class TestFindPublishableVideos:
         assert "2026-04-03" in str(results[0][1])
 
     def test_raises_no_dirs(self, tmp_path):
-        with pytest.raises(FileNotFoundError, match="No video directories"):
+        with pytest.raises(FileNotFoundError, match="No output directories"):
             find_publishable_videos(None, tmp_path)
+
+
+class TestFindScriptVideosShared:
+    """Test the shared find_script_videos directly with prefer_captioned."""
+
+    def test_prefer_captioned_true(self, tmp_path):
+        d = tmp_path / "2026-04-01_1"
+        d.mkdir()
+        (d / "script_video.mp4").write_bytes(b"raw")
+        (d / "script_video_captioned.mp4").write_bytes(b"captioned")
+
+        results = find_script_videos(date(2026, 4, 1), tmp_path, prefer_captioned=True)
+        assert results[0][1].name == "script_video_captioned.mp4"
+
+    def test_prefer_captioned_false(self, tmp_path):
+        d = tmp_path / "2026-04-01_1"
+        d.mkdir()
+        (d / "script_video.mp4").write_bytes(b"raw")
+        (d / "script_video_captioned.mp4").write_bytes(b"captioned")
+
+        results = find_script_videos(date(2026, 4, 1), tmp_path, prefer_captioned=False)
+        assert results[0][1].name == "script_video.mp4"

@@ -3,7 +3,7 @@ from __future__ import annotations
 import logging
 from pathlib import Path
 
-from shared.ffmpeg import run_ffmpeg
+from shared.ffmpeg import ENCODE_ARGS, run_ffmpeg
 
 logger = logging.getLogger(__name__)
 
@@ -31,12 +31,7 @@ def burn_subtitles(
             str(video_path),
             "-filter_script:v",
             str(filter_script_path.resolve()),
-            "-c:v",
-            "libx264",
-            "-preset",
-            "fast",
-            "-c:a",
-            "aac",
+            *ENCODE_ARGS,
             "-movflags",
             "+faststart",
             str(output_path),

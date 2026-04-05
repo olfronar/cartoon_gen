@@ -140,7 +140,7 @@ Transcribes spoken audio from generated videos via the OpenAI Whisper API, gener
 
 ## TikTok Publisher
 
-Uploads each per-script video as a separate TikTok post. Prefers captioned videos, falls back to uncaptioned. Uses TikTok's Direct Post API with chunked file upload. Content is flagged as AI-generated.
+Uploads each per-script video as a draft to the creator's TikTok inbox. Prefers captioned videos, falls back to uncaptioned. Uses TikTok's inbox API with chunked file upload. User publishes manually from the TikTok app.
 
 ```bash
 # One-time: authenticate (opens browser)
@@ -149,9 +149,8 @@ uv run python -m tiktok_publisher auth
 # Upload latest videos
 uv run python -m tiktok_publisher upload
 
-# Upload with options
+# Upload for specific date
 uv run python -m tiktok_publisher upload --date 2026-04-02
-uv run python -m tiktok_publisher upload --privacy PUBLIC_TO_EVERYONE
 ```
 
 Requires `TIKTOK_CLIENT_KEY` and `TIKTOK_CLIENT_SECRET` from the [TikTok Developer portal](https://developers.tiktok.com/), and `cloudflared` CLI installed. During auth, a cloudflared tunnel provides an HTTPS redirect URI — register it in your TikTok app settings when prompted.
@@ -167,14 +166,14 @@ cartoon_maker/
 ├── caption_maker/       # Stage 5: whisper-based video captions
 ├── tiktok_publisher/    # Stage 6: TikTok video publishing
 ├── shared/              # Data contracts, config, LLM helpers, context loader
-├── tests/               # 287 tests (pytest)
+├── tests/               # 283 tests (pytest)
 └── output/              # All generated artifacts (gitignored)
 ```
 
 ## Testing
 
 ```bash
-uv run pytest tests/ -v             # Run all 287 tests
+uv run pytest tests/ -v             # Run all 283 tests
 uv run pytest tests/test_dedup.py   # Single file
 uv run ruff check .                 # Lint
 ```

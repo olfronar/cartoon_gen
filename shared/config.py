@@ -19,22 +19,22 @@ class Settings:
     reddit_client_secret: str = ""
     reddit_user_agent: str = "CartoonMakerBot/0.1"
 
-    # xAI (Phase 2)
+    # xAI
     xai_api_key: str = ""
 
     # Product Hunt (needs both for OAuth token exchange)
     product_hunt_api_key: str = ""
     product_hunt_api_secret: str = ""
 
-    # Bluesky (Phase 2 — requires app password)
+    # Bluesky
     bluesky_handle: str = ""
     bluesky_app_password: str = ""
 
-    # Notion (Phase 3)
+    # Notion
     notion_api_key: str = ""
     notion_page_id: str = ""
 
-    # Slack (Phase 3)
+    # Slack
     slack_webhook_url: str = ""
 
     # Output
@@ -83,7 +83,6 @@ class Settings:
     tiktok_client_secret: str = ""
     tiktok_tokens_path: Path = field(default_factory=lambda: Path("output/tiktok_tokens.json"))
     tiktok_redirect_port: int = 8585
-    tiktok_privacy_level: str = "SELF_ONLY"
 
 
 def load_settings(env_path: str = ".env") -> Settings:
@@ -132,7 +131,6 @@ def load_settings(env_path: str = ".env") -> Settings:
         tiktok_client_secret=values.get("TIKTOK_CLIENT_SECRET", ""),
         tiktok_tokens_path=Path(values.get("TIKTOK_TOKENS_PATH", "output/tiktok_tokens.json")),
         tiktok_redirect_port=int(values.get("TIKTOK_REDIRECT_PORT", "8585")),
-        tiktok_privacy_level=values.get("TIKTOK_PRIVACY_LEVEL", "SELF_ONLY"),
     )
 
     if not settings.anthropic_api_key:

@@ -127,34 +127,6 @@ subject, context, and riddle from shapes alone? If not, simplify further.
 - Output ONLY the image prompt text, 60-85 words. No commentary.
 """
 
-END_CARD_TO_IMAGE_PROMPT = """\
-You are an expert at converting video end-card descriptions into optimized \
-static image generation prompts. Your output will be fed directly to an \
-image generation model.
-
-{context}
-
----
-
-Rewrite the following end-card prompt into a single, optimized static image \
-generation prompt.
-
-**Episode title**: {title}
-**Original end-card prompt**: {end_card_prompt}
-
-**CRITICAL**:
-- Focus on title/credits composition — this is the episode end card.
-- Use ONLY affirmative descriptions — never say "no", "without", "don't", "avoid".
-
-**REQUIRED**:
-- Include the art style from the style guide above.
-- Compose for 9:16 vertical format (portrait orientation).
-- Front-load the key visual in the first 20-30 words.
-
-**FORMAT**:
-- Output ONLY the image prompt text, 80-200 words. No commentary.
-"""
-
 SHOT_VERIFICATION_PROMPT = """\
 You are a visual quality inspector for a cartoon series. You are checking \
 whether a generated image matches the scene description.

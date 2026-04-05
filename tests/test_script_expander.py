@@ -1,6 +1,5 @@
 from __future__ import annotations
 
-import json
 from datetime import date
 from unittest.mock import MagicMock
 
@@ -8,20 +7,7 @@ import pytest
 
 from script_writer.pipeline.script_expander import expand_script, generate_synopsis
 from shared.models import Logline, Synopsis
-from tests.conftest import make_scored_item
-
-
-def _mock_stream_response(json_data):
-    mock_message = MagicMock()
-    mock_message.content = [
-        MagicMock(type="text", text=json.dumps(json_data)),
-    ]
-    mock_stream = MagicMock()
-    mock_stream.__enter__ = MagicMock(return_value=mock_stream)
-    mock_stream.__exit__ = MagicMock(return_value=False)
-    mock_stream.get_final_message.return_value = mock_message
-    return mock_stream
-
+from tests.conftest import make_scored_item, mock_stream_response
 
 MOCK_SYNOPSIS = {
     "setup": "Robot opens restaurant",
@@ -63,7 +49,7 @@ LOGLINE = Logline(
 class TestGenerateSynopsis:
     def test_generates_synopsis(self):
         mock_client = MagicMock()
-        mock_client.messages.stream.return_value = _mock_stream_response(MOCK_SYNOPSIS)
+        mock_client.messages.stream.return_value = mock_stream_response(MOCK_SYNOPSIS)
 
         result = generate_synopsis(
             logline=LOGLINE,
@@ -92,7 +78,7 @@ class TestGenerateSynopsis:
 class TestExpandScript:
     def test_expands_to_script(self):
         mock_client = MagicMock()
-        mock_client.messages.stream.return_value = _mock_stream_response(MOCK_SCRIPT)
+        mock_client.messages.stream.return_value = mock_stream_response(MOCK_SCRIPT)
 
         synopsis = Synopsis(**MOCK_SYNOPSIS)
 

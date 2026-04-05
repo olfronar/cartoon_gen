@@ -65,7 +65,7 @@ class TestUploadChunks:
 
         mock_urlopen_fn.return_value = _mock_urlopen(b"", status=201)
 
-        upload_chunks("https://upload.example.com", video, chunk_size=40)
+        upload_chunks("https://upload.example.com", video, chunk_size=40, total_size=100)
 
         # 100 bytes / 40 byte chunks = 3 chunks (40 + 40 + 20)
         assert mock_urlopen_fn.call_count == 3

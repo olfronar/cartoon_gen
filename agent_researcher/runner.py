@@ -4,6 +4,8 @@ import asyncio
 import contextlib
 import logging
 
+import anthropic
+
 from shared.config import Settings, load_settings
 from shared.models import ComedyBrief, RawItem
 
@@ -85,12 +87,19 @@ async def _pipeline(settings: Settings) -> ComedyBrief:
     with contextlib.suppress(OSError):
         filtered = filter_already_covered(filtered, settings.output_dir)
 
+    # Single Anthropic client shared by prefilter and scorer
+    llm_client = (
+        anthropic.Anthropic(api_key=settings.anthropic_api_key)
+        if settings.anthropic_api_key
+        else None
+    )
+
     # LLM pre-filter (Sonnet — fast ranking)
-    filtered = await asyncio.to_thread(prefilter_items, filtered, settings)
+    filtered = await asyncio.to_thread(prefilter_items, filtered, settings, llm_client)
     logger.info("After prefilter: %d items", len(filtered))
 
     # LLM scoring (Opus — deep analysis)
-    scored = await asyncio.to_thread(score_items, filtered, settings)
+    scored = await asyncio.to_thread(score_items, filtered, settings, llm_client)
 
     # Generate brief
     return generate_brief(scored)

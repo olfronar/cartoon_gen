@@ -43,7 +43,7 @@ def _make_settings(tmp_path: Path) -> MagicMock:
 
 class TestCaptionRunner:
     @pytest.mark.asyncio
-    @patch("video_designer.pipeline.assembler.assemble_final_video")
+    @patch("shared.assembler.assemble_final_video")
     @patch("caption_maker.pipeline.runner.burn_subtitles")
     @patch("caption_maker.pipeline.runner.probe_video", return_value=(270, 480, 30.0))
     @patch("caption_maker.pipeline.runner.transcribe")
@@ -74,7 +74,7 @@ class TestCaptionRunner:
         mock_assemble.assert_called_once()
 
     @pytest.mark.asyncio
-    @patch("video_designer.pipeline.assembler.assemble_final_video")
+    @patch("shared.assembler.assemble_final_video")
     @patch("caption_maker.pipeline.runner.burn_subtitles")
     @patch("caption_maker.pipeline.runner.probe_video", return_value=(270, 480, 30.0))
     @patch("caption_maker.pipeline.runner.transcribe")

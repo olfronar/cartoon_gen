@@ -4,7 +4,6 @@ from unittest.mock import MagicMock, patch
 
 from static_shots_maker.pipeline.prompt_generator import (
     _fallback_strip,
-    generate_end_card_prompt,
     generate_scene_prompt,
 )
 from tests.conftest import make_scene, make_script
@@ -73,21 +72,3 @@ class TestGenerateScenePrompt:
         # Should use fallback — no audio/duration
         assert "audio" not in result.lower()
         assert "duration" not in result.lower()
-
-
-class TestGenerateEndCardPrompt:
-    @patch("static_shots_maker.pipeline.prompt_generator.call_llm_text")
-    def test_calls_claude(self, mock_llm):
-        mock_llm.return_value = "Logo on gradient background"
-        script = make_script(end_card_prompt="Show the logo. Music: fanfare. Duration: 3 seconds.")
-
-        result = generate_end_card_prompt(script, "context", MagicMock(), "claude-opus-4-6", 4096)
-        assert result == "Logo on gradient background"
-
-    @patch("static_shots_maker.pipeline.prompt_generator.call_llm_text")
-    def test_fallback_on_error(self, mock_llm):
-        mock_llm.side_effect = RuntimeError("API error")
-        script = make_script(end_card_prompt="Show the logo. Music: fanfare. Duration: 3 seconds.")
-
-        result = generate_end_card_prompt(script, "context", MagicMock(), "claude-opus-4-6", 4096)
-        assert "logo" in result.lower()

@@ -4,7 +4,7 @@ from datetime import date
 
 import pytest
 
-from caption_maker.pipeline.video_finder import find_script_videos
+from shared.utils import find_script_videos
 
 
 class TestFindScriptVideos:

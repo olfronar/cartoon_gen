@@ -5,7 +5,7 @@ import re
 
 from shared.models import CartoonScript, SceneScript
 from shared.utils import call_llm_text
-from static_shots_maker.prompts import END_CARD_TO_IMAGE_PROMPT, SCENE_TO_IMAGE_PROMPT
+from static_shots_maker.prompts import SCENE_TO_IMAGE_PROMPT
 
 logger = logging.getLogger(__name__)
 
@@ -51,26 +51,6 @@ def generate_scene_prompt(
             scene.scene_number,
         )
         return _fallback_strip(scene.scene_prompt)
-
-
-def generate_end_card_prompt(
-    script: CartoonScript,
-    context_block: str,
-    client,
-    model: str,
-    max_tokens: int,
-) -> str:
-    """Rewrite an end-card prompt into an optimized image generation prompt."""
-    prompt = END_CARD_TO_IMAGE_PROMPT.format(
-        context=context_block,
-        title=script.title,
-        end_card_prompt=script.end_card_prompt,
-    )
-    try:
-        return call_llm_text(client, prompt, model, max_tokens).strip()
-    except Exception:
-        logger.exception("Claude prompt rewrite failed for end card, using fallback")
-        return _fallback_strip(script.end_card_prompt)
 
 
 def _fallback_strip(prompt: str) -> str:

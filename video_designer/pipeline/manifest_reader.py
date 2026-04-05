@@ -2,16 +2,14 @@ from __future__ import annotations
 
 import json
 import logging
-import re
 from dataclasses import dataclass
 from datetime import date
 from pathlib import Path
 
 from shared.models import CartoonScript, ShotsManifest
+from shared.utils import OUTPUT_INDEX_RE, find_latest_output_date
 
 logger = logging.getLogger(__name__)
-
-_INDEX_RE = re.compile(r"^\d{4}-\d{2}-\d{2}_(\d+)$")
 
 
 @dataclass(slots=True)
@@ -35,7 +33,7 @@ def read_manifests(
     scripts_dir = scripts_dir or Path("output/scripts")
 
     if target_date is None:
-        target_date = _find_latest_date(shots_dir)
+        target_date = find_latest_output_date(shots_dir)
 
     date_str = target_date.isoformat()
     results: list[ScriptWithShots] = []
@@ -43,7 +41,7 @@ def read_manifests(
     for manifest_dir in sorted(shots_dir.glob(f"{date_str}_*")):
         if not manifest_dir.is_dir():
             continue
-        match = _INDEX_RE.match(manifest_dir.name)
+        match = OUTPUT_INDEX_RE.match(manifest_dir.name)
         if not match:
             continue
         index = int(match.group(1))
@@ -69,14 +67,3 @@ def read_manifests(
         results.append(ScriptWithShots(index=index, script=script, manifest=manifest))
 
     return results
-
-
-def _find_latest_date(shots_dir: Path) -> date:
-    """Find the most recent date by scanning subdirectory names."""
-    dates: set[str] = set()
-    for path in shots_dir.iterdir():
-        if path.is_dir() and _INDEX_RE.match(path.name):
-            dates.add(path.name.rsplit("_", 1)[0])
-    if not dates:
-        raise FileNotFoundError(f"No shot directories found in {shots_dir}")
-    return date.fromisoformat(max(dates))

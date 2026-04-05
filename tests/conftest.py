@@ -3,8 +3,25 @@ from __future__ import annotations
 import json
 from datetime import date, datetime, timezone
 from pathlib import Path
+from unittest.mock import MagicMock
 
 from shared.models import CartoonScript, ComedyBrief, RawItem, SceneScript, ScoredItem, Synopsis
+
+
+def mock_stream_response(json_data):
+    """Create a mock Anthropic streaming response context manager.
+
+    Used by tests that mock ``client.messages.stream()`` calls.
+    """
+    mock_message = MagicMock()
+    mock_message.content = [
+        MagicMock(type="text", text=json.dumps(json_data)),
+    ]
+    mock_stream = MagicMock()
+    mock_stream.__enter__ = MagicMock(return_value=mock_stream)
+    mock_stream.__exit__ = MagicMock(return_value=False)
+    mock_stream.get_final_message.return_value = mock_message
+    return mock_stream
 
 
 def make_raw_item(

@@ -35,7 +35,7 @@ def verify_shot(
             scene_title=scene.scene_title,
             scene_prompt=scene.scene_prompt,
             visual_gag=scene.visual_gag or "none",
-            format_type=script.format_type or "standard",
+            format_type=script.format_type or "visual_punchline",
             billy_emotion=scene.billy_emotion or "deadpan",
         )
         data = call_llm_json(client, prompt, model, max_tokens, images=[image_path])
@@ -64,7 +64,7 @@ def compare_candidates(
         prompt = SHOT_COMPARISON_PROMPT.format(
             scene_title=scene.scene_title,
             scene_prompt=scene.scene_prompt,
-            format_type=script.format_type or "standard",
+            format_type=script.format_type or "visual_punchline",
         )
         data = call_llm_json(client, prompt, model, max_tokens, images=[image_a, image_b])
         winner = data.get("winner", "a").lower() if isinstance(data, dict) else "a"
