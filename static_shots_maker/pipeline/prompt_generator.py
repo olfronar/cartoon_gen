@@ -58,9 +58,12 @@ def generate_scene_prompt(
         return _fallback_strip(scene.scene_prompt)
 
     if comedy_check:
-        image_prompt = _check_comedy(image_prompt, scene, script, client, max_tokens)
+        image_prompt = _check_comedy(image_prompt, scene, script, client)
 
     return image_prompt
+
+
+_COMEDY_CHECK_MAX_TOKENS = 4096
 
 
 def _check_comedy(
@@ -68,7 +71,6 @@ def _check_comedy(
     scene: SceneScript,
     script: CartoonScript,
     client,
-    max_tokens: int,
 ) -> str:
     """Check if an image prompt is independently funny. Revise once if not. Fail-open."""
     try:
@@ -78,8 +80,8 @@ def _check_comedy(
             visual_gag=scene.visual_gag or "None",
             image_prompt=image_prompt,
         )
-        # Use Sonnet for fast, cheap evaluation
-        data = call_llm_json(client, check_prompt, "claude-sonnet-4-6", max_tokens)
+        # Use Sonnet with a small token budget for fast, cheap evaluation
+        data = call_llm_json(client, check_prompt, "claude-sonnet-4-6", _COMEDY_CHECK_MAX_TOKENS)
         if not isinstance(data, dict):
             return image_prompt
         if not data.get("revision_needed", False):
