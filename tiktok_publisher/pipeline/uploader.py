@@ -172,7 +172,12 @@ def _api_request(req: urllib.request.Request) -> dict:
 
 
 def _compute_chunk_size(video_size: int) -> int:
-    """Compute appropriate chunk size for a given video size."""
+    """Compute appropriate chunk size for a given video size.
+
+    TikTok requires chunk_size between 5 MB and 64 MB. For files smaller than
+    5 MB, we still report 5 MB as the chunk size (total_chunk_count=1, and the
+    actual PUT sends the real file bytes with a correct Content-Range).
+    """
     if video_size <= _MIN_CHUNK:
-        return video_size  # Single chunk for small files
+        return _MIN_CHUNK
     return min(_DEFAULT_CHUNK, _MAX_CHUNK)

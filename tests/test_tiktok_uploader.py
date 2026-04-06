@@ -24,7 +24,7 @@ def _mock_urlopen(response_data: bytes, status: int = 200):
 
 class TestComputeChunkSize:
     def test_small_file(self):
-        assert _compute_chunk_size(1024) == 1024  # < 5MB
+        assert _compute_chunk_size(1024) == 5 * 1024 * 1024  # Clamp to 5MB minimum
 
     def test_medium_file(self):
         assert _compute_chunk_size(50 * 1024 * 1024) == 10 * 1024 * 1024  # 10MB default
