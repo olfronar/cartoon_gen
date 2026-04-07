@@ -227,7 +227,17 @@ def call_llm_json(
     Raises on API or parse failure (caller decides fallback policy).
     """
     text = strip_code_fences(_call_llm(client, prompt, model, max_tokens, images=images))
-    return json.loads(text)
+    text = text.strip()
+    try:
+        return json.loads(text)
+    except (json.JSONDecodeError, ValueError):
+        # Fall back to bracket extraction for LLM responses with surrounding text
+        for expect in (dict, list):
+            try:
+                return extract_json(text, expect=expect)
+            except ValueError:
+                continue
+        raise ValueError(f"Could not parse JSON from LLM response:\n{text[:500]}") from None
 
 
 def call_llm_text(
