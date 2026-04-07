@@ -146,29 +146,36 @@ Output a `story_hook` object with:
 precisely — not "concern" or "unease" but "the guilty relief that it happened to \
 them and not us" or "the quiet dread that we already knew and did nothing"
 
-**STEP 1.5 — CREATIVE COLLISION** (break your own analysis before writing)
+**STEP 1.5 — WILD ANGLES** (ignore ALL constraints — diverge before you converge)
 
-Before writing loglines, force a collision between the story and an UNRELATED \
-domain. Pick ONE and answer briefly:
-- A completely different profession encountering this news (a plumber, a \
-kindergarten teacher, a wedding planner, a marine biologist)
-- A mundane domestic situation with the same structural shape (a couple \
-arguing about the thermostat, a child explaining why the dog ate their \
-homework, a neighbor dispute about a fence)
-- An object from a completely unrelated context that, placed in this news \
-story, becomes the funniest possible prop
+Forget formats. Forget character limits. Forget scene rules. Forget what's \
+"renderable." Forget everything you know about this show. Your ONLY job right \
+now: list 6-8 wildly different comedy framings of this story that would make \
+someone spit out their coffee. No idea is too weird, too dark, too absurd. \
+Include at least:
+- One that treats the story as a mundane domestic problem (appliance repair, \
+grocery shopping, parking dispute — same emotional shape, zero grandeur)
+- One that's pure visual absurdism (impossible scale, wrong materials, physics \
+violations — the image alone makes people laugh)
+- One that takes a figure of speech or cliché about this topic LITERALLY \
+(metaphor becomes physical reality)
+- One from a completely unexpected profession's perspective (a plumber, a \
+kindergarten teacher, a wedding planner encountering this news in their workday)
+- Two or more that surprise even YOU — angles that feel dangerous, weird, or \
+so specific they might alienate half the audience but make the other half cry-laugh
 
-Add a `creative_leap` to the story_hook object:
-- `collision`: the unrelated domain, situation, or object you chose
-- `structural_match`: WHY it matches the news story's shape (one sentence)
-- `unexpected_angle`: what comedy angle this collision reveals that pure \
-analysis of the news would never produce
+Add `wild_angles` to the story_hook object: a list of 6-8 one-sentence pitches. \
+Each pitch should be a COMPLETE comedy concept in one sentence — not "what if \
+X?" but "Billy holds X while Y happens." Concrete image, concrete joke.
 
-You do NOT need to use this collision in your loglines. It exists to break \
-your analytical pattern. But if the collision produces something funnier than \
-your story_hook angle — USE IT. The best joke wins regardless of where it came from.
+These are NOT throwaway brainstorming. You WILL use the best ones. The loglines \
+below must draw from wild_angles AND your story_hook analysis. If a wild angle \
+is funnier than your analytical approach — the wild angle wins.
 
 **STEP 2 — WRITE THREE LOGLINES**
+
+Select your 3 best angles from wild_angles AND your story_hook analysis. Shape \
+each into a logline satisfying format and character constraints below.
 
 Each logline must take a DIFFERENT approach AND specify a different `format_type` \
 (one of the show's four formats). Each approach must identify the *specific feeling \
@@ -295,8 +302,7 @@ default to visual_punchline with Billy alone.
 
 Return as a JSON object with keys:
 - `story_hook`: object with keys: topic, angle, conflict, stakes, surprise, \
-avoided_feeling, creative_leap (object with: collision, structural_match, \
-unexpected_angle)
+avoided_feeling, wild_angles (list of 6-8 one-sentence comedy pitches)
 - `loglines`: array of 3 objects with keys: text, approach, format_type, \
 featured_characters, visual_hook, news_essence, layers
 """
@@ -335,7 +341,15 @@ Which logline has the most LAYERS — funny on first watch AND funnier on second
 watch when you notice more? Which visual hook rewards closer inspection? Which \
 joke works on multiple levels simultaneously? Rate each logline 1-5 for rewatch depth.
 
-Sum the three scores per logline. Highest total wins. Ties broken by which \
+**THE MEME TEST** (mandatory — score BEFORE summing):
+For each logline, imagine the final frame as a still image with no audio. \
+Would someone screenshot it and text it to a group chat with "lmaooo"? Would \
+the image go viral as a standalone meme? If the answer is no, set The Sharer \
+score to 1 regardless of other qualities. The image MUST be funny WITHOUT \
+the dialogue.
+
+Sum the three scores per logline. Highest total wins. Ties broken by The \
+Sharer score — the most shareable logline wins ties. If still tied, which \
 logline made YOU laugh hardest — not smile, not nod, LAUGH. If you're choosing \
 between clever-but-dry and funny-but-rougher, choose funny.
 
@@ -609,6 +623,12 @@ funny, cut the explanation and let the line land
 **THE LAST LINE TEST**: Read only the final line of dialogue. Does it land? \
 Does it surprise? Could you put it on a t-shirt? If the last line is just \
 another fact or observation, the script doesn't have a punchline.
+
+**THE TWEET TEST**: Billy's key punchline must work as a standalone tweet. \
+If it needs setup, context, or a second sentence to be funny, it's not a \
+punchline — it's an explanation. Cut until it's quotable. "Non-GMO. Cage-free. \
+Heartbroken." = 5 words, instant laugh. "At least this one's load-bearing." = \
+6 words, instant laugh. That's the bar. Every word must earn its place.
 
 **THE BAR TEST**: Read the dialogue out loud to a stranger. Do they laugh? \
 If not, rewrite. "Measured disbelief" is not a comedy emotion — it is an \
@@ -1004,12 +1024,15 @@ are competing head-to-head. Pick the funnier one.
 
 1. **Funny AND clear** — both required, neither optional. Does it make you \
 laugh AND convey the news? If only one logline achieves both, it wins.
-2. **Emotional hit** — does it name a specific feeling people are avoiding? \
+2. **Screenshot shareability** — imagine the final frame as a still image. \
+Would someone screenshot it and text it to a group chat? Would it work as a \
+standalone meme? The logline with the more shareable image wins this criterion.
+3. **Emotional hit** — does it name a specific feeling people are avoiding? \
 Not generic "concern" but a precise uncomfortable truth.
-3. **Specificity** — concrete objects, not abstractions. "iPhone 16 Pro" not \
+4. **Specificity** — concrete objects, not abstractions. "iPhone 16 Pro" not \
 "smartphone."
-4. **Format fit** — does the chosen format_type serve the joke?
-5. **Visual feasibility** — at most one other character, three or fewer visual \
+5. **Format fit** — does the chosen format_type serve the joke?
+6. **Visual feasibility** — at most one other character, three or fewer visual \
 elements, renderable as one clean image.
 
 ## Rules

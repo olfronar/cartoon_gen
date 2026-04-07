@@ -4,8 +4,8 @@ import logging
 from pathlib import Path
 
 from shared.models import CartoonScript, SceneScript
-from shared.utils import call_llm_text
-from video_designer.prompts import SCENE_TO_VIDEO_PROMPT
+from shared.utils import call_llm_json, call_llm_text
+from video_designer.prompts import DYNAMICS_CHECK_PROMPT, SCENE_TO_VIDEO_PROMPT
 
 logger = logging.getLogger(__name__)
 
@@ -54,10 +54,72 @@ def generate_video_prompt(
     )
     images = [image_path] if image_path else None
     try:
-        return call_llm_text(client, prompt, model, max_tokens, images=images).strip()
+        video_prompt = call_llm_text(client, prompt, model, max_tokens, images=images).strip()
     except Exception:
         logger.exception(
             "Claude video prompt failed for scene %d, using original scene_prompt",
             scene.scene_number,
         )
         return scene.scene_prompt
+
+    return _check_dynamics(video_prompt, scene, script, client)
+
+
+_DYNAMICS_CHECK_MAX_TOKENS = 2048
+
+
+def _check_dynamics(
+    video_prompt: str,
+    scene: SceneScript,
+    script: CartoonScript,
+    client,
+) -> str:
+    """Check if video prompt describes specific physical motion. Fail-open."""
+    try:
+        check_prompt = DYNAMICS_CHECK_PROMPT.format(
+            video_prompt=video_prompt,
+            format_type=script.format_type or "demonstration",
+        )
+        data = call_llm_json(client, check_prompt, "claude-sonnet-4-6", _DYNAMICS_CHECK_MAX_TOKENS)
+        if not isinstance(data, dict):
+            return video_prompt
+        score = data.get("motion_score", 5)
+        if score >= 3:
+            logger.info(
+                "Video dynamics check passed (score=%d) for scene %d",
+                score,
+                scene.scene_number,
+            )
+            return video_prompt
+        suggestion = data.get("suggested_motion", "")
+        if not suggestion:
+            logger.warning(
+                "Video dynamics check failed (score=%d) but no suggestion for scene %d",
+                score,
+                scene.scene_number,
+            )
+            return video_prompt
+        # Rewrite the prompt incorporating the motion suggestion
+        rewrite_prompt = (
+            f"Rewrite this video prompt to include more dynamic motion.\n\n"
+            f"Original prompt:\n{video_prompt}\n\n"
+            f"Motion to add:\n{suggestion}\n\n"
+            f"Rules:\n"
+            f"- 80-150 words max\n"
+            f"- Use vigorous verbs (lunges, collapses, erupts) not generic (moves, goes)\n"
+            f"- Specify FROM/TO state and SPEED for the new motion\n"
+            f"- Keep all existing dialogue, audio, and camera direction\n"
+            f"- Output ONLY the rewritten prompt, no commentary"
+        )
+        revised = call_llm_text(
+            client, rewrite_prompt, "claude-sonnet-4-6", _DYNAMICS_CHECK_MAX_TOKENS
+        ).strip()
+        logger.info(
+            "Video dynamics check: rewrote prompt for scene %d (score=%d)",
+            scene.scene_number,
+            score,
+        )
+        return revised
+    except Exception:
+        logger.exception("Video dynamics check failed — keeping original prompt")
+        return video_prompt

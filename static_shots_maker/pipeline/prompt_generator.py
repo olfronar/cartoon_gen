@@ -66,13 +66,16 @@ def generate_scene_prompt(
 _COMEDY_CHECK_MAX_TOKENS = 4096
 
 
+_COMEDY_REWRITE_MAX_TOKENS = 1024
+
+
 def _check_comedy(
     image_prompt: str,
     scene: SceneScript,
     script: CartoonScript,
     client,
 ) -> str:
-    """Check if an image prompt is independently funny. Revise once if not. Fail-open."""
+    """Check if an image prompt is independently funny. Rewrite once if not. Fail-open."""
     try:
         check_prompt = IMAGE_COMEDY_CHECK_PROMPT.format(
             title=script.title,
@@ -90,9 +93,22 @@ def _check_comedy(
         suggestion = data.get("suggested_revision", "")
         if not suggestion:
             return image_prompt
-        # Apply the suggestion by appending it as a comedy amplification
-        revised = f"{image_prompt.rstrip('.')}. {suggestion}"
-        logger.info("Image comedy check: applied revision for scene %d", scene.scene_number)
+        # Rewrite the full prompt incorporating the comedy suggestion
+        rewrite_prompt = (
+            f"Rewrite this image generation prompt to be funnier.\n\n"
+            f"Original prompt:\n{image_prompt}\n\n"
+            f"Comedy note (what's missing):\n{suggestion}\n\n"
+            f"Rules:\n"
+            f"- 50-70 words max\n"
+            f"- Front-load the single funniest visual element in the first 10 words\n"
+            f"- The image must be independently funny as a standalone meme\n"
+            f"- Preserve all character details and art style references\n"
+            f"- Output ONLY the rewritten prompt, no commentary"
+        )
+        revised = call_llm_text(
+            client, rewrite_prompt, "claude-sonnet-4-6", _COMEDY_REWRITE_MAX_TOKENS
+        ).strip()
+        logger.info("Image comedy check: rewrote prompt for scene %d", scene.scene_number)
         return revised
     except Exception:
         logger.exception("Image comedy check failed — keeping original prompt")

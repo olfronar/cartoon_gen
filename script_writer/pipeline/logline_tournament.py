@@ -143,7 +143,52 @@ def run_tournament(
             next_round.append(current[i])
         current = next_round
 
-    return current[0]
+    winner = current[0]
+    _quality_gate(winner, item, client)
+    return winner
+
+
+_QUALITY_GATE_PROMPT = """\
+You are a TikTok comedy judge. Rate this logline for a cartoon news comedy show.
+
+**News headline**: {title}
+**Logline**: {logline_text}
+**Visual hook**: {visual_hook}
+
+Answer three yes/no questions:
+1. **scroll_stop**: Would this make you STOP SCROLLING in 2 seconds?
+2. **screenshot**: Would you screenshot and send to a group chat?
+3. **instant_funny**: Is it funny within 3 seconds — no setup needed?
+
+Return JSON:
+{{"scroll_stop": true/false, "screenshot": true/false, "instant_funny": true/false}}\
+"""
+
+_QUALITY_GATE_MAX_TOKENS = 1024
+
+
+def _quality_gate(winner: Logline, item: ScoredItem, client) -> None:
+    """Evaluate tournament winner quality. Logs warnings — does not block."""
+    try:
+        prompt = _QUALITY_GATE_PROMPT.format(
+            title=item.item.title,
+            logline_text=winner.text,
+            visual_hook=winner.visual_hook,
+        )
+        data = call_llm_json(client, prompt, "claude-sonnet-4-6", _QUALITY_GATE_MAX_TOKENS)
+        if not isinstance(data, dict):
+            return
+        fails = [k for k in ("scroll_stop", "screenshot", "instant_funny") if not data.get(k)]
+        if fails:
+            logger.warning(
+                "Quality gate: tournament winner failed %s — logline: %s",
+                ", ".join(fails),
+                winner.text[:80],
+            )
+        else:
+            logger.info("Quality gate: tournament winner passed all checks")
+    except Exception:
+        logger.exception("Quality gate check failed — continuing")
 
 
 def _format_logline(logline: Logline, label: str) -> str:

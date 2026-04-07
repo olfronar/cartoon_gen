@@ -39,6 +39,18 @@ turns. Billy's emotion ({billy_emotion}) is visible in his body language.
 what the viewer understands. Start moving early — the payoff needs time to land.
   - **demonstration**: One deliberate gesture from Billy. Object transforms. The \
 gesture is casual, the result is impossible.
+- MOTION VERBS: Use specific, vigorous verbs: lunges, collapses, erupts, \
+shatters, buckles, swells, warps, wilts, inflates, crumbles, snaps, peels, \
+bloats, fractures, oozes, spasms. NEVER use generic verbs: moves, goes, \
+changes, happens, appears, transitions, becomes. Generic motion = static video.
+- MOTION TRAJECTORY: For every moving element, specify: FROM what state \
+TO what state, at what SPEED (sudden/gradual/accelerating). \
+"The phone swells from palm-sized to cinder-block in 3 seconds" not \
+"the phone transforms." "Billy's wrist buckles under sudden weight" not \
+"Billy reacts."
+- SINGLE FOCUS: Describe ONE primary motion in full mechanical detail — \
+the viewer's eye follows this. All other motion is ambient texture described \
+in 2-3 words each ("shadows pulse," "dust drifts," "surface ripples").
 - PACING: hit the action fast. Start motion or dialogue within the first 2-3 \
 seconds. Don't waste the opening on a static establishing shot — the static \
 image already established the scene. The viewer is scrolling on a phone.
@@ -68,4 +80,34 @@ of the world.
 - Include camera movement: {camera_movement}.
 - Reference character animations using their visual details from profiles above.
 - Output ONLY the video prompt text, 80-150 words. No commentary.
+"""
+
+DYNAMICS_CHECK_PROMPT = """\
+You are checking whether a video generation prompt describes enough specific \
+physical motion to produce a dynamic (not static) video.
+
+## Video prompt to evaluate
+{video_prompt}
+
+## Format type
+{format_type}
+
+## Rate motion specificity (1-5)
+
+1 = No motion described at all — reads like a still image description
+2 = Vague motion ("things move," "changes occur," "transforms")
+3 = Some specifics but missing trajectories or speeds
+4 = Clear motion trajectories with FROM/TO states and timing
+5 = Vivid physical detail — you can visualize the exact motion frame by frame
+
+## Output format
+
+Return JSON:
+{{
+  "motion_score": 1-5,
+  "has_vigorous_verbs": true or false,
+  "has_trajectory": true or false,
+  "suggested_motion": "If score < 3, describe ONE specific physical motion to \
+add that would make the video dynamic. Otherwise empty string."
+}}\
 """

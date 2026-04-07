@@ -130,7 +130,10 @@ makes someone snort is a success.
 (same background elements, consistent character placement, matching lighting).
 
 **FORMAT**:
-- DISTILL, do not expand. Output 70-100 words. Cut GENERIC adjectives (big, small, \
+- FRONT-LOAD THE JOKE: The first 10 words must describe the single funniest \
+visual element. Everything after serves that element. If removing a phrase \
+doesn't weaken the comedy, remove it.
+- DISTILL, do not expand. Output 50-70 words. Cut GENERIC adjectives (big, small, \
 dark, bright) but PRESERVE material adjectives (rubber, fibrous, weathered, \
 mossy, scuffed, sagging, glossy, chitinous, membranous). Cut spatial instructions \
 before the visual riddle. Material and texture words are load-bearing — they tell \
@@ -141,7 +144,7 @@ phrase, shorten it to its essence.
 - Replace all motion/duration/audio references with static visual descriptions.
 - **Instant-read test**: blur to 100×100 pixels in your mind — can you identify \
 subject, context, and riddle from shapes alone? If not, simplify further.
-- Output ONLY the image prompt text, 60-85 words. No commentary.
+- Output ONLY the image prompt text, 50-70 words. No commentary.
 """
 
 IMAGE_COMEDY_CHECK_PROMPT = """\
@@ -208,6 +211,10 @@ from the scene prompt) visually prominent? A viewer scrolling on their phone \
 should notice it immediately.
 5. **Overall quality** — Is the image clear, well-composed, and aesthetically \
 consistent with an illustrated cartoon style?
+6. **Comedy effectiveness** — Cover the dialogue with your hand. Is this image \
+independently funny? Would someone share it as a meme? Does it contain visual \
+incongruity readable at phone thumbnail size? Score 0 if the image merely \
+illustrates the news without visual humor.
 
 ## Output format
 
@@ -215,13 +222,14 @@ Return JSON:
 {{
   "passed": true or false,
   "score": 0-10,
+  "comedy_score": 0-10,
   "issues": ["list of specific problems found, empty if passed"],
   "prompt_refinements": "Specific additions/changes to the image prompt that \
 would fix the issues. Empty string if passed."
 }}
 
-Set passed=true if score >= 6 AND no critical elements (characters, key objects) \
-are missing. Otherwise passed=false.\
+Set passed=true if score >= 6 AND comedy_score >= 5 AND no critical elements \
+(characters, key objects) are missing. Otherwise passed=false.\
 """
 
 SHOT_COMPARISON_PROMPT = """\
