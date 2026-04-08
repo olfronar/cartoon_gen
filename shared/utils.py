@@ -231,18 +231,11 @@ def call_llm_json(
     try:
         return json.loads(text)
     except (json.JSONDecodeError, ValueError):
-        # Fall back to bracket extraction for LLM responses with surrounding text.
-        # Skip extract_json's own json.loads attempt (already failed above).
-        for open_br, close_br, expect in (("{", "}", dict), ("[", "]", list)):
-            start = text.find(open_br)
-            end = text.rfind(close_br)
-            if start != -1 and end > start:
-                try:
-                    result = json.loads(text[start : end + 1])
-                    if isinstance(result, expect):
-                        return result
-                except (json.JSONDecodeError, ValueError):
-                    continue
+        for expect in (dict, list):
+            try:
+                return extract_json(text, expect=expect)
+            except ValueError:
+                continue
         raise ValueError(f"Could not parse JSON from LLM response:\n{text[:500]}") from None
 
 
