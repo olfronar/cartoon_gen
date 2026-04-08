@@ -5,7 +5,11 @@ from pathlib import Path
 
 from shared.models import CartoonScript, SceneScript
 from shared.utils import call_llm_json, call_llm_text
-from video_designer.prompts import DYNAMICS_CHECK_PROMPT, SCENE_TO_VIDEO_PROMPT
+from video_designer.prompts import (
+    DYNAMICS_CHECK_PROMPT,
+    DYNAMICS_REWRITE_PROMPT,
+    SCENE_TO_VIDEO_PROMPT,
+)
 
 logger = logging.getLogger(__name__)
 
@@ -66,6 +70,7 @@ def generate_video_prompt(
 
 
 _DYNAMICS_CHECK_MAX_TOKENS = 2048
+_DYNAMICS_REWRITE_MAX_TOKENS = 1024
 
 
 def _check_dynamics(
@@ -100,19 +105,12 @@ def _check_dynamics(
             )
             return video_prompt
         # Rewrite the prompt incorporating the motion suggestion
-        rewrite_prompt = (
-            f"Rewrite this video prompt to include more dynamic motion.\n\n"
-            f"Original prompt:\n{video_prompt}\n\n"
-            f"Motion to add:\n{suggestion}\n\n"
-            f"Rules:\n"
-            f"- 80-150 words max\n"
-            f"- Use vigorous verbs (lunges, collapses, erupts) not generic (moves, goes)\n"
-            f"- Specify FROM/TO state and SPEED for the new motion\n"
-            f"- Keep all existing dialogue, audio, and camera direction\n"
-            f"- Output ONLY the rewritten prompt, no commentary"
+        rewrite_prompt = DYNAMICS_REWRITE_PROMPT.format(
+            video_prompt=video_prompt,
+            suggestion=suggestion,
         )
         revised = call_llm_text(
-            client, rewrite_prompt, "claude-sonnet-4-6", _DYNAMICS_CHECK_MAX_TOKENS
+            client, rewrite_prompt, "claude-sonnet-4-6", _DYNAMICS_REWRITE_MAX_TOKENS
         ).strip()
         logger.info(
             "Video dynamics check: rewrote prompt for scene %d (score=%d)",

@@ -5,7 +5,11 @@ import re
 
 from shared.models import CartoonScript, SceneScript
 from shared.utils import call_llm_json, call_llm_text
-from static_shots_maker.prompts import IMAGE_COMEDY_CHECK_PROMPT, SCENE_TO_IMAGE_PROMPT
+from static_shots_maker.prompts import (
+    COMEDY_REWRITE_PROMPT,
+    IMAGE_COMEDY_CHECK_PROMPT,
+    SCENE_TO_IMAGE_PROMPT,
+)
 
 logger = logging.getLogger(__name__)
 
@@ -94,16 +98,9 @@ def _check_comedy(
         if not suggestion:
             return image_prompt
         # Rewrite the full prompt incorporating the comedy suggestion
-        rewrite_prompt = (
-            f"Rewrite this image generation prompt to be funnier.\n\n"
-            f"Original prompt:\n{image_prompt}\n\n"
-            f"Comedy note (what's missing):\n{suggestion}\n\n"
-            f"Rules:\n"
-            f"- 50-70 words max\n"
-            f"- Front-load the single funniest visual element in the first 10 words\n"
-            f"- The image must be independently funny as a standalone meme\n"
-            f"- Preserve all character details and art style references\n"
-            f"- Output ONLY the rewritten prompt, no commentary"
+        rewrite_prompt = COMEDY_REWRITE_PROMPT.format(
+            image_prompt=image_prompt,
+            suggestion=suggestion,
         )
         revised = call_llm_text(
             client, rewrite_prompt, "claude-sonnet-4-6", _COMEDY_REWRITE_MAX_TOKENS

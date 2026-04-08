@@ -111,3 +111,20 @@ Return JSON:
 add that would make the video dynamic. Otherwise empty string."
 }}\
 """
+
+DYNAMICS_REWRITE_PROMPT = """\
+Rewrite this video prompt to include more dynamic motion.
+
+Original prompt:
+{video_prompt}
+
+Motion to add:
+{suggestion}
+
+Rules:
+- 80-150 words max
+- Use vigorous verbs (lunges, collapses, erupts) not generic (moves, goes)
+- Specify FROM/TO state and SPEED for the new motion
+- Keep all existing dialogue, audio, and camera direction
+- Output ONLY the rewritten prompt, no commentary\
+"""

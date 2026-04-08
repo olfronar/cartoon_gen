@@ -258,3 +258,20 @@ Return JSON:
   "reasoning": "1-2 sentences explaining your choice"
 }}\
 """
+
+COMEDY_REWRITE_PROMPT = """\
+Rewrite this image generation prompt to be funnier.
+
+Original prompt:
+{image_prompt}
+
+Comedy note (what's missing):
+{suggestion}
+
+Rules:
+- 50-70 words max
+- Front-load the single funniest visual element in the first 10 words
+- The image must be independently funny as a standalone meme
+- Preserve all character details and art style references
+- Output ONLY the rewritten prompt, no commentary\
+"""
