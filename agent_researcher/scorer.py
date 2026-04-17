@@ -113,7 +113,7 @@ def _call_scorer_once(client, items_json: str):
         model=SCORING_MODEL,
         max_tokens=32768,
         thinking={"type": "adaptive"},
-        temperature=1,  # required when thinking is enabled
+        output_config={"effort": "medium"},
         messages=[{"role": "user", "content": SCORING_PROMPT + items_json}],
     ) as stream:
         response = stream.get_final_message()

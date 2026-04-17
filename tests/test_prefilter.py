@@ -124,7 +124,7 @@ class TestPrefilterWithMockedAPI:
         assert call_kwargs["model"] == "claude-opus-4-7"
 
     def test_no_thinking_enabled(self):
-        """Prefilter uses temperature=0 without thinking for reliable JSON."""
+        """Prefilter uses effort=medium without thinking for reliable JSON."""
         settings = Settings(anthropic_api_key="test-key")
         items = [make_raw_item()]
 
@@ -139,5 +139,6 @@ class TestPrefilterWithMockedAPI:
             prefilter_items(items, settings)
 
         call_kwargs = mock_client.messages.create.call_args[1]
-        assert call_kwargs["temperature"] == 0
+        assert call_kwargs["output_config"] == {"effort": "medium"}
         assert "thinking" not in call_kwargs
+        assert "temperature" not in call_kwargs

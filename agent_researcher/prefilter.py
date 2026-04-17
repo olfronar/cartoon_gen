@@ -47,7 +47,7 @@ def _call_prefilter(client, items_json: str) -> list[dict]:
     response = client.messages.create(
         model=PREFILTER_MODEL,
         max_tokens=4096,
-        temperature=0,
+        output_config={"effort": "medium"},
         messages=[{"role": "user", "content": PREFILTER_PROMPT + items_json}],
     )
     text = extract_text(response)
