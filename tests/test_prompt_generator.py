@@ -49,7 +49,7 @@ class TestGenerateScenePrompt:
         script = make_script()
 
         result = generate_scene_prompt(
-            scene, script, "context", MagicMock(), "claude-opus-4-6", 4096
+            scene, script, "context", MagicMock(), "claude-opus-4-7", 4096
         )
         assert result == "A frozen moment of a robot chef"
         mock_llm.assert_called_once()
@@ -67,7 +67,7 @@ class TestGenerateScenePrompt:
         script = make_script()
 
         result = generate_scene_prompt(
-            scene, script, "context", MagicMock(), "claude-opus-4-6", 4096
+            scene, script, "context", MagicMock(), "claude-opus-4-7", 4096
         )
         # Should use fallback — no audio/duration
         assert "audio" not in result.lower()

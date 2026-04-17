@@ -12,7 +12,7 @@ from shared.utils import extract_json, extract_text
 
 logger = logging.getLogger(__name__)
 
-PREFILTER_MODEL = "claude-sonnet-4-6"
+PREFILTER_MODEL = "claude-opus-4-7"
 MAX_PREFILTER_ITEMS = 200
 PREFILTER_TOP_N = 50
 MAX_RETRIES = 2

@@ -106,7 +106,7 @@ class TestPrefilterWithMockedAPI:
         assert len(result) == 1
         assert result[0].title == "Only item"
 
-    def test_uses_sonnet_model(self):
+    def test_uses_prefilter_model(self):
         settings = Settings(anthropic_api_key="test-key")
         items = [make_raw_item()]
 
@@ -121,7 +121,7 @@ class TestPrefilterWithMockedAPI:
             prefilter_items(items, settings)
 
         call_kwargs = mock_client.messages.create.call_args[1]
-        assert "sonnet" in call_kwargs["model"]
+        assert call_kwargs["model"] == "claude-opus-4-7"
 
     def test_no_thinking_enabled(self):
         """Prefilter uses temperature=0 without thinking for reliable JSON."""

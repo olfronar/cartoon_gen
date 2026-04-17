@@ -21,7 +21,7 @@ def generate_synopsis(
     item: ScoredItem,
     context_block: str,
     client,
-    model: str = "claude-opus-4-6",
+    model: str = "claude-opus-4-7",
     max_tokens: int = 64000,
 ) -> Synopsis:
     """Generate a three-act synopsis for a logline."""
@@ -47,7 +47,7 @@ def expand_script(
     script_date: date,
     context_block: str,
     client,
-    model: str = "claude-opus-4-6",
+    model: str = "claude-opus-4-7",
     max_tokens: int = 64000,
 ) -> CartoonScript:
     """Expand a synopsis into a full script with scene-by-scene breakdown."""

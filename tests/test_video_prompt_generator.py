@@ -17,7 +17,7 @@ class TestGenerateVideoPrompt:
         script = make_script()
 
         result = generate_video_prompt(
-            scene, script, "context", MagicMock(), "claude-opus-4-6", 4096
+            scene, script, "context", MagicMock(), "claude-opus-4-7", 4096
         )
         assert result == "A robot slowly turns its head"
         mock_llm.assert_called_once()
@@ -29,7 +29,7 @@ class TestGenerateVideoPrompt:
         script = make_script()
 
         result = generate_video_prompt(
-            scene, script, "context", MagicMock(), "claude-opus-4-6", 4096
+            scene, script, "context", MagicMock(), "claude-opus-4-7", 4096
         )
         assert result == "A robot chef in a kitchen."
 

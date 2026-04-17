@@ -13,7 +13,7 @@ from shared.utils import extract_json, extract_text, strip_code_fences
 
 logger = logging.getLogger(__name__)
 
-SCORING_MODEL = "claude-opus-4-6"
+SCORING_MODEL = "claude-opus-4-7"
 MAX_ITEMS_TO_SCORE = 50
 MAX_RETRIES = 3
 RETRY_BACKOFF_BASE = 5  # seconds

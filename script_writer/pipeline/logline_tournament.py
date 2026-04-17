@@ -23,7 +23,7 @@ def compare_pair(
     item: ScoredItem,
     context_block: str,
     client,
-    model: str = "claude-opus-4-6",
+    model: str = "claude-opus-4-7",
     max_tokens: int = 64000,
 ) -> tuple[Logline, Logline, str]:
     """Compare two loglines head-to-head. Returns (winner, loser, feedback_for_loser)."""
@@ -49,7 +49,7 @@ def revise_logline(
     item: ScoredItem,
     context_block: str,
     client,
-    model: str = "claude-opus-4-6",
+    model: str = "claude-opus-4-7",
     max_tokens: int = 64000,
 ) -> Logline:
     """Revise a losing logline using feedback from its comparison. Returns revised Logline."""
@@ -80,7 +80,7 @@ def run_tournament(
     item: ScoredItem,
     context_block: str,
     client,
-    model: str = "claude-opus-4-6",
+    model: str = "claude-opus-4-7",
     max_tokens: int = 64000,
 ) -> Logline:
     """Run a single-elimination tournament with feedback-driven revision.
@@ -164,7 +164,7 @@ def _quality_gate(winner: Logline, item: ScoredItem, client) -> None:
             logline_text=winner.text,
             visual_hook=winner.visual_hook,
         )
-        data = call_llm_json(client, prompt, "claude-sonnet-4-6", _QUALITY_GATE_MAX_TOKENS)
+        data = call_llm_json(client, prompt, "claude-opus-4-7", _QUALITY_GATE_MAX_TOKENS)
         if not isinstance(data, dict):
             return
         fails = [k for k in ("scroll_stop", "screenshot", "instant_funny") if not data.get(k)]

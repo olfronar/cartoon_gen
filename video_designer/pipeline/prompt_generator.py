@@ -85,7 +85,7 @@ def _check_dynamics(
             video_prompt=video_prompt,
             format_type=script.format_type or "demonstration",
         )
-        data = call_llm_json(client, check_prompt, "claude-sonnet-4-6", _DYNAMICS_CHECK_MAX_TOKENS)
+        data = call_llm_json(client, check_prompt, "claude-opus-4-7", _DYNAMICS_CHECK_MAX_TOKENS)
         if not isinstance(data, dict):
             return video_prompt
         score = data.get("motion_score", 5)
@@ -110,7 +110,7 @@ def _check_dynamics(
             suggestion=suggestion,
         )
         revised = call_llm_text(
-            client, rewrite_prompt, "claude-sonnet-4-6", _DYNAMICS_REWRITE_MAX_TOKENS
+            client, rewrite_prompt, "claude-opus-4-7", _DYNAMICS_REWRITE_MAX_TOKENS
         ).strip()
         logger.info(
             "Video dynamics check: rewrote prompt for scene %d (score=%d)",

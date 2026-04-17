@@ -52,7 +52,7 @@ def main() -> None:
         type=str,
         choices=["opus", "grok"],
         default="opus",
-        help="LLM: opus (claude-opus-4-6) or grok (grok-4.20-beta-latest-reasoning).",
+        help="LLM: opus (claude-opus-4-7) or grok (grok-4.20-beta-latest-reasoning).",
     )
     parser.add_argument(
         "--no-editor",

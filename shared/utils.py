@@ -179,7 +179,7 @@ def _call_anthropic(
         model=model,
         max_tokens=max_tokens,
         thinking={"type": "adaptive"},
-        temperature=1,
+        output_config={"effort": "medium"},
         messages=[{"role": "user", "content": content}],
     ) as stream:
         return extract_text(stream.get_final_message())

@@ -14,7 +14,7 @@ def select_logline(
     item: ScoredItem,
     context_block: str,
     client,
-    model: str = "claude-opus-4-6",
+    model: str = "claude-opus-4-7",
     max_tokens: int = 64000,
 ) -> Logline:
     """Select the best logline from 3 candidates."""

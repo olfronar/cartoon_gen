@@ -246,7 +246,7 @@ async def _process_shot(
     prompt_client=None,
     do_verify: bool = False,
     num_candidates: int = 1,
-    verify_model: str = "claude-opus-4-6",
+    verify_model: str = "claude-opus-4-7",
     verify_max_tokens: int = 4096,
 ) -> ShotResult:
     """Generate a single shot (scene or end card). Retries image generation up to 5 times."""

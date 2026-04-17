@@ -17,7 +17,7 @@ def list_characters(characters_dir: Path) -> list[str]:
     return sorted(p.stem for p in characters_dir.glob("*.md"))
 
 
-def create_character(api_key: str, characters_dir: Path, model: str = "claude-opus-4-6") -> Path:
+def create_character(api_key: str, characters_dir: Path, model: str = "claude-opus-4-7") -> Path:
     """Run character interview and write the profile file."""
     existing = list_characters(characters_dir)
 

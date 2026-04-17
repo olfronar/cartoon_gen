@@ -88,7 +88,7 @@ def _check_comedy(
             image_prompt=image_prompt,
         )
         # Use Sonnet with a small token budget for fast, cheap evaluation
-        data = call_llm_json(client, check_prompt, "claude-sonnet-4-6", _COMEDY_CHECK_MAX_TOKENS)
+        data = call_llm_json(client, check_prompt, "claude-opus-4-7", _COMEDY_CHECK_MAX_TOKENS)
         if not isinstance(data, dict):
             return image_prompt
         if not data.get("revision_needed", False):
@@ -103,7 +103,7 @@ def _check_comedy(
             suggestion=suggestion,
         )
         revised = call_llm_text(
-            client, rewrite_prompt, "claude-sonnet-4-6", _COMEDY_REWRITE_MAX_TOKENS
+            client, rewrite_prompt, "claude-opus-4-7", _COMEDY_REWRITE_MAX_TOKENS
         ).strip()
         logger.info("Image comedy check: rewrote prompt for scene %d", scene.scene_number)
         return revised

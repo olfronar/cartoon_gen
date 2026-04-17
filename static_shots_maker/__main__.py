@@ -38,7 +38,7 @@ def main() -> None:
         type=str,
         choices=["opus", "grok"],
         default="opus",
-        help="LLM for prompt rewriting: opus (claude-opus-4-6) or grok.",
+        help="LLM for prompt rewriting: opus (claude-opus-4-7) or grok.",
     )
     parser.add_argument(
         "--verify",

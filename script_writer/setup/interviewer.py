@@ -14,7 +14,7 @@ INTERVIEW_COMPLETE_MARKER = "INTERVIEW_COMPLETE"
 def run_interview(
     api_key: str,
     system_prompt: str,
-    model: str = "claude-opus-4-6",
+    model: str = "claude-opus-4-7",
     initial_context: str = "",
 ) -> dict:
     """Run a multi-turn interview via Claude, collecting user input from stdin.

@@ -26,7 +26,7 @@ def verify_shot(
     scene: SceneScript,
     script: CartoonScript,
     client,
-    model: str = "claude-opus-4-6",
+    model: str = "claude-opus-4-7",
     max_tokens: int = 4096,
 ) -> VerificationResult:
     """Compare generated image against scene_prompt via Claude vision."""
@@ -56,7 +56,7 @@ def compare_candidates(
     scene: SceneScript,
     script: CartoonScript,
     client,
-    model: str = "claude-opus-4-6",
+    model: str = "claude-opus-4-7",
     max_tokens: int = 4096,
 ) -> Literal["a", "b"]:
     """Pairwise VLM comparison of two candidate images. Returns winner."""

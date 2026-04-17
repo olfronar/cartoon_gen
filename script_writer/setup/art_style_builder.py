@@ -10,7 +10,7 @@ from .interviewer import run_interview
 logger = logging.getLogger(__name__)
 
 
-def create_art_style(api_key: str, art_style_path: Path, model: str = "claude-opus-4-6") -> Path:
+def create_art_style(api_key: str, art_style_path: Path, model: str = "claude-opus-4-7") -> Path:
     """Run art style interview and write the style document."""
     context = ""
     if art_style_path.exists():

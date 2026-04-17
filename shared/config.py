@@ -41,7 +41,7 @@ class Settings:
     output_dir: Path = field(default_factory=lambda: Path("output/briefs"))
 
     # Script Writer
-    script_writer_model: str = "claude-opus-4-6"
+    script_writer_model: str = "claude-opus-4-7"
     script_writer_max_tokens: int = 64000
     characters_dir: Path = field(default_factory=lambda: Path("output/characters"))
     art_style_path: Path = field(default_factory=lambda: Path("output/art_style.md"))
@@ -50,7 +50,7 @@ class Settings:
     # Static Shots Maker
     google_api_key: str = ""
     shots_model: str = "gemini-3.1-flash-image-preview"
-    shots_prompt_model: str = "claude-opus-4-6"
+    shots_prompt_model: str = "claude-opus-4-7"
     shots_prompt_max_tokens: int = 4096
     shots_max_concurrency: int = 10
     shots_output_dir: Path = field(default_factory=lambda: Path("output/static_shots"))
@@ -58,7 +58,7 @@ class Settings:
     # Static Shots Maker — verification & refinement
     shots_verify: bool = False
     shots_candidates: int = 1
-    shots_verify_model: str = "claude-opus-4-6"
+    shots_verify_model: str = "claude-opus-4-7"
     shots_verify_max_tokens: int = 4096
 
     # Art Materials
@@ -71,7 +71,7 @@ class Settings:
 
     # Video Designer
     video_model: str = "grok-imagine-video"
-    video_prompt_model: str = "claude-opus-4-6"
+    video_prompt_model: str = "claude-opus-4-7"
     video_prompt_max_tokens: int = 4096
     video_max_concurrency: int = 5
     video_output_dir: Path = field(default_factory=lambda: Path("output/videos"))
@@ -101,27 +101,27 @@ def load_settings(env_path: str = ".env") -> Settings:
         notion_api_key=values.get("NOTION_API_KEY", ""),
         notion_page_id=values.get("NOTION_PAGE_ID", ""),
         slack_webhook_url=values.get("SLACK_WEBHOOK_URL", ""),
-        script_writer_model=values.get("SCRIPT_WRITER_MODEL", "claude-opus-4-6"),
+        script_writer_model=values.get("SCRIPT_WRITER_MODEL", "claude-opus-4-7"),
         script_writer_max_tokens=int(values.get("SCRIPT_WRITER_MAX_TOKENS", "64000")),
         characters_dir=Path(values.get("CHARACTERS_DIR", "output/characters")),
         art_style_path=Path(values.get("ART_STYLE_PATH", "output/art_style.md")),
         scripts_output_dir=Path(values.get("SCRIPTS_OUTPUT_DIR", "output/scripts")),
         google_api_key=values.get("GOOGLE_API_KEY", ""),
         shots_model=values.get("SHOTS_MODEL", "gemini-3.1-flash-image-preview"),
-        shots_prompt_model=values.get("SHOTS_PROMPT_MODEL", "claude-opus-4-6"),
+        shots_prompt_model=values.get("SHOTS_PROMPT_MODEL", "claude-opus-4-7"),
         shots_prompt_max_tokens=int(values.get("SHOTS_PROMPT_MAX_TOKENS", "4096")),
         shots_max_concurrency=int(values.get("SHOTS_MAX_CONCURRENCY", "10")),
         shots_output_dir=Path(values.get("SHOTS_OUTPUT_DIR", "output/static_shots")),
         shots_verify=values.get("SHOTS_VERIFY", "").lower() in ("1", "true", "yes"),
         shots_candidates=int(values.get("SHOTS_CANDIDATES", "1")),
-        shots_verify_model=values.get("SHOTS_VERIFY_MODEL", "claude-opus-4-6"),
+        shots_verify_model=values.get("SHOTS_VERIFY_MODEL", "claude-opus-4-7"),
         shots_verify_max_tokens=int(values.get("SHOTS_VERIFY_MAX_TOKENS", "4096")),
         art_materials_dir=Path(values.get("ART_MATERIALS_DIR", "output/art_materials")),
         openai_api_key=values.get("OPENAI_API_KEY", ""),
         whisper_model=values.get("WHISPER_MODEL", "whisper-1"),
         caption_font_path=Path(values.get("CAPTION_FONT_PATH", "assets/fonts/Inter-Bold.ttf")),
         video_model=values.get("VIDEO_MODEL", "grok-imagine-video"),
-        video_prompt_model=values.get("VIDEO_PROMPT_MODEL", "claude-opus-4-6"),
+        video_prompt_model=values.get("VIDEO_PROMPT_MODEL", "claude-opus-4-7"),
         video_prompt_max_tokens=int(values.get("VIDEO_PROMPT_MAX_TOKENS", "4096")),
         video_max_concurrency=int(values.get("VIDEO_MAX_CONCURRENCY", "5")),
         video_output_dir=Path(values.get("VIDEO_OUTPUT_DIR", "output/videos")),

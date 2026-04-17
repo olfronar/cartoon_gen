@@ -17,7 +17,7 @@ def generate_loglines(
     item: ScoredItem,
     context_block: str,
     client,
-    model: str = "claude-opus-4-6",
+    model: str = "claude-opus-4-7",
     max_tokens: int = 64000,
 ) -> list[Logline]:
     """Generate 3 loglines (quiet part, betrayal, image) for a single news item."""
@@ -65,7 +65,7 @@ def generate_additional_loglines(
     existing: list[Logline],
     context_block: str,
     client,
-    model: str = "claude-opus-4-6",
+    model: str = "claude-opus-4-7",
     max_tokens: int = 64000,
 ) -> list[Logline]:
     """Generate 2 additional loglines that take different angles from existing ones."""

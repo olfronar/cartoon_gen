@@ -16,7 +16,7 @@ def punchup_script(
     item: ScoredItem,
     context_block: str,
     client,
-    model: str = "claude-opus-4-6",
+    model: str = "claude-opus-4-7",
     max_tokens: int = 64000,
 ) -> CartoonScript:
     """Comedy punch-up pass: generate funnier alternatives for key elements.
@@ -103,7 +103,7 @@ def review_script(
     item: ScoredItem,
     context_block: str,
     client,
-    model: str = "claude-opus-4-6",
+    model: str = "claude-opus-4-7",
     max_tokens: int = 64000,
 ) -> dict:
     """Evaluate a CartoonScript against comedy criteria. Returns structured feedback."""
@@ -123,7 +123,7 @@ def revise_script(
     item: ScoredItem,
     context_block: str,
     client,
-    model: str = "claude-opus-4-6",
+    model: str = "claude-opus-4-7",
     max_tokens: int = 64000,
 ) -> CartoonScript:
     """Revise a CartoonScript based on editor feedback. Returns revised CartoonScript."""
@@ -160,7 +160,7 @@ def review_and_revise(
     item: ScoredItem,
     context_block: str,
     client,
-    model: str = "claude-opus-4-6",
+    model: str = "claude-opus-4-7",
     max_tokens: int = 64000,
 ) -> CartoonScript:
     """Review then revise. Returns original on error or if review passes."""
